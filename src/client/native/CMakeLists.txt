@@ -50,7 +50,7 @@ add_library(remote_support_native SHARED
   src/transport_crypto.cpp
   src/transport_protocol.cpp
   src/transport.cpp
-  src/phased_exports.cpp)
+  src/input.cpp)
 target_include_directories(remote_support_native PRIVATE
   "${CMAKE_CURRENT_SOURCE_DIR}/src"
   "${RS_CONTRACT_ROOT}/02-protocol/native")
@@ -133,6 +133,17 @@ target_link_libraries(transport_integration_test PRIVATE remote_support_native)
 set_property(TARGET transport_integration_test PROPERTY CXX_STANDARD 20)
 set_property(TARGET transport_integration_test PROPERTY CXX_STANDARD_REQUIRED ON)
 
+add_executable(input_mapping_test tests/input_mapping_test.cpp)
+target_include_directories(input_mapping_test PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
+set_property(TARGET input_mapping_test PROPERTY CXX_STANDARD 20)
+set_property(TARGET input_mapping_test PROPERTY CXX_STANDARD_REQUIRED ON)
+
+add_executable(input_integration_test tests/input_integration_test.cpp)
+target_include_directories(input_integration_test PRIVATE "${RS_CONTRACT_ROOT}/02-protocol/native")
+target_link_libraries(input_integration_test PRIVATE remote_support_native)
+set_property(TARGET input_integration_test PROPERTY CXX_STANDARD 20)
+set_property(TARGET input_integration_test PROPERTY CXX_STANDARD_REQUIRED ON)
+
 if(MSVC)
   target_compile_options(abi_c_test PRIVATE /W4 /WX)
   target_compile_options(abi_cpp_test PRIVATE /W4 /WX /permissive-)
@@ -147,6 +158,8 @@ if(MSVC)
   target_compile_options(codec_capability_probe PRIVATE /W4 /WX /permissive- /EHsc)
   target_compile_options(hardware_encoder_test PRIVATE /W4 /WX /permissive- /EHsc)
   target_compile_options(transport_integration_test PRIVATE /W4 /WX /permissive- /EHsc)
+  target_compile_options(input_mapping_test PRIVATE /W4 /WX /permissive- /EHsc)
+  target_compile_options(input_integration_test PRIVATE /W4 /WX /permissive- /EHsc)
 else()
   target_compile_options(abi_c_test PRIVATE -Wall -Wextra -Wpedantic -Werror)
   target_compile_options(abi_cpp_test PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -161,6 +174,8 @@ else()
   target_compile_options(codec_capability_probe PRIVATE -Wall -Wextra -Wpedantic -Werror)
   target_compile_options(hardware_encoder_test PRIVATE -Wall -Wextra -Wpedantic -Werror)
   target_compile_options(transport_integration_test PRIVATE -Wall -Wextra -Wpedantic -Werror)
+  target_compile_options(input_mapping_test PRIVATE -Wall -Wextra -Wpedantic -Werror)
+  target_compile_options(input_integration_test PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 
 add_test(NAME AT-NFR-MNT-002-abi-c COMMAND abi_c_test)
@@ -178,4 +193,6 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   add_test(NAME AT-SEC-TRN-001-binding-fingerprint-negative COMMAND transport_integration_test fingerprint-mismatch)
   add_test(NAME AT-SEC-TRN-001-binding-replay-negative COMMAND transport_integration_test binding-replay)
   add_test(NAME AT-FR-NET-001-protocol-version-negative COMMAND transport_integration_test protocol-version)
+  add_test(NAME AT-FR-INP-001-local-scope-and-lifecycle COMMAND input_integration_test)
 endif()
+add_test(NAME AT-FR-INP-002-coordinate-normalization COMMAND input_mapping_test)

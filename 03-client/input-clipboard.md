@@ -19,6 +19,13 @@ Use canonical physical pixel coordinates in the Windows virtual desktop space. C
 
 For absolute mouse injection, normalize to the Windows absolute input range using the complete virtual desktop bounds and the virtual-desktop flag. Validate off-by-one behavior with edge/corner tests.
 
+The Console inverse transform is implemented in physical client pixels and is
+identical to the renderer geometry for fit, actual-size, stretch, zoom and pan.
+WPF logical coordinates are converted using the current per-axis DPI scale
+before inversion. Rotation is normalized in the media pipeline, so portrait
+frames use their post-rotation physical dimensions and desktop origin without a
+second rotation in the input layer.
+
 ## Keyboard model
 
 - Prefer scan-code events for physical key semantics.
@@ -31,6 +38,13 @@ For absolute mouse injection, normalize to the Windows absolute input range usin
 ## UIPI and elevation
 
 `SendInput` is subject to Windows integrity restrictions. The client must expose capability status and not pretend an event succeeded when target integrity prevents it. Installed mode may use an authorized elevated helper, but the helper validates session and permission on every request.
+
+The attended portable implementation supports only the interactive `Default`
+desktop. It checks the input desktop name and compares the foreground process
+integrity RID with the current process before injection, then also requires
+`SendInput` to report the complete submitted count. Secure desktop and higher-
+integrity targets fail with stable capability reasons. No portable path attempts
+to cross either boundary.
 
 ## Clipboard
 

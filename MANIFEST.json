@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "fileCount": 132,
+  "fileCount": 133,
   "files": [
     {
       "path": "00-product/commercialization-and-compliance.md",
@@ -129,8 +129,8 @@
     },
     {
       "path": "02-protocol/native/remote_support_native.h",
-      "bytes": 23437,
-      "sha256": "25d6aafb61c749d126c7e45847c1c66cbfeebdda519da19e40d41c5147a41095"
+      "bytes": 24395,
+      "sha256": "ff8bf6ec3f4272162aea289a7c6b217f73f3d7e696227616d39bc91eaf994c21"
     },
     {
       "path": "02-protocol/openapi/openapi.yaml",
@@ -209,8 +209,8 @@
     },
     {
       "path": "03-client/input-clipboard.md",
-      "bytes": 1919,
-      "sha256": "da424a8eebc1ffed5cd4dc8e5286247c1172c6f84fd95cc02601cb15f1c15803"
+      "bytes": 2763,
+      "sha256": "a4d70d802426c85bcd16369605e7ae2ee86b6ce9531902fe088507b5aaa78581"
     },
     {
       "path": "03-client/installer-updater.md",
@@ -224,8 +224,8 @@
     },
     {
       "path": "03-client/media-kernel-contract.md",
-      "bytes": 8138,
-      "sha256": "efb1c3439862f971e865954fd909976ad5f65702b201c60927508dc6a3deeb4f"
+      "bytes": 8749,
+      "sha256": "8bbbbd31bd875021b7397f7a4508c642461ce3096954e1799e3334004c2cba8a"
     },
     {
       "path": "03-client/native-bridge-contract.md",
@@ -349,8 +349,8 @@
     },
     {
       "path": "06-quality/compatibility-matrix.md",
-      "bytes": 1681,
-      "sha256": "24195f8010da717ed33a8fa119e2741069ce900d177ec6e71a4b3bb6c2aedb03"
+      "bytes": 2571,
+      "sha256": "9b4d2af9556c287c2c8c407a2205aa3274ee927e3e7f14a4f1365af22312afdb"
     },
     {
       "path": "06-quality/observability.md",
@@ -401,6 +401,11 @@
       "path": "07-delivery/evidence/goal-04.md",
       "bytes": 1749,
       "sha256": "563c1009fb82182c37a56cda0f8f44cf2eba63ef534a5cb01f15de823f56e7a8"
+    },
+    {
+      "path": "07-delivery/evidence/goal-05.md",
+      "bytes": 1513,
+      "sha256": "91a8245782b2e08438be919cfb484047d96deb56fa39bde3bb49cec6b43253d4"
     },
     {
       "path": "07-delivery/goals/goal-01-foundation.md",

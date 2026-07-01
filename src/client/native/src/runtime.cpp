@@ -3,7 +3,7 @@
 #include <array>
 
 namespace {
-constexpr char build_id[] = "remote-support-native/0.2.0+abi1.1";
+constexpr char build_id[] = "remote-support-native/0.5.0+abi1.3";
 
 rs_status_v1 create_device(rs_runtime_t* runtime) {
   constexpr std::array<D3D_FEATURE_LEVEL, 2> levels{D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0};

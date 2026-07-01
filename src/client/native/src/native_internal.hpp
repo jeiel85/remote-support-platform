@@ -240,7 +240,16 @@ struct rs_transport_t {
   bool incoming_h264_key_frame{};
   uint64_t next_remote_frame_id{1};
 };
-struct rs_input_injector_t { rs_runtime_t* runtime{}; };
+struct rs_input_injector_t {
+  rs_runtime_t* runtime{};
+  std::mutex mutex;
+  uint64_t expected_display_generation{};
+  uint32_t permission_flags{};
+  bool enabled{true};
+  uint64_t last_input_sequence{};
+  std::set<uint32_t> pressed_keys;
+  std::set<rs_pointer_button_v1> pressed_buttons;
+};
 
 std::string utf8_from_wide(const wchar_t* value);
 std::wstring wide_from_utf8(rs_string_view_v1 value);

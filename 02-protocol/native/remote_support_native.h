@@ -21,7 +21,7 @@ extern "C" {
 #endif
 
 #define RS_NATIVE_ABI_MAJOR 1u
-#define RS_NATIVE_ABI_MINOR 2u
+#define RS_NATIVE_ABI_MINOR 3u
 #define RS_DATA_CHANNEL_ID_INVALID 0xffffffffu
 
 typedef struct rs_runtime_t* rs_runtime_handle;
@@ -189,6 +189,19 @@ typedef enum rs_keyboard_kind_v1 {
   RS_KEYBOARD_KEY_UP = 1,
   RS_KEYBOARD_UNICODE_TEXT = 2
 } rs_keyboard_kind_v1;
+
+typedef enum rs_input_permission_flags_v1 {
+  RS_INPUT_PERMISSION_NONE = 0,
+  RS_INPUT_PERMISSION_POINTER = 1,
+  RS_INPUT_PERMISSION_KEYBOARD = 2
+} rs_input_permission_flags_v1;
+
+typedef enum rs_input_capability_state_v1 {
+  RS_INPUT_CAPABILITY_AVAILABLE = 0,
+  RS_INPUT_CAPABILITY_DISABLED = 1,
+  RS_INPUT_CAPABILITY_SECURE_DESKTOP = 2,
+  RS_INPUT_CAPABILITY_UIPI_BLOCKED = 3
+} rs_input_capability_state_v1;
 
 typedef struct rs_string_view_v1 {
   const char* data;
@@ -454,6 +467,16 @@ typedef struct rs_input_options_v1 {
   uint32_t flags;
 } rs_input_options_v1;
 
+typedef struct rs_input_capability_v1 {
+  uint32_t struct_size;
+  rs_input_capability_state_v1 state;
+  uint32_t pointer_allowed;
+  uint32_t keyboard_allowed;
+  uint32_t secure_desktop_active;
+  uint32_t foreground_has_higher_integrity;
+  rs_string_view_v1 stable_reason;
+} rs_input_capability_v1;
+
 typedef struct rs_pointer_input_v1 {
   uint32_t struct_size;
   rs_pointer_kind_v1 kind;
@@ -576,6 +599,8 @@ RS_API void RS_CALL rs_transport_destroy(rs_transport_handle transport);
 
 RS_API rs_status_v1 RS_CALL rs_input_injector_create(rs_runtime_handle runtime, const rs_input_options_v1* options, rs_input_injector_handle* out_injector);
 RS_API rs_status_v1 RS_CALL rs_input_injector_set_display_generation(rs_input_injector_handle injector, uint64_t display_generation);
+RS_API rs_status_v1 RS_CALL rs_input_injector_set_enabled(rs_input_injector_handle injector, uint32_t enabled);
+RS_API rs_status_v1 RS_CALL rs_input_injector_get_capability(rs_input_injector_handle injector, rs_input_capability_v1* out_capability);
 RS_API rs_status_v1 RS_CALL rs_input_inject_pointer(rs_input_injector_handle injector, const rs_pointer_input_v1* input);
 RS_API rs_status_v1 RS_CALL rs_input_inject_keyboard(rs_input_injector_handle injector, const rs_keyboard_input_v1* input);
 RS_API rs_status_v1 RS_CALL rs_input_release_all(rs_input_injector_handle injector, uint64_t through_input_sequence);

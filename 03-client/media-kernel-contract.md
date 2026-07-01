@@ -1,6 +1,6 @@
 # Media Kernel Execution Contract
 
-This document closes the implementation choices that were previously left implicit between Goals 02 and 03. The public ABI in `../02-protocol/native/remote_support_native.h` is authoritative; this document fixes behavior, limits, and evidence expectations for ABI minor version 1.
+This document closes the implementation choices that were previously left implicit between Goals 02 and 05. The public ABI in `../02-protocol/native/remote_support_native.h` is authoritative; this document fixes behavior, limits, and evidence expectations through ABI minor version 3.
 
 ## 1. Runtime and callback model
 
@@ -83,5 +83,15 @@ Deterministic CI evidence covers the synthetic source, bounded queues, timestamp
 ## 9. Transport binding inputs
 
 ABI 1.2 requires `rs_transport_binding_options_v1` for every peer transport. The caller supplies the authenticated remote peer ID and role, current permission revision and canonical scope names, a 32-byte authorization-context hash, and an authorized ephemeral P-256 key pair plus the reciprocal peer public key. Raw private scalars are copied on create, locked in process memory when supported, zeroed on every close path, and never logged.
+
+ABI 1.3 makes local input authorization explicit. `rs_input_options_v1.flags`
+contains only `RS_INPUT_PERMISSION_POINTER` and/or
+`RS_INPUT_PERMISSION_KEYBOARD`; zero is a valid view-only context. Debug-only
+test flags are rejected by Release builds. Every event is independently gated
+by enabled state, scope, sequence and (for pointer events) display generation.
+`rs_input_injector_set_enabled(0)` is the emergency/revocation barrier: it
+releases tracked state before disabling further input. Capability queries report
+unsupported secure desktop and foreground UIPI elevation instead of claiming
+success.
 
 `rs_runtime_generate_peer_key_pair` produces a P-256 private scalar and SEC1 uncompressed public point for the authorization flow. A transport parses the local and remote SHA-256 DTLS fingerprints from the descriptions active in the WebRTC peer connection, signs `RSP-TRANSPORT-BINDING-V1` with ECDSA P-256/SHA-256 in P1363 form, and verifies the reciprocal binding. A transport remains pre-content until both the binding and its acknowledgement verify. Any identity, role, epoch, permission revision, scope, authorization hash, fingerprint, key ID, signature, or replay mismatch is fatal.
