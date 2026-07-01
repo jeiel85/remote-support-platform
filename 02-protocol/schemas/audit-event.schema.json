@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.example.com/remote-support/audit-event-v1.json",
+  "title": "Remote Support Audit Event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "id",
+    "chainScope",
+    "chainSequence",
+    "category",
+    "action",
+    "outcome",
+    "actor",
+    "correlationId",
+    "occurredAt",
+    "details",
+    "eventHash"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "tenantId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid"
+    },
+    "chainScope": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "chainSequence": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "category": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "action": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "outcome": {
+      "enum": [
+        "SUCCEEDED",
+        "FAILED",
+        "DENIED",
+        "CANCELLED"
+      ]
+    },
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "USER",
+            "DEVICE",
+            "HOST",
+            "SERVICE",
+            "SYSTEM",
+            "PLATFORM_SUPPORT",
+            "ANONYMOUS"
+          ]
+        },
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 256
+        }
+      }
+    },
+    "target": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "id"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      }
+    },
+    "correlationId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "sourceIp": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "ipv4"
+        },
+        {
+          "type": "string",
+          "format": "ipv6"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "details": {
+      "type": "object",
+      "maxProperties": 64
+    },
+    "previousHash": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "eventHash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  }
+}

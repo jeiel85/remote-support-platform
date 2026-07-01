@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "environment": "production",
+  "apiBaseUrl": "https://api.example.com/v1",
+  "signalingUrl": "wss://signal.example.com/v1/ws",
+  "update": {
+    "manifestUrl": "https://api.example.com/v1/updates/manifest",
+    "channel": "stable",
+    "trustedRootVersion": 1,
+    "automaticCheck": true
+  },
+  "limits": {
+    "maxControlMessageBytes": 262144,
+    "maxFileChunkBytes": 1048576,
+    "maxClipboardUtf8Bytes": 1048576,
+    "maxFileBytes": 10737418240
+  },
+  "diagnostics": {
+    "localLogLevel": "Information",
+    "allowUserSupportBundle": true
+  }
+}

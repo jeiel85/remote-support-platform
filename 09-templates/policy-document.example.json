@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "rules": [
+    {
+      "id": "allow-operators-attended-business-hours",
+      "effect": "ALLOW",
+      "subjects": {
+        "roles": ["OPERATOR"]
+      },
+      "resources": {
+        "allDevices": true
+      },
+      "sessionTypes": ["ATTENDED", "MANAGED_ATTENDED"],
+      "scopes": ["VIEW_SCREEN", "CONTROL_POINTER", "CONTROL_KEYBOARD", "CHAT"],
+      "conditions": {
+        "requireMfa": true,
+        "maxAuthenticationAgeSeconds": 3600,
+        "requireLocalConsent": true,
+        "schedule": {
+          "timezone": "Asia/Seoul",
+          "windows": [
+            {
+              "daysOfWeek": ["MO", "TU", "WE", "TH", "FR"],
+              "startLocal": "08:00",
+              "endLocal": "20:00",
+              "allowOvernight": false
+            }
+          ]
+        }
+      },
+      "limits": {
+        "maxSessionDurationSeconds": 7200,
+        "maxFileBytes": 0
+      }
+    },
+    {
+      "id": "deny-unattended-by-default",
+      "effect": "DENY",
+      "subjects": {
+        "roles": ["OWNER", "ADMIN", "OPERATOR"]
+      },
+      "resources": {
+        "allDevices": true
+      },
+      "sessionTypes": ["UNATTENDED"],
+      "scopes": ["UNATTENDED_SESSION"]
+    }
+  ]
+}

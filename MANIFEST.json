@@ -1,0 +1,644 @@
+{
+  "schemaVersion": 1,
+  "bundleRevision": "1.3-final-re-audited",
+  "generatedAtUtc": "2026-07-01T03:37:50Z",
+  "fileCount": 127,
+  "hashAlgorithm": "SHA-256",
+  "files": [
+    {
+      "path": "00-product/commercialization-and-compliance.md",
+      "bytes": 3683,
+      "sha256": "bb76db00e0335da3c0c27e306b5668881775ecc76a15d24a9b9e9995a812d5b8"
+    },
+    {
+      "path": "00-product/functional-requirements.md",
+      "bytes": 5714,
+      "sha256": "d38bb709c831a1eda4fd68cc1dfd12e132bb09a57b2bdbea3f60878c7c2541c4"
+    },
+    {
+      "path": "00-product/nonfunctional-requirements.md",
+      "bytes": 7981,
+      "sha256": "92c567a732d33c440d8e58d209f1ca6543e5ef893c3bed57c129c6876d3430f6"
+    },
+    {
+      "path": "00-product/product-scope.md",
+      "bytes": 1867,
+      "sha256": "1316547ca5fddae18e70f15075845ebc0542a78fb1580ccffdb9b1b1f2df40e7"
+    },
+    {
+      "path": "00-product/risk-register.md",
+      "bytes": 2443,
+      "sha256": "1a8cb5668c14a4d5405cf470de1da65c23203d7b3431966b12cd0f35a7f22ae1"
+    },
+    {
+      "path": "00-product/user-flows.md",
+      "bytes": 4673,
+      "sha256": "01b226ce4bd8bd173080c7f236ef09a3304d187eab77b263a8885f1454379e0f"
+    },
+    {
+      "path": "01-architecture/adr/0001-modular-monolith.md",
+      "bytes": 780,
+      "sha256": "b8f3cfb54c06b596b032ac032ddd5b8e7fc3cc898e15c86e59128d8130be6dc8"
+    },
+    {
+      "path": "01-architecture/adr/0002-native-media-core.md",
+      "bytes": 679,
+      "sha256": "eee7e6ca62ad7db84ca0146a529759eb7b825edf690d9705a2ea2a6598409b78"
+    },
+    {
+      "path": "01-architecture/adr/0003-webrtc-transport.md",
+      "bytes": 570,
+      "sha256": "f80b752b9735e11df9988e2744e7a42fd232dc83a87ea689a83c5ce0448966bf"
+    },
+    {
+      "path": "01-architecture/adr/0004-attended-default.md",
+      "bytes": 496,
+      "sha256": "b9951238f7e864943409015cfa196936881d9c9ab4922d0bcbe543a73c553397"
+    },
+    {
+      "path": "01-architecture/adr/0005-no-content-storage.md",
+      "bytes": 484,
+      "sha256": "deb85af9462200357815bc7db7bb643ff4ae379b4297444937da13a21b32cc25"
+    },
+    {
+      "path": "01-architecture/adr/0006-signed-update-chain.md",
+      "bytes": 577,
+      "sha256": "3220bffc886e62e1f0a22f9b6b4fee20860841689b782ec3c8b909786d0013b9"
+    },
+    {
+      "path": "01-architecture/data-architecture.md",
+      "bytes": 3251,
+      "sha256": "57a1bd8632c9e4d29bbd14436572ca100e7e24bde1891bce1d1977dbd6dddf4e"
+    },
+    {
+      "path": "01-architecture/media-pipeline.md",
+      "bytes": 3154,
+      "sha256": "3c2c0fcd81644839d84d8a603e2661fe7f2c45fcb4a1cf6088ea683c6a166365"
+    },
+    {
+      "path": "01-architecture/networking-and-turn.md",
+      "bytes": 3575,
+      "sha256": "6db3a4a0f621ebcbfdbf82ed86a70fbd6dacc61d4475943f591d907706712164"
+    },
+    {
+      "path": "01-architecture/runtime-sequences.md",
+      "bytes": 4814,
+      "sha256": "8a25f3cbd307a6c94a4a41e04692e162689714c1d2d7040abf7844264e8cb391"
+    },
+    {
+      "path": "01-architecture/system-architecture.md",
+      "bytes": 3952,
+      "sha256": "3efa537136f9196de74707e77a4a1af27ba3d8f80c5e192470e937513d278981"
+    },
+    {
+      "path": "01-architecture/windows-process-model.md",
+      "bytes": 3539,
+      "sha256": "9db39cb1314ee1f557a60d7ccc5b0a72efa5df45d8120b22e734cf3b556102c5"
+    },
+    {
+      "path": "02-protocol/api-flow-contract.md",
+      "bytes": 6481,
+      "sha256": "df7d96ce0b68bb065cb7be27bd470795e82911dbff95d3051e20e7ccda1cc95b"
+    },
+    {
+      "path": "02-protocol/canonicalization-and-signatures.md",
+      "bytes": 4724,
+      "sha256": "275d39820359a75e3ada178f173e00c278915f6d2951198aadb7c20f2dedfaab"
+    },
+    {
+      "path": "02-protocol/control-channel.md",
+      "bytes": 4239,
+      "sha256": "ac9315ce38e54b60314378b1741f4c4bcc43accab3c78e3b0a0593a686126a67"
+    },
+    {
+      "path": "02-protocol/error-model.md",
+      "bytes": 1227,
+      "sha256": "69bf78286da33dd2bd4a209690e8bd1fc32c4be453b9d832fa7242b91a2a94cc"
+    },
+    {
+      "path": "02-protocol/file-transfer-protocol.md",
+      "bytes": 1819,
+      "sha256": "1298b3540614e13a9e51dd9da21b938b6545ff91a04700ace6871db29ee93063"
+    },
+    {
+      "path": "02-protocol/ipc/service_ipc.proto",
+      "bytes": 4886,
+      "sha256": "6c1568144aeb2125fad8933c5bc743e039c5e583a0adca83edff12ced11c9303"
+    },
+    {
+      "path": "02-protocol/managed-host-command-channel.md",
+      "bytes": 3065,
+      "sha256": "f98b0f5a4c400e61a370654e8b30a300a422cf4d219c2c8ef81770842a9a581a"
+    },
+    {
+      "path": "02-protocol/native/remote_support_native.h",
+      "bytes": 15793,
+      "sha256": "9de5c2c3014a39b4e1244c17a4a7d8d87cf739c77a955b3a0f92bbaea30d3a00"
+    },
+    {
+      "path": "02-protocol/openapi/openapi.yaml",
+      "bytes": 84943,
+      "sha256": "949560d39a6d88da0eddeece26fbca43855b1f7311b6d37a8fd5a6417ba876da"
+    },
+    {
+      "path": "02-protocol/protobuf/remote_support.proto",
+      "bytes": 8555,
+      "sha256": "99d1d62fe099eb1bede5c736b63b81db7fbe12e086d1d31fb4a2209f0e30bc44"
+    },
+    {
+      "path": "02-protocol/schemas/appsettings.schema.json",
+      "bytes": 3494,
+      "sha256": "2274aad557b38d7c612879ee1c72496be6e9d8c8f987607e04a62f5b9831b364"
+    },
+    {
+      "path": "02-protocol/schemas/audit-event.schema.json",
+      "bytes": 2787,
+      "sha256": "b98fda4f27fffd9bdc25fbd261ffa403d29f25d81fc4edb83940bd19da66dcd0"
+    },
+    {
+      "path": "02-protocol/schemas/client-config.schema.json",
+      "bytes": 1912,
+      "sha256": "f8118ff711ae338e8dcc42989ede7371bddd5b21a5f21a05d55b699bc0f4eea8"
+    },
+    {
+      "path": "02-protocol/schemas/policy-document.schema.json",
+      "bytes": 7292,
+      "sha256": "6dcd91149299b54a6dee0bd53c3fce8a589fd648857c397ccea6a0fc4e22895a"
+    },
+    {
+      "path": "02-protocol/schemas/update-manifest.schema.json",
+      "bytes": 4516,
+      "sha256": "9b2c5156f3583fa05b0e9c888b4786ceb8836a618593c504553ae8ef4727cc98"
+    },
+    {
+      "path": "02-protocol/schemas/update-root.schema.json",
+      "bytes": 3105,
+      "sha256": "dfbfec602f52ad924f7b5bebc828a9984e12adf296200b1d53c8f08d61d12d37"
+    },
+    {
+      "path": "02-protocol/session-state-machine.md",
+      "bytes": 2667,
+      "sha256": "3a0409d079abcdd569a2d686b84f1678230be2f72df42be4c934e7e6c1d0cfe9"
+    },
+    {
+      "path": "02-protocol/signaling-protocol.md",
+      "bytes": 2597,
+      "sha256": "8520f5a704f9462de5b42647c52a9b5d5a14f9c32373aed01d6d61344fbd72de"
+    },
+    {
+      "path": "03-client/accessibility-localization.md",
+      "bytes": 3051,
+      "sha256": "19901ec796362b9e8c79ccff694a3afa2cd774d1da52670603fe8e1d79c94479"
+    },
+    {
+      "path": "03-client/admin-portal.md",
+      "bytes": 3323,
+      "sha256": "b8cf3d14f5716145e1b76a6ea835250cf2044576fd026dc5ea67aee3ba6475e0"
+    },
+    {
+      "path": "03-client/capture-encoder-implementation.md",
+      "bytes": 2112,
+      "sha256": "a3fd953362e99a8b5058a70c7cf27d3fe071694b13503fe402ddb373cd59f439"
+    },
+    {
+      "path": "03-client/client-solution-structure.md",
+      "bytes": 1955,
+      "sha256": "ce267a0326c0c050d413766319d69184d503e4071fe4214c22d429174d41c18f"
+    },
+    {
+      "path": "03-client/elevation-broker.md",
+      "bytes": 4623,
+      "sha256": "5d4e7ab566cf970f721f209f5932d961f4c5b9904f31511c2b9d09f69377ac9b"
+    },
+    {
+      "path": "03-client/input-clipboard.md",
+      "bytes": 1919,
+      "sha256": "da424a8eebc1ffed5cd4dc8e5286247c1172c6f84fd95cc02601cb15f1c15803"
+    },
+    {
+      "path": "03-client/installer-updater.md",
+      "bytes": 2721,
+      "sha256": "38ea9fe22af9b0b40d380edeafac204aa94f692efd6445228990cae6e3fd990d"
+    },
+    {
+      "path": "03-client/local-data-and-logs.md",
+      "bytes": 1234,
+      "sha256": "396c074b923322ce2f040561050427551b9fd2f14ed0e8dd1e246622510517d1"
+    },
+    {
+      "path": "03-client/native-bridge-contract.md",
+      "bytes": 3831,
+      "sha256": "bd8517e6416c20fd54f00ba92294dec7b18655f48e55df625181696471ca0a18"
+    },
+    {
+      "path": "03-client/operator-console.md",
+      "bytes": 1767,
+      "sha256": "c84bf03d3d88aacf18bada1448cf77c164c0479e37c52c907e9ad27366dbd58b"
+    },
+    {
+      "path": "03-client/portable-agent.md",
+      "bytes": 1780,
+      "sha256": "81baa95fe77bbd1838e7b66defb77eaeff1b42c3ba6cda723fb0825fd2ceef32"
+    },
+    {
+      "path": "03-client/webrtc-integration.md",
+      "bytes": 4474,
+      "sha256": "d5ebbba6d0c09e8d104ade838760df3a55315d6c0f54ac2271138c79075917ed"
+    },
+    {
+      "path": "03-client/windows-service.md",
+      "bytes": 2317,
+      "sha256": "f5bb5e29cd68f57a8a2b34574f824d56b43bf9a1771e3c9c9cdeca3818c23c71"
+    },
+    {
+      "path": "04-backend/authorization-matrix.md",
+      "bytes": 2594,
+      "sha256": "214f10644c674a2dd73462f1cce7d5320fc1d4d4fb4bff01cdcab917b9d71229"
+    },
+    {
+      "path": "04-backend/backend-structure.md",
+      "bytes": 1734,
+      "sha256": "d15d702f65ddbf594dd215269a370ff969eef0a65bf1d66d56c86024f791f463"
+    },
+    {
+      "path": "04-backend/capacity-and-cost.md",
+      "bytes": 1627,
+      "sha256": "087223576cc72ef7f137d04f93b7c0431990a9bd9a45babe0abf8b1fe24f6874"
+    },
+    {
+      "path": "04-backend/database-schema.sql",
+      "bytes": 32076,
+      "sha256": "98f715b59234f5c414c9699fabbdf61247fc89c16f2c98b6cdd08c03eec75948"
+    },
+    {
+      "path": "04-backend/deployment-topology.md",
+      "bytes": 1575,
+      "sha256": "039b7a5096256666a36ffc5ae6ccea0fd3e7413f88a209ab0e7daf4accc63156"
+    },
+    {
+      "path": "04-backend/domain-model.md",
+      "bytes": 3120,
+      "sha256": "8c2b962b8f3a491c03f95fd47b6bdcedbbfcdcb455e0e696d1edad144ae46330"
+    },
+    {
+      "path": "04-backend/migration-policy.md",
+      "bytes": 1588,
+      "sha256": "1b8389d52e8f28348b40ddbba204ceabc36b23a8f9cff87bd5c4c4e39186551e"
+    },
+    {
+      "path": "04-backend/policy-engine.md",
+      "bytes": 3530,
+      "sha256": "5b295f75a184fab8759e677cf5a9cfaef38c89a39da0b7b79ca6723351ae7400"
+    },
+    {
+      "path": "04-backend/signaling-service.md",
+      "bytes": 1370,
+      "sha256": "6de2bdb4ed35cd6fd6f089476083e84ca8d83d940fc1a7623a373f75d156d4d1"
+    },
+    {
+      "path": "04-backend/turn-service.md",
+      "bytes": 1655,
+      "sha256": "60775d4117fbcc6accc2dc4944c1a7f94cb3fb0eddc1129c8235162fb9aea5b8"
+    },
+    {
+      "path": "05-security/abuse-prevention.md",
+      "bytes": 1654,
+      "sha256": "5cc8fafca9d366f2dcc9930e59de239519fbddc179f7023c78d558e7ff61eb6e"
+    },
+    {
+      "path": "05-security/audit-and-incident.md",
+      "bytes": 1617,
+      "sha256": "cfa9af2d3ed5b8f6a93c77413ac15c2617ee91493b6e043ee7f32c59aaea599e"
+    },
+    {
+      "path": "05-security/identity-and-access.md",
+      "bytes": 2746,
+      "sha256": "a4c142262ecb993304be3228baed2e48ceb97f121be368aac2cba9ded41e773e"
+    },
+    {
+      "path": "05-security/key-management.md",
+      "bytes": 1580,
+      "sha256": "1295fbcbe2fe87792be192038bec981b4f1fc67dd95c7140830b9758288388e2"
+    },
+    {
+      "path": "05-security/secure-sdlc.md",
+      "bytes": 1545,
+      "sha256": "0469fe4dd0b4fae4883c0f15a878f3c45e001afd0acd5877ae8d38d04b525cc8"
+    },
+    {
+      "path": "05-security/security-architecture.md",
+      "bytes": 4141,
+      "sha256": "bc1b6f23c3c1317d6bd694e06239f9fd5bff84bd8e701e36de5874ab8f3e94bc"
+    },
+    {
+      "path": "05-security/threat-model.md",
+      "bytes": 4202,
+      "sha256": "03c0128a6b87e46960c515be778671fb30165a9c0fdd00a9cc6ff872dc9c655e"
+    },
+    {
+      "path": "06-quality/compatibility-matrix.md",
+      "bytes": 1681,
+      "sha256": "24195f8010da717ed33a8fa119e2741069ce900d177ec6e71a4b3bb6c2aedb03"
+    },
+    {
+      "path": "06-quality/observability.md",
+      "bytes": 1414,
+      "sha256": "016c98b5feac4078632a4726a266a38a5597bcd5a8c89ed38d0536ddf01fee2b"
+    },
+    {
+      "path": "06-quality/performance-and-slo.md",
+      "bytes": 1675,
+      "sha256": "016b6dfc2e060bc93aca80ff157a3852be09411b00d17334f09a6cf52f262d9c"
+    },
+    {
+      "path": "06-quality/release-gates.md",
+      "bytes": 1852,
+      "sha256": "60b690bb000495d6875ef3ae07296158961e579a3fdc1c1436e089cb1513fa8a"
+    },
+    {
+      "path": "06-quality/test-strategy.md",
+      "bytes": 1874,
+      "sha256": "6a717e1a715966631a9a6fcf73598d0013e7d0eec58f3d41004c0024769720bc"
+    },
+    {
+      "path": "07-delivery/acceptance-test-cases.csv",
+      "bytes": 60726,
+      "sha256": "21b810dd3234ac8d3fe8b98085e0e56d8dce5b1ffaa0940a54d3429c534d1374"
+    },
+    {
+      "path": "07-delivery/acceptance-test-catalog.md",
+      "bytes": 83345,
+      "sha256": "91c1a0fce3d54d85b1e70dad4c79b9ca7ed2eceb7c055b27601cc9312785a9f8"
+    },
+    {
+      "path": "07-delivery/bootstrap-and-build.md",
+      "bytes": 2285,
+      "sha256": "0d22f3f50d08801a8aa91980d841a7aa4c0e16458a5b63262f8d4a6dbd85f607"
+    },
+    {
+      "path": "07-delivery/ci-cd.md",
+      "bytes": 1973,
+      "sha256": "5d04cc6932b061e6f7350c96b2e0b9f5d9cc670dcb08f6dcc02a409cb5bb5f7d"
+    },
+    {
+      "path": "07-delivery/coding-standards.md",
+      "bytes": 1683,
+      "sha256": "3c2729a1f21fe47e08fa7a7b7a2a10949065e4de1cd480f873231af89829047f"
+    },
+    {
+      "path": "07-delivery/goals/goal-01-foundation.md",
+      "bytes": 2436,
+      "sha256": "d85556a84c4866b48297dae62e80993923dad2ff95d3341a952816447aba0966"
+    },
+    {
+      "path": "07-delivery/goals/goal-02-capture-render.md",
+      "bytes": 2120,
+      "sha256": "e66c68879fb853369e4677d1b6dd4f1df25c4bc55c41fc7446cebc607ccc77cd"
+    },
+    {
+      "path": "07-delivery/goals/goal-03-encoding.md",
+      "bytes": 2215,
+      "sha256": "960ff30d783577b3f866e0aa9191c3f38898193027344c28dd1abfbbaac8ce8c"
+    },
+    {
+      "path": "07-delivery/goals/goal-04-lan-transport.md",
+      "bytes": 2483,
+      "sha256": "15b43b478fc646762766acbd8570bca856a2d40948270428dbac6c1386f8bc21"
+    },
+    {
+      "path": "07-delivery/goals/goal-05-input-topology.md",
+      "bytes": 2234,
+      "sha256": "fba7f1677714acb65a1d61b6edfe6d2e87dea71af3409c72467b8321828b4a69"
+    },
+    {
+      "path": "07-delivery/goals/goal-06-control-plane-consent.md",
+      "bytes": 2227,
+      "sha256": "10050fec54a4fce91af961b1e7677dc7ef262ba6cc3d3ed15a7665469ee9f579"
+    },
+    {
+      "path": "07-delivery/goals/goal-07-internet-turn.md",
+      "bytes": 2307,
+      "sha256": "fa65bd6fac8c385ecb58e2e52fa550f3f7e55c228eeb0eddd36cdc6f1f65abfe"
+    },
+    {
+      "path": "07-delivery/goals/goal-08-data-features.md",
+      "bytes": 2162,
+      "sha256": "33d587a59d8fde5bae4ee56e3076f0b7edad742c6817fefcc3272700a992a493"
+    },
+    {
+      "path": "07-delivery/goals/goal-09-attended-packaging.md",
+      "bytes": 1038,
+      "sha256": "a32775ade643312f99b92ecc3c7dcf9069f82e7ad1ee856091f836336d6aa640"
+    },
+    {
+      "path": "07-delivery/goals/goal-10-tenancy-policy-audit.md",
+      "bytes": 2579,
+      "sha256": "a173b4ab7dc8534e0f22ea25d01b7976d4f0e10713d9446d95343e4beba04a58"
+    },
+    {
+      "path": "07-delivery/goals/goal-11-update-observability-ops.md",
+      "bytes": 2334,
+      "sha256": "0420378af54a728881ce3fce8179c09fbef79ba82e2dccf5fd6f4ab693d2759d"
+    },
+    {
+      "path": "07-delivery/goals/goal-12-attended-ga.md",
+      "bytes": 2513,
+      "sha256": "bef0fa5591fc9ba5036138a0d80ee7e14feb271cb487854788872c2af5291e05"
+    },
+    {
+      "path": "07-delivery/goals/goal-13-managed-host.md",
+      "bytes": 1474,
+      "sha256": "9c9c7484dacc0555d2a1bc5b65aa9012c8eb65a1b0ef2924018467ad72ed7f97"
+    },
+    {
+      "path": "07-delivery/goals/goal-14-unattended.md",
+      "bytes": 2543,
+      "sha256": "99214c3a68faad9d612a668f620f88d2b6cc0768a68a09c3ebd7fc7263d5d9f0"
+    },
+    {
+      "path": "07-delivery/implementation-order.md",
+      "bytes": 1346,
+      "sha256": "ffbc45c52c03d695ad91897c65c2a9490888718d3967a867b8ddfd6af9a1de34"
+    },
+    {
+      "path": "07-delivery/product-backlog.md",
+      "bytes": 1985,
+      "sha256": "aaeb4266c3f79a52e96f833a04adc9f3f2f57f167c937000ecb58fc8d4b0e42e"
+    },
+    {
+      "path": "07-delivery/repository-structure.md",
+      "bytes": 2132,
+      "sha256": "879e6db7a7fd8239d785a476cfb69e17b007864ce8cf2ce1ada38dc2ab7f525e"
+    },
+    {
+      "path": "07-delivery/traceability/requirements-traceability.csv",
+      "bytes": 44052,
+      "sha256": "967ba9745e2789752f906d268bf4100c02c84500899359998932e90f6d031aec"
+    },
+    {
+      "path": "07-delivery/traceability/requirements-traceability.md",
+      "bytes": 20014,
+      "sha256": "6b64916b2fd83525986cf7c28ee2778ed94704048907a87435ce346a69c56262"
+    },
+    {
+      "path": "08-operations/disaster-recovery-plan.md",
+      "bytes": 2559,
+      "sha256": "3e4bc235bed11ee660cd6ceb00b29344462fb850af8c38e7661ec816bb2a9032"
+    },
+    {
+      "path": "08-operations/operations-overview.md",
+      "bytes": 916,
+      "sha256": "9893afc50f0f73cdfbab9503184d994a8fd6023df6f80c90df114f151c1d6ae7"
+    },
+    {
+      "path": "08-operations/runbooks/control-plane-outage.md",
+      "bytes": 1049,
+      "sha256": "d400c7ac1440cdb50885e4c25b6dcdcc2ca23a93f0d4f60493f37412f9210998"
+    },
+    {
+      "path": "08-operations/runbooks/database-restore.md",
+      "bytes": 879,
+      "sha256": "098bfa4820c8946d716a8b0f74450c7ea7afa22e442f021eb76f1cc258498867"
+    },
+    {
+      "path": "08-operations/runbooks/security-incident.md",
+      "bytes": 1137,
+      "sha256": "fca5d77f7f527f57ef5a400aedbea7ef09fef6b8c017c6d9ae15c7f16af9cbaf"
+    },
+    {
+      "path": "08-operations/runbooks/signing-key-compromise.md",
+      "bytes": 1071,
+      "sha256": "b477bb6cc69a83ac6652906f7ff2f3de1dcf336d359746b4c3a7184ba9943296"
+    },
+    {
+      "path": "08-operations/runbooks/turn-capacity-or-ddos.md",
+      "bytes": 857,
+      "sha256": "e79e7e42cbcbfc0b564d89b10a73473a0c890f234446bfb8101e6c2e61bb7ee3"
+    },
+    {
+      "path": "08-operations/slo-alert-catalog.md",
+      "bytes": 3163,
+      "sha256": "27e2d59547af42cf3b3d193571fdbcb5021373537c69b08676e1f032381911b7"
+    },
+    {
+      "path": "09-templates/appsettings.example.json",
+      "bytes": 1103,
+      "sha256": "633d6030464a804aacd48f3686d6ed19562a0cebecdd36faf13268580d4314aa"
+    },
+    {
+      "path": "09-templates/audit-event-catalog.md",
+      "bytes": 4985,
+      "sha256": "b36f56c3c0e2efaf255826ac4798557d4f8e90c2d23aa1d9b979e03f49e089be"
+    },
+    {
+      "path": "09-templates/audit-event.example.json",
+      "bytes": 893,
+      "sha256": "0485bbb95271bdfdeb49240e591ea86246040c2b67d2a6c071428c592449253d"
+    },
+    {
+      "path": "09-templates/client-config.example.json",
+      "bytes": 576,
+      "sha256": "7d3182af460640ff91a6101bec2d6c341c513a148f1b2a4c01f0bff6f5617882"
+    },
+    {
+      "path": "09-templates/coturn.production.example.conf",
+      "bytes": 990,
+      "sha256": "f00e6336617d305255c4a8ae0d822d4e28e83464f9cd940de9dd9760451552da"
+    },
+    {
+      "path": "09-templates/definition-of-done.md",
+      "bytes": 607,
+      "sha256": "95ae2f66ad7ec30a6fd2be5ce416cc43e7329dfd5dad68e4d0f8425a384a86c8"
+    },
+    {
+      "path": "09-templates/docker-compose.dev.yml",
+      "bytes": 956,
+      "sha256": "7db8cbdee46cb563fe089a4ab7f86c4fc9fca5227611b458e81cfde30e85f15d"
+    },
+    {
+      "path": "09-templates/error-codes.md",
+      "bytes": 7009,
+      "sha256": "f7f1117d688eb6d5a62f803d5af14bed43be2348e84da531f5665fddc024f517"
+    },
+    {
+      "path": "09-templates/policy-document.example.json",
+      "bytes": 1214,
+      "sha256": "16d930c4b13ce68d705772144f9fb70da100c6ff4674335d788940cd74fbea1f"
+    },
+    {
+      "path": "09-templates/security-review-template.md",
+      "bytes": 868,
+      "sha256": "a69e9c5604c4e0723ced4095b1d3cd3c978fe0c00df6463ed16ac30ad73a87a4"
+    },
+    {
+      "path": "09-templates/update-manifest.example.json",
+      "bytes": 1099,
+      "sha256": "1b6309ac2678b051c745f0f7cf9a453d9432ba8d742169a314a5cd8ac0f90284"
+    },
+    {
+      "path": "09-templates/update-root.example.json",
+      "bytes": 1198,
+      "sha256": "8bb2a169e54b32d2078e0db62bcf315ac108c9e238980d530e1ec112c21a43ca"
+    },
+    {
+      "path": "10-references/dependency-and-license-policy.md",
+      "bytes": 1630,
+      "sha256": "f01265544482c4bdcf1043365fc1794855260940b74af20bef171669798c096a"
+    },
+    {
+      "path": "10-references/official-references.md",
+      "bytes": 3447,
+      "sha256": "8c0fbc34988440671a19dfda5a2b711035566f1fac0ac2d3dc050b62175e278d"
+    },
+    {
+      "path": "10-references/version-baseline.md",
+      "bytes": 1637,
+      "sha256": "a44fe592ed4dd0f35b2db77dd930010099591ecdfb13348d2810756f203598f2"
+    },
+    {
+      "path": "11-bootstrap/README.md",
+      "bytes": 1331,
+      "sha256": "24b2ce749a0a3ca33140de59468f7cffb1eafb2e8c359d9fb47ed7751595c00a"
+    },
+    {
+      "path": "11-bootstrap/initialize-repository.ps1",
+      "bytes": 7742,
+      "sha256": "396aa94969a2fb1e65f8f9f10cb13d0a2b2a39f0417132ed46198fceb767a7a6"
+    },
+    {
+      "path": "11-bootstrap/requirements.txt",
+      "bytes": 111,
+      "sha256": "8c9368a82d28292cd5f8a18f2ed9e63d147fd77b17218b847d99d21c9daf632b"
+    },
+    {
+      "path": "11-bootstrap/validate-bundle.py",
+      "bytes": 22096,
+      "sha256": "959486a04dc101fc0887010ddfc9bcd03ca75494482152db5c909113a24ae80b"
+    },
+    {
+      "path": "DOCUMENT_INDEX.md",
+      "bytes": 5711,
+      "sha256": "6fde511cf966e397753e569eff850d45fa48848ecc4375a0cdab640c31f4255d"
+    },
+    {
+      "path": "FINAL_AUDIT_REPORT.md",
+      "bytes": 3832,
+      "sha256": "a0eae004275434b59a6cd72b8131a854d98b97a12e9beb40bcea23a75d04602b"
+    },
+    {
+      "path": "IMPLEMENTATION_READINESS.md",
+      "bytes": 1848,
+      "sha256": "c09626dc12fc86d5f83ba8b477f3e4e164c797eb169756285bed6076e88cb9be"
+    },
+    {
+      "path": "README.md",
+      "bytes": 1327,
+      "sha256": "77af2a92e56c6aaff7385579523cdff771527d83e17a90d2298f1053e3b7ca07"
+    },
+    {
+      "path": "START_HERE.md",
+      "bytes": 880,
+      "sha256": "d967b0ef53f6d0891cbaadb90ca89c772fbaec799ec984870a9ef933f2cb5cdd"
+    }
+  ]
+}

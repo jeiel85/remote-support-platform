@@ -1,0 +1,5 @@
+PyYAML>=6.0,<7
+jsonschema[format]>=4.20,<5
+openapi-spec-validator>=0.9,<1
+pglast>=7.0,<8
+grpcio-tools>=1.70,<2

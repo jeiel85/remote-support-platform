@@ -1,0 +1,50 @@
+{
+  "signed": {
+    "schemaVersion": 1,
+    "rootVersion": 1,
+    "issuedAt": "2026-07-01T00:00:00Z",
+    "expiresAt": "2027-07-01T00:00:00Z",
+    "consistentSnapshot": true,
+    "keys": {
+      "root-a": {
+        "algorithm": "ed25519",
+        "publicKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      },
+      "root-b": {
+        "algorithm": "ed25519",
+        "publicKey": "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"
+      },
+      "targets-a": {
+        "algorithm": "ed25519",
+        "publicKey": "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
+      }
+    },
+    "roles": {
+      "root": {
+        "keyIds": [
+          "root-a",
+          "root-b"
+        ],
+        "threshold": 2
+      },
+      "targets": {
+        "keyIds": [
+          "targets-a"
+        ],
+        "threshold": 1
+      }
+    }
+  },
+  "signatures": [
+    {
+      "keyId": "root-a",
+      "algorithm": "ed25519",
+      "signature": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    {
+      "keyId": "root-b",
+      "algorithm": "ed25519",
+      "signature": "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"
+    }
+  ]
+}

@@ -1,0 +1,3245 @@
+openapi: 3.1.0
+info:
+  title: Remote Support Control Plane API
+  version: 1.3.0
+  description: Implementation contract for attended and managed-host control-plane operations. Media, input, clipboard, chat,
+    and file bytes remain peer-to-peer and are not accepted by this API.
+servers:
+- url: https://api.example.com/v1
+  description: Production example; replace by environment configuration
+tags:
+- name: Attended
+- name: Sessions
+- name: Devices
+- name: Policies
+- name: Tenant
+- name: Audit
+- name: Updates
+- name: Abuse
+security:
+- operatorBearer: []
+paths:
+  /attended-sessions:
+    post:
+      operationId: createAttendedSession
+      summary: Create an attended host session
+      tags:
+      - Attended
+      security: []
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAttendedSessionRequest'
+      responses:
+        '201':
+          description: Pending attended session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendedSessionCreated'
+        '400': &id001
+          $ref: '#/components/responses/BadRequest'
+        '429': &id002
+          $ref: '#/components/responses/RateLimited'
+        '500': &id003
+          $ref: '#/components/responses/InternalError'
+  /attended-sessions/resolve:
+    post:
+      operationId: resolveAttendedSession
+      summary: Resolve a support code as an authenticated operator
+      tags:
+      - Attended
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResolveAttendedSessionRequest'
+      responses:
+        '200':
+          description: Consent request created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsentRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '400': *id001
+        '401': &id004
+          $ref: '#/components/responses/Unauthorized'
+        '403': &id006
+          $ref: '#/components/responses/Forbidden'
+        '409': &id005
+          $ref: '#/components/responses/Conflict'
+        '429': *id002
+        '500': *id003
+  /attended-sessions/{sessionId}/pending-consent:
+    get:
+      operationId: getPendingConsent
+      summary: Read the current pending consent request as the host
+      tags:
+      - Attended
+      security:
+      - hostBootstrapBearer: []
+      parameters:
+      - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: Pending consent request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PendingConsent'
+        '204':
+          description: No pending consent request
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401': *id004
+        '409': *id005
+        '429': *id002
+        '500': *id003
+  /attended-sessions/{sessionId}/consent:
+    post:
+      operationId: decideAttendedConsent
+      summary: Approve or reject a pending consent request
+      tags:
+      - Attended
+      security:
+      - hostBootstrapBearer: []
+      parameters:
+      - $ref: '#/components/parameters/SessionId'
+      - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConsentDecision'
+      responses:
+        '200':
+          description: Updated session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '400': *id001
+        '401': *id004
+        '409': *id005
+        '429': *id002
+        '500': *id003
+  /sessions/{sessionId}:
+    get:
+      operationId: getSession
+      summary: Read authorized session metadata
+      tags:
+      - Sessions
+      security:
+      - dpopProof: []
+        peerDpopAccessToken: []
+      - operatorBearer: []
+      parameters:
+      - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: Session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401': *id004
+        '403': *id006
+        '500': *id003
+    delete:
+      operationId: endSession
+      summary: End a session
+      tags:
+      - Sessions
+      security:
+      - dpopProof: []
+        peerDpopAccessToken: []
+      - operatorBearer: []
+      parameters:
+      - $ref: '#/components/parameters/SessionId'
+      - $ref: '#/components/parameters/IfMatch'
+      responses:
+        '204':
+          description: Ended or already ended
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401': *id004
+        '403': *id006
+        '409': *id005
+        '500': *id003
+  /sessions/{sessionId}/peer-authorization:
+    post:
+      operationId: exchangePeerAuthorization
+      summary: Exchange a bootstrap credential and key proof for a scoped peer token
+      tags:
+      - Sessions
+      security:
+      - sessionBootstrapBearer: []
+      parameters:
+      - $ref: '#/components/parameters/SessionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PeerAuthorizationRequest'
+      responses:
+        '200':
+          description: Peer authorization
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PeerAuthorization'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '400': *id001
+        '401': *id004
+        '403': *id006
+        '409': *id005
+        '429': *id002
+        '500': *id003
+  /sessions/{sessionId}/signaling-tickets:
+    post:
+      operationId: createSignalingTicket
+      summary: Create a one-time signaling WebSocket ticket
+      tags:
+      - Sessions
+      security:
+      - dpopProof: []
+        peerDpopAccessToken: []
+      parameters:
+      - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: Signaling ticket
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignalingTicket'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401': *id004
+        '403': *id006
+        '409': *id005
+        '429': *id002
+        '500': *id003
+  /sessions/{sessionId}/turn-credentials:
+    post:
+      operationId: createTurnCredentials
+      summary: Issue short-lived TURN credentials for the current peer
+      tags:
+      - Sessions
+      security:
+      - dpopProof: []
+        peerDpopAccessToken: []
+      parameters:
+      - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: TURN credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TurnCredentials'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401': *id004
+        '403': *id006
+        '409': *id005
+        '429': *id002
+        '500': *id003
+  /sessions/{sessionId}/reconnect-grants:
+    post:
+      operationId: createReconnectGrant
+      summary: Create a single-use reconnect grant and next transport epoch
+      tags:
+      - Sessions
+      security:
+      - dpopProof: []
+        peerDpopAccessToken: []
+      parameters:
+      - $ref: '#/components/parameters/SessionId'
+      - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReconnectRequest'
+      responses:
+        '200':
+          description: Reconnect grant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReconnectGrant'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '400': *id001
+        '401': *id004
+        '403': *id006
+        '409': *id005
+        '429': *id002
+        '500': *id003
+  /sessions/{sessionId}/scope-revocations:
+    post:
+      operationId: revokeSessionScopes
+      summary: Revoke one or more granted scopes
+      tags:
+      - Sessions
+      security:
+      - dpopProof: []
+        peerDpopAccessToken: []
+      - operatorBearer: []
+      parameters:
+      - $ref: '#/components/parameters/SessionId'
+      - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScopeRevocationRequest'
+      responses:
+        '200':
+          description: Updated session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '400': *id001
+        '401': *id004
+        '403': *id006
+        '409': *id005
+        '500': *id003
+  /device-enrollment-tokens:
+    post:
+      operationId: createDeviceEnrollmentToken
+      summary: Create a one-time device enrollment token
+      tags:
+      - Devices
+      parameters:
+      - $ref: '#/components/parameters/TenantContext'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnrollmentTokenRequest'
+      responses:
+        '201':
+          description: Enrollment token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnrollmentTokenResult'
+        '400': *id001
+        '401': *id004
+        '403': *id006
+        '429': *id002
+        '500': *id003
+  /devices/enrollments:
+    post:
+      operationId: enrollDevice
+      summary: Enroll an installed host and bind its device key
+      tags:
+      - Devices
+      security: []
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceEnrollmentRequest'
+      responses:
+        '201':
+          description: Device enrollment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceEnrollmentResult'
+        '400': *id001
+        '403': *id006
+        '409': *id005
+        '429': *id002
+        '500': *id003
+  /devices:
+    get:
+      operationId: listDevices
+      summary: List tenant devices
+      tags:
+      - Devices
+      parameters:
+      - $ref: '#/components/parameters/TenantContext'
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Devices
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedDevices'
+        '401': *id004
+        '403': *id006
+        '500': *id003
+  /devices/{deviceId}:
+    get:
+      operationId: getDevice
+      summary: Read a tenant device
+      tags:
+      - Devices
+      parameters:
+      - $ref: '#/components/parameters/TenantContext'
+      - $ref: '#/components/parameters/DeviceId'
+      responses:
+        '200':
+          description: Device
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401': *id004
+        '403': *id006
+        '500': *id003
+    delete:
+      operationId: revokeDevice
+      summary: Revoke a tenant device and its active credentials
+      tags:
+      - Devices
+      parameters:
+      - $ref: '#/components/parameters/TenantContext'
+      - $ref: '#/components/parameters/DeviceId'
+      - $ref: '#/components/parameters/IfMatch'
+      responses:
+        '204':
+          description: Revoked or already revoked
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401': *id004
+        '403': *id006
+        '409': *id005
+        '500': *id003
+  /devices/{deviceId}/heartbeat:
+    post:
+      operationId: reportDeviceHeartbeat
+      summary: Report installed-host health and version
+      tags:
+      - Devices
+      security:
+      - dpopProof: []
+        deviceDpopAccessToken: []
+      parameters:
+      - $ref: '#/components/parameters/DeviceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceHeartbeat'
+      responses:
+        '204':
+          description: Accepted
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '400': *id001
+        '401': *id004
+        '403': *id006
+        '409': *id005
+        '429': *id002
+        '500': *id003
+  /devices/{deviceId}/sessions:
+    post:
+      operationId: createManagedSession
+      summary: Request a managed attended or unattended session
+      tags:
+      - Devices
+      parameters:
+      - $ref: '#/components/parameters/TenantContext'
+      - $ref: '#/components/parameters/DeviceId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ManagedSessionRequest'
+      responses:
+        '201':
+          description: Managed session queued for host delivery
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManagedSessionCreated'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '400': *id001
+        '401': *id004
+        '403': *id006
+        '409': *id005
+        '429': *id002
+        '500': *id003
+  /tenant/policies:
+    get:
+      operationId: listPolicies
+      summary: List active and draft tenant policies
+      tags:
+      - Policies
+      responses:
+        '200':
+          description: Policies
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Policy'
+        '401': *id004
+        '403': *id006
+        '500': *id003
+      parameters:
+      - $ref: '#/components/parameters/TenantContext'
+    post:
+      operationId: createPolicy
+      summary: Create a draft tenant policy
+      tags:
+      - Policies
+      parameters:
+      - $ref: '#/components/parameters/TenantContext'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolicyDocument'
+      responses:
+        '201':
+          description: Policy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Policy'
+        '400': *id001
+        '401': *id004
+        '403': *id006
+        '409': *id005
+        '500': *id003
+  /tenant/policies/{policyId}/versions:
+    post:
+      operationId: createPolicyVersion
+      summary: Create an immutable policy version
+      tags:
+      - Policies
+      parameters:
+      - $ref: '#/components/parameters/TenantContext'
+      - $ref: '#/components/parameters/PolicyId'
+      - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolicyDocument'
+      responses:
+        '201':
+          description: Policy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Policy'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '400': *id001
+        '401': *id004
+        '403': *id006
+        '409': *id005
+        '500': *id003
+  /tenant/policies/{policyId}/activate:
+    post:
+      operationId: activatePolicyVersion
+      summary: Activate a validated policy version
+      tags:
+      - Policies
+      parameters:
+      - $ref: '#/components/parameters/TenantContext'
+      - $ref: '#/components/parameters/PolicyId'
+      - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - version
+              properties:
+                version:
+                  type: integer
+                  minimum: 1
+      responses:
+        '200':
+          description: Policy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Policy'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '400': *id001
+        '401': *id004
+        '403': *id006
+        '409': *id005
+        '500': *id003
+  /tenant/audit-events:
+    get:
+      operationId: listAuditEvents
+      summary: List authorized tenant audit events
+      tags:
+      - Audit
+      parameters:
+      - $ref: '#/components/parameters/TenantContext'
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/Limit'
+      - name: from
+        in: query
+        schema:
+          type: string
+          format: date-time
+      - name: to
+        in: query
+        schema:
+          type: string
+          format: date-time
+      - name: category
+        in: query
+        schema:
+          type: string
+          maxLength: 128
+      responses:
+        '200':
+          description: Audit events
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedAuditEvents'
+        '400': *id001
+        '401': *id004
+        '403': *id006
+        '500': *id003
+  /updates/manifest:
+    get:
+      operationId: getUpdateManifest
+      summary: Get signed update metadata for product/channel/architecture
+      tags:
+      - Updates
+      security: []
+      parameters:
+      - name: product
+        in: query
+        required: true
+        schema:
+          type: string
+          maxLength: 64
+      - name: channel
+        in: query
+        required: true
+        schema:
+          type: string
+          enum:
+          - internal
+          - canary
+          - stable
+      - name: architecture
+        in: query
+        required: true
+        schema:
+          type: string
+          enum:
+          - x64
+          - arm64
+      - name: currentSequence
+        in: query
+        required: true
+        schema:
+          type: integer
+          minimum: 0
+      responses:
+        '200':
+          description: Signed update metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateManifestEnvelope'
+        '304':
+          description: No newer eligible release
+        '400': *id001
+        '429': *id002
+        '500': *id003
+  /abuse-reports:
+    post:
+      operationId: createAbuseReport
+      summary: Submit an abuse or unauthorized-access report
+      tags:
+      - Abuse
+      security:
+      - {}
+      - hostBootstrapBearer: []
+      - dpopProof: []
+        peerDpopAccessToken: []
+      - operatorBearer: []
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AbuseReportRequest'
+      responses:
+        '202':
+          description: Report accepted
+        '400': *id001
+        '429': *id002
+        '500': *id003
+  /devices/{deviceId}/credential-challenges:
+    post:
+      operationId: createDeviceCredentialChallenge
+      summary: Create a short-lived challenge for device credential refresh
+      tags:
+      - Devices
+      security: []
+      parameters:
+      - $ref: '#/components/parameters/DeviceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceCredentialChallengeRequest'
+      responses:
+        '201':
+          description: Challenge issued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceCredentialChallenge'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /devices/{deviceId}/credentials:
+    post:
+      operationId: exchangeDeviceCredential
+      summary: Exchange a signed device-key challenge for a short-lived device credential
+      tags:
+      - Devices
+      security: []
+      parameters:
+      - $ref: '#/components/parameters/DeviceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceCredentialExchangeRequest'
+      responses:
+        '200':
+          description: Device credential
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceCredential'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /devices/{deviceId}/keys/rotate:
+    post:
+      operationId: rotateDeviceKey
+      summary: Rotate the active device key using proof from the current key
+      tags:
+      - Devices
+      security:
+      - dpopProof: []
+        deviceDpopAccessToken: []
+      parameters:
+      - $ref: '#/components/parameters/DeviceId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceKeyRotationRequest'
+      responses:
+        '202':
+          description: Rotation accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceKeyRotationResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /devices/{deviceId}/pending-session-requests:
+    get:
+      operationId: pollManagedSessionRequests
+      summary: Long-poll managed-session requests for an installed host
+      tags:
+      - Devices
+      security:
+      - dpopProof: []
+        deviceDpopAccessToken: []
+      parameters:
+      - $ref: '#/components/parameters/DeviceId'
+      - $ref: '#/components/parameters/WaitSeconds'
+      - $ref: '#/components/parameters/Cursor'
+      responses:
+        '200':
+          description: Pending requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedManagedSessionRequests'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /sessions/{sessionId}/managed-host-decision:
+    post:
+      operationId: decideManagedHostSession
+      summary: Accept or reject a managed-session request and bind the host ephemeral peer key
+      tags:
+      - Sessions
+      security:
+      - dpopProof: []
+        deviceDpopAccessToken: []
+      parameters:
+      - $ref: '#/components/parameters/SessionId'
+      - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ManagedHostDecision'
+      responses:
+        '200':
+          description: Host decision applied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManagedHostDecisionResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /tenants:
+    post:
+      operationId: createTenant
+      summary: Create a tenant and owner membership
+      tags:
+      - Tenant
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTenantRequest'
+      responses:
+        '201':
+          description: Tenant created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tenant'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /tenant:
+    get:
+      operationId: getTenant
+      summary: Get the current tenant
+      tags:
+      - Tenant
+      responses:
+        '200':
+          description: Tenant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tenant'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+      parameters:
+      - $ref: '#/components/parameters/TenantContext'
+  /tenant/settings:
+    get:
+      operationId: getTenantSettings
+      summary: Get versioned tenant settings
+      tags:
+      - Tenant
+      responses:
+        '200':
+          description: Settings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantSettings'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+      parameters:
+      - $ref: '#/components/parameters/TenantContext'
+    patch:
+      operationId: patchTenantSettings
+      summary: Patch tenant settings with optimistic concurrency
+      tags:
+      - Tenant
+      parameters:
+      - $ref: '#/components/parameters/TenantContext'
+      - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TenantSettingsPatch'
+      responses:
+        '200':
+          description: Settings updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantSettings'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /tenant/memberships:
+    get:
+      operationId: listMemberships
+      summary: List tenant memberships
+      tags:
+      - Tenant
+      parameters:
+      - $ref: '#/components/parameters/TenantContext'
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Memberships
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedMemberships'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /tenant/memberships/{userId}:
+    patch:
+      operationId: patchMembership
+      summary: Update membership roles or status
+      tags:
+      - Tenant
+      parameters:
+      - $ref: '#/components/parameters/TenantContext'
+      - $ref: '#/components/parameters/UserId'
+      - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MembershipPatch'
+      responses:
+        '200':
+          description: Membership updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Membership'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    delete:
+      operationId: removeMembership
+      summary: Remove a tenant membership
+      tags:
+      - Tenant
+      parameters:
+      - $ref: '#/components/parameters/TenantContext'
+      - $ref: '#/components/parameters/UserId'
+      - $ref: '#/components/parameters/IfMatch'
+      responses:
+        '204':
+          description: Membership removed
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /tenant/invitations:
+    get:
+      operationId: listInvitations
+      summary: List tenant invitations
+      tags:
+      - Tenant
+      parameters:
+      - $ref: '#/components/parameters/TenantContext'
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Invitations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedInvitations'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    post:
+      operationId: createInvitation
+      summary: Invite a tenant member
+      tags:
+      - Tenant
+      parameters:
+      - $ref: '#/components/parameters/TenantContext'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvitationRequest'
+      responses:
+        '201':
+          description: Invitation created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invitation'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /tenant/invitations/{invitationId}:
+    delete:
+      operationId: revokeInvitation
+      summary: Revoke a pending invitation
+      tags:
+      - Tenant
+      parameters:
+      - $ref: '#/components/parameters/TenantContext'
+      - $ref: '#/components/parameters/InvitationId'
+      responses:
+        '204':
+          description: Invitation revoked
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /tenant/data-exports:
+    post:
+      operationId: requestTenantDataExport
+      summary: Request an auditable tenant data export
+      tags:
+      - Tenant
+      parameters:
+      - $ref: '#/components/parameters/TenantContext'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DataExportRequest'
+      responses:
+        '202':
+          description: Export queued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataExportResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /tenant/closure-requests:
+    post:
+      operationId: requestTenantClosure
+      summary: Request tenant closure with reauthentication and cooling-off controls
+      tags:
+      - Tenant
+      parameters:
+      - $ref: '#/components/parameters/TenantContext'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TenantClosureRequest'
+      responses:
+        '202':
+          description: Closure request accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantClosureResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /invitations/{invitationId}/accept:
+    post:
+      operationId: acceptInvitation
+      summary: Accept a tenant invitation after OIDC authentication
+      tags:
+      - Tenant
+      parameters:
+      - $ref: '#/components/parameters/InvitationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvitationAcceptanceRequest'
+      responses:
+        '200':
+          description: Invitation accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Membership'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /tenant/data-exports/{requestId}:
+    get:
+      operationId: getTenantDataExport
+      summary: Get tenant data-export workflow status
+      tags:
+      - Tenant
+      parameters:
+      - $ref: '#/components/parameters/TenantContext'
+      - $ref: '#/components/parameters/RequestId'
+      responses:
+        '200':
+          description: Export status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataExportResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /tenant/closure-requests/{requestId}:
+    get:
+      operationId: getTenantClosureRequest
+      summary: Get tenant-closure workflow status
+      tags:
+      - Tenant
+      parameters:
+      - $ref: '#/components/parameters/TenantContext'
+      - $ref: '#/components/parameters/RequestId'
+      responses:
+        '200':
+          description: Closure status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantClosureResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    delete:
+      operationId: cancelTenantClosureRequest
+      summary: Cancel a closure request during the permitted cooling-off window
+      tags:
+      - Tenant
+      parameters:
+      - $ref: '#/components/parameters/TenantContext'
+      - $ref: '#/components/parameters/RequestId'
+      - $ref: '#/components/parameters/IfMatch'
+      responses:
+        '204':
+          description: Closure request cancelled
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /updates/root:
+    get:
+      operationId: getUpdateRoot
+      summary: Get the next sequential signed update trust root after the caller root
+      tags:
+      - Updates
+      security: []
+      parameters:
+      - name: currentRootVersion
+        in: query
+        required: true
+        schema:
+          type: integer
+          minimum: 0
+      responses:
+        '200':
+          description: Signed update root
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateRootEnvelope'
+        '304':
+          description: No newer root
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /sessions/{sessionId}/peer-authorization-challenges:
+    post:
+      operationId: createPeerAuthorizationChallenge
+      summary: Create a single-use proof challenge for the bootstrap-bound peer
+      tags:
+      - Sessions
+      security:
+      - sessionBootstrapBearer: []
+      parameters:
+      - $ref: '#/components/parameters/SessionId'
+      responses:
+        '201':
+          description: Peer authorization challenge
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PeerAuthorizationChallenge'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+components:
+  securitySchemes:
+    operatorBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: OIDC access token for an authenticated operator/admin.
+    hostBootstrapBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: opaque
+      description: Short-lived attended-host bootstrap credential.
+    sessionBootstrapBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: opaque
+      description: Host or operator bootstrap credential used only for peer authorization exchange.
+    dpopProof:
+      type: apiKey
+      in: header
+      name: DPoP
+      description: RFC 9449 proof JWT. Required together with peer/device access tokens; htm, htu, iat, jti, ath and server
+        nonce are validated and replay-cached.
+    peerDpopAccessToken:
+      type: http
+      scheme: DPoP
+      description: Short-lived session/peer/epoch/scope-bound access token containing a cnf.jkt key thumbprint. Every use
+        requires a matching RFC 9449 DPoP proof.
+    deviceDpopAccessToken:
+      type: http
+      scheme: DPoP
+      description: Short-lived installed-device access token containing device/key/authorization-version claims and cnf.jkt.
+        Every use requires a matching RFC 9449 DPoP proof.
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 16
+        maxLength: 128
+    IfMatch:
+      name: If-Match
+      in: header
+      required: true
+      schema:
+        type: string
+        pattern: ^"[0-9]+"$
+      description: Quoted state or resource version.
+    SessionId:
+      name: sessionId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    DeviceId:
+      name: deviceId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    PolicyId:
+      name: policyId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    Cursor:
+      name: cursor
+      in: query
+      required: false
+      schema:
+        type: string
+        maxLength: 512
+    Limit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 200
+        default: 50
+    UserId:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    InvitationId:
+      name: invitationId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    WaitSeconds:
+      name: waitSeconds
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 30
+        default: 20
+    RequestId:
+      name: requestId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    TenantContext:
+      name: X-Tenant-Id
+      in: header
+      required: true
+      description: Explicit tenant context selected by the authenticated caller; the server verifies active membership and
+        never trusts this value as authorization.
+      schema:
+        type: string
+        format: uuid
+  schemas:
+    SupportCode:
+      type: string
+      description: Ten Crockford Base32 symbols grouped 5-5; 50 bits of server-generated entropy. Input is normalized to uppercase
+        before validation.
+      pattern: ^[0-9A-HJKMNP-TV-Z]{5}-[0-9A-HJKMNP-TV-Z]{5}$
+      minLength: 11
+      maxLength: 11
+      example: 7K3M9-X2P4T
+    Scope:
+      type: string
+      enum:
+      - VIEW_SCREEN
+      - CONTROL_POINTER
+      - CONTROL_KEYBOARD
+      - SYNC_CLIPBOARD_TEXT_HOST_TO_OPERATOR
+      - SYNC_CLIPBOARD_TEXT_OPERATOR_TO_HOST
+      - TRANSFER_FILE_HOST_TO_OPERATOR
+      - TRANSFER_FILE_OPERATOR_TO_HOST
+      - CHAT
+      - SWITCH_MONITOR
+      - REQUEST_REBOOT
+      - RECONNECT_AFTER_REBOOT
+      - UNATTENDED_SESSION
+    SessionState:
+      type: string
+      enum:
+      - CREATED
+      - WAITING_FOR_OPERATOR
+      - CONSENT_PENDING
+      - HOST_PENDING
+      - AUTHORIZED
+      - NEGOTIATING
+      - CONNECTED
+      - RECONNECTING
+      - EXPIRED
+      - REJECTED
+      - FAILED
+      - CANCELLED
+      - ENDED
+    PeerRole:
+      type: string
+      enum:
+      - HOST
+      - OPERATOR
+    RouteClass:
+      type:
+      - string
+      - 'null'
+      enum:
+      - DIRECT
+      - TURN_UDP
+      - TURN_TCP
+      - TURN_TLS
+      - null
+    PublicKeyJwk:
+      oneOf:
+      - type: object
+        additionalProperties: false
+        required:
+        - kty
+        - crv
+        - x
+        properties:
+          kty:
+            const: OKP
+          crv:
+            const: Ed25519
+          x:
+            type: string
+            pattern: ^[A-Za-z0-9_-]{43}$
+      - type: object
+        additionalProperties: false
+        required:
+        - kty
+        - crv
+        - x
+        - y
+        properties:
+          kty:
+            const: EC
+          crv:
+            const: P-256
+          x:
+            type: string
+            pattern: ^[A-Za-z0-9_-]{43}$
+          y:
+            type: string
+            pattern: ^[A-Za-z0-9_-]{43}$
+      description: Endpoint signing key. Installed Windows devices SHOULD use a non-exportable P-256 CNG/TPM-backed key when
+        available; ephemeral peers may use Ed25519 or P-256.
+    ClientCapabilities:
+      type: object
+      additionalProperties: false
+      required:
+      - protocolMajor
+      - protocolMinor
+      - features
+      properties:
+        protocolMajor:
+          type: integer
+          minimum: 1
+        protocolMinor:
+          type: integer
+          minimum: 0
+        features:
+          type: array
+          maxItems: 128
+          uniqueItems: true
+          items:
+            type: string
+            maxLength: 64
+        codecs:
+          type: array
+          maxItems: 16
+          uniqueItems: true
+          items:
+            type: string
+            maxLength: 64
+    CreateAttendedSessionRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - hostEphemeralPublicKey
+      - clientVersion
+      - capabilities
+      properties:
+        hostEphemeralPublicKey:
+          $ref: '#/components/schemas/PublicKeyJwk'
+        clientVersion:
+          type: string
+          minLength: 1
+          maxLength: 64
+        installationInstanceId:
+          type: string
+          format: uuid
+        locale:
+          type: string
+          maxLength: 32
+        capabilities:
+          $ref: '#/components/schemas/ClientCapabilities'
+    AttendedSessionCreated:
+      type: object
+      additionalProperties: false
+      required:
+      - sessionId
+      - supportCode
+      - expiresAt
+      - hostBootstrapToken
+      - hostPeerId
+      - state
+      - stateVersion
+      - pendingEventsUrl
+      properties:
+        sessionId:
+          type: string
+          format: uuid
+        supportCode:
+          $ref: '#/components/schemas/SupportCode'
+        expiresAt:
+          type: string
+          format: date-time
+        hostBootstrapToken:
+          type: string
+          minLength: 32
+        hostPeerId:
+          type: string
+          format: uuid
+        state:
+          $ref: '#/components/schemas/SessionState'
+        stateVersion:
+          type: integer
+          minimum: 1
+        pendingEventsUrl:
+          type: string
+          format: uri
+    ResolveAttendedSessionRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - supportCode
+      - requestedScopes
+      - operatorEphemeralPublicKey
+      - clientVersion
+      properties:
+        supportCode:
+          $ref: '#/components/schemas/SupportCode'
+        requestedScopes:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/Scope'
+        operatorEphemeralPublicKey:
+          $ref: '#/components/schemas/PublicKeyJwk'
+        clientVersion:
+          type: string
+          minLength: 1
+          maxLength: 64
+        capabilities:
+          $ref: '#/components/schemas/ClientCapabilities'
+    ConsentRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - sessionId
+      - consentRequestId
+      - operator
+      - requestedScopes
+      - expiresAt
+      - stateVersion
+      - operatorBootstrapToken
+      properties:
+        sessionId:
+          type: string
+          format: uuid
+        consentRequestId:
+          type: string
+          format: uuid
+        operator:
+          type: object
+          additionalProperties: false
+          required:
+          - displayName
+          - tenantDisplayName
+          properties:
+            displayName:
+              type: string
+              minLength: 1
+              maxLength: 200
+            tenantDisplayName:
+              type: string
+              minLength: 1
+              maxLength: 200
+            verifiedTenant:
+              type: boolean
+        requestedScopes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Scope'
+        expiresAt:
+          type: string
+          format: date-time
+        stateVersion:
+          type: integer
+          minimum: 1
+        operatorBootstrapToken:
+          type: string
+          minLength: 32
+          description: Returned only to the authenticated operator caller.
+    PendingConsent:
+      type: object
+      additionalProperties: false
+      required:
+      - sessionId
+      - consentRequestId
+      - operator
+      - requestedScopes
+      - expiresAt
+      - stateVersion
+      - consentNonce
+      - hostEphemeralKeyThumbprint
+      properties:
+        sessionId:
+          type: string
+          format: uuid
+        consentRequestId:
+          type: string
+          format: uuid
+        operator:
+          type: object
+          additionalProperties: false
+          required:
+          - displayName
+          - tenantDisplayName
+          - verifiedTenant
+          properties:
+            displayName:
+              type: string
+            tenantDisplayName:
+              type: string
+            verifiedTenant:
+              type: boolean
+        requestedScopes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Scope'
+        expiresAt:
+          type: string
+          format: date-time
+        stateVersion:
+          type: integer
+        consentNonce:
+          type: string
+          minLength: 16
+          maxLength: 256
+        hostEphemeralKeyThumbprint:
+          type: string
+          pattern: ^[A-Za-z0-9_-]{43}$
+          description: RFC 7638 SHA-256 JWK thumbprint in unpadded base64url.
+    ConsentDecision:
+      type: object
+      additionalProperties: false
+      required:
+      - consentRequestId
+      - approved
+      - grantedScopes
+      - consentNonce
+      - decisionProof
+      properties:
+        consentRequestId:
+          type: string
+          format: uuid
+        approved:
+          type: boolean
+        grantedScopes:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/Scope'
+        consentNonce:
+          type: string
+          minLength: 16
+          maxLength: 256
+        decisionProof:
+          $ref: '#/components/schemas/DetachedProof'
+    Session:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - sessionType
+      - state
+      - stateVersion
+      - permissionRevision
+      - requestedScopes
+      - grantedScopes
+      - createdAt
+      - expiresAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenantId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        sessionType:
+          type: string
+          enum:
+          - ATTENDED
+          - MANAGED_ATTENDED
+          - UNATTENDED
+        state:
+          $ref: '#/components/schemas/SessionState'
+        stateVersion:
+          type: integer
+          minimum: 1
+        permissionRevision:
+          type: integer
+          minimum: 0
+        transportEpoch:
+          type: integer
+          minimum: 0
+        requestedScopes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Scope'
+        grantedScopes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Scope'
+        createdAt:
+          type: string
+          format: date-time
+        authorizedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        connectedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        endedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+        endReason:
+          type:
+          - string
+          - 'null'
+          maxLength: 128
+        routeClass:
+          $ref: '#/components/schemas/RouteClass'
+    ProofOfPossession:
+      type: object
+      additionalProperties: false
+      required:
+      - nonce
+      - signature
+      - algorithm
+      - publicKey
+      properties:
+        nonce:
+          type: string
+          minLength: 16
+          maxLength: 256
+        signature:
+          type: string
+          minLength: 64
+          maxLength: 256
+        publicKey:
+          $ref: '#/components/schemas/PublicKeyJwk'
+        algorithm:
+          type: string
+          enum:
+          - ed25519
+          - ecdsa-p256-sha256-p1363
+    PeerAuthorizationRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - challengeId
+      - role
+      - proof
+      properties:
+        role:
+          $ref: '#/components/schemas/PeerRole'
+        proof:
+          $ref: '#/components/schemas/ProofOfPossession'
+        challengeId:
+          type: string
+          format: uuid
+    PeerAuthorization:
+      type: object
+      additionalProperties: false
+      required:
+      - sessionId
+      - peerId
+      - role
+      - peerToken
+      - grantedScopes
+      - permissionRevision
+      - transportEpoch
+      - expiresAt
+      properties:
+        sessionId:
+          type: string
+          format: uuid
+        peerId:
+          type: string
+          format: uuid
+        role:
+          $ref: '#/components/schemas/PeerRole'
+        peerToken:
+          type: string
+          minLength: 32
+        grantedScopes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Scope'
+        permissionRevision:
+          type: integer
+          minimum: 0
+        transportEpoch:
+          type: integer
+          minimum: 0
+        expiresAt:
+          type: string
+          format: date-time
+    SignalingTicket:
+      type: object
+      additionalProperties: false
+      required:
+      - ticket
+      - signalingUrl
+      - expiresAt
+      - transportEpoch
+      properties:
+        ticket:
+          type: string
+          minLength: 32
+        signalingUrl:
+          type: string
+          format: uri
+        expiresAt:
+          type: string
+          format: date-time
+        transportEpoch:
+          type: integer
+          minimum: 0
+    TurnCredentials:
+      type: object
+      additionalProperties: false
+      required:
+      - iceServers
+      - expiresAt
+      - region
+      properties:
+        region:
+          type: string
+          maxLength: 64
+        iceServers:
+          type: array
+          minItems: 1
+          maxItems: 16
+          items:
+            type: object
+            additionalProperties: false
+            required:
+            - urls
+            - username
+            - credential
+            properties:
+              urls:
+                type: array
+                minItems: 1
+                maxItems: 8
+                items:
+                  type: string
+                  format: uri
+              username:
+                type: string
+                minLength: 1
+                maxLength: 256
+              credential:
+                type: string
+                minLength: 16
+                maxLength: 512
+        expiresAt:
+          type: string
+          format: date-time
+    ReconnectRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - priorEpoch
+      - lastPermissionRevision
+      - reason
+      properties:
+        priorEpoch:
+          type: integer
+          minimum: 0
+        lastPermissionRevision:
+          type: integer
+          minimum: 0
+        reason:
+          type: string
+          enum:
+          - TRANSPORT_FAILURE
+          - SIGNALING_FAILURE
+          - NETWORK_CHANGE
+          - REBOOT_CONTINUITY
+    ReconnectGrant:
+      type: object
+      additionalProperties: false
+      required:
+      - grant
+      - newEpoch
+      - expiresAt
+      properties:
+        grant:
+          type: string
+          minLength: 32
+        newEpoch:
+          type: integer
+          minimum: 1
+        expiresAt:
+          type: string
+          format: date-time
+    ScopeRevocationRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - revokedScopes
+      - reasonCode
+      properties:
+        revokedScopes:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/Scope'
+        reasonCode:
+          type: string
+          minLength: 1
+          maxLength: 128
+    EnrollmentTokenRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - expiresInSeconds
+      properties:
+        expiresInSeconds:
+          type: integer
+          minimum: 60
+          maximum: 86400
+        deviceGroupId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        allowedInstallations:
+          type: integer
+          minimum: 1
+          maximum: 1000
+          default: 1
+    EnrollmentTokenResult:
+      type: object
+      additionalProperties: false
+      required:
+      - enrollmentToken
+      - expiresAt
+      properties:
+        enrollmentToken:
+          type: string
+          minLength: 32
+        expiresAt:
+          type: string
+          format: date-time
+    DeviceEnrollmentRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - enrollmentToken
+      - installationId
+      - devicePublicKey
+      - deviceInfo
+      - proof
+      properties:
+        enrollmentToken:
+          type: string
+          minLength: 32
+        installationId:
+          type: string
+          format: uuid
+        devicePublicKey:
+          $ref: '#/components/schemas/PublicKeyJwk'
+        deviceInfo:
+          type: object
+          additionalProperties: false
+          required:
+          - displayName
+          - osVersion
+          - architecture
+          - appVersion
+          properties:
+            displayName:
+              type: string
+              minLength: 1
+              maxLength: 200
+            osVersion:
+              type: string
+              maxLength: 128
+            architecture:
+              type: string
+              enum:
+              - x64
+              - arm64
+            appVersion:
+              type: string
+              maxLength: 64
+        proof:
+          $ref: '#/components/schemas/ProofOfPossession'
+    DeviceEnrollmentResult:
+      type: object
+      additionalProperties: false
+      required:
+      - deviceId
+      - deviceCredential
+      - keyVersion
+      - policyVersion
+      properties:
+        deviceId:
+          type: string
+          format: uuid
+        deviceCredential:
+          type: string
+          minLength: 32
+        keyVersion:
+          type: integer
+          minimum: 1
+        policyVersion:
+          type: integer
+          minimum: 0
+    DeviceHeartbeat:
+      type: object
+      additionalProperties: false
+      required:
+      - appVersion
+      - osVersion
+      - serviceState
+      - interactiveSessions
+      - sentAt
+      properties:
+        appVersion:
+          type: string
+        osVersion:
+          type: string
+        serviceState:
+          type: string
+          enum:
+          - HEALTHY
+          - DEGRADED
+          - UPDATE_PENDING
+          - RESTART_REQUIRED
+        interactiveSessions:
+          type: integer
+          minimum: 0
+          maximum: 128
+        capabilities:
+          $ref: '#/components/schemas/ClientCapabilities'
+        sentAt:
+          type: string
+          format: date-time
+    Device:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - displayName
+      - status
+      - appVersion
+      - osVersion
+      - unattendedEnabled
+      - enrolledAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - REVOKED
+          - DECOMMISSIONED
+        appVersion:
+          type: string
+        osVersion:
+          type: string
+        unattendedEnabled:
+          type: boolean
+        enrolledAt:
+          type: string
+          format: date-time
+        lastSeenAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+    ManagedSessionRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - requestedScopes
+      - sessionType
+      - operatorEphemeralPublicKey
+      properties:
+        requestedScopes:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/Scope'
+        sessionType:
+          type: string
+          enum:
+          - MANAGED_ATTENDED
+          - UNATTENDED
+        operatorEphemeralPublicKey:
+          $ref: '#/components/schemas/PublicKeyJwk'
+        requestedDurationSeconds:
+          type: integer
+          minimum: 60
+          maximum: 28800
+    PolicyDocument:
+      type: object
+      additionalProperties: true
+      required:
+      - name
+      - document
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        document:
+          type: object
+        description:
+          type:
+          - string
+          - 'null'
+          maxLength: 2000
+    Policy:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - name
+      - status
+      - activeVersion
+      - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        status:
+          type: string
+          enum:
+          - DRAFT
+          - ACTIVE
+          - DISABLED
+        activeVersion:
+          type:
+          - integer
+          - 'null'
+          minimum: 1
+        createdAt:
+          type: string
+          format: date-time
+    AuditEvent:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - category
+      - action
+      - outcome
+      - occurredAt
+      - correlationId
+      properties:
+        id:
+          type: string
+          format: uuid
+        category:
+          type: string
+        action:
+          type: string
+        outcome:
+          type: string
+        actorType:
+          type: string
+        actorId:
+          type:
+          - string
+          - 'null'
+        targetType:
+          type:
+          - string
+          - 'null'
+        targetId:
+          type:
+          - string
+          - 'null'
+        occurredAt:
+          type: string
+          format: date-time
+        correlationId:
+          type: string
+          format: uuid
+        details:
+          type: object
+    UpdateManifestEnvelope:
+      type: object
+      description: Signed update metadata envelope. Exact JSON Schema is the source of truth.
+      additionalProperties: true
+    AbuseReportRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - category
+      - description
+      properties:
+        category:
+          type: string
+          enum:
+          - SCAM
+          - UNAUTHORIZED_ACCESS
+          - HARASSMENT
+          - MALWARE
+          - OTHER
+        description:
+          type: string
+          minLength: 1
+          maxLength: 4000
+        sessionId:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        contactConsent:
+          type: boolean
+          default: false
+    PagedDevices:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Device'
+        nextCursor:
+          type:
+          - string
+          - 'null'
+    PagedAuditEvents:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditEvent'
+        nextCursor:
+          type:
+          - string
+          - 'null'
+    Problem:
+      type: object
+      additionalProperties: false
+      required:
+      - error
+      properties:
+        error:
+          type: object
+          additionalProperties: false
+          required:
+          - code
+          - message
+          - correlationId
+          - retryable
+          properties:
+            code:
+              type: string
+              minLength: 1
+              maxLength: 128
+            message:
+              type: string
+              minLength: 1
+              maxLength: 500
+            correlationId:
+              type: string
+              format: uuid
+            retryable:
+              type: boolean
+            retryAfterSeconds:
+              type:
+              - integer
+              - 'null'
+              minimum: 0
+            details:
+              type: object
+              additionalProperties: true
+    DetachedProof:
+      type: object
+      additionalProperties: false
+      required:
+      - nonce
+      - keyId
+      - algorithm
+      - signature
+      properties:
+        nonce:
+          type: string
+          minLength: 16
+          maxLength: 256
+        keyId:
+          type: string
+          minLength: 1
+          maxLength: 128
+        algorithm:
+          type: string
+          enum:
+          - ed25519
+          - ecdsa-p256-sha256-p1363
+        signature:
+          type: string
+          minLength: 64
+          maxLength: 256
+    DeviceCredentialChallengeRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - keyVersion
+      - purpose
+      properties:
+        keyVersion:
+          type: integer
+          minimum: 1
+        purpose:
+          type: string
+          enum:
+          - CREDENTIAL_REFRESH
+          - KEY_ROTATION
+    DeviceCredentialChallenge:
+      type: object
+      additionalProperties: false
+      required:
+      - challengeId
+      - nonce
+      - expiresAt
+      - canonicalizationVersion
+      - purpose
+      properties:
+        challengeId:
+          type: string
+          format: uuid
+        nonce:
+          type: string
+          minLength: 16
+          maxLength: 256
+        expiresAt:
+          type: string
+          format: date-time
+        canonicalizationVersion:
+          type: string
+          enum:
+          - RSP-DEVICE-CREDENTIAL-V1
+          - RSP-DEVICE-KEY-ROTATION-V1
+        purpose:
+          type: string
+          enum:
+          - CREDENTIAL_REFRESH
+          - KEY_ROTATION
+    DeviceCredentialExchangeRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - challengeId
+      - keyVersion
+      - proof
+      properties:
+        challengeId:
+          type: string
+          format: uuid
+        keyVersion:
+          type: integer
+          minimum: 1
+        proof:
+          $ref: '#/components/schemas/DetachedProof'
+    DeviceCredential:
+      type: object
+      additionalProperties: false
+      required:
+      - deviceCredential
+      - expiresAt
+      - authorizationVersion
+      - keyVersion
+      properties:
+        deviceCredential:
+          type: string
+          minLength: 32
+        expiresAt:
+          type: string
+          format: date-time
+        authorizationVersion:
+          type: integer
+          minimum: 1
+        keyVersion:
+          type: integer
+          minimum: 1
+    DeviceKeyRotationRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - challengeId
+      - newPublicKey
+      - currentKeyProof
+      properties:
+        newPublicKey:
+          $ref: '#/components/schemas/PublicKeyJwk'
+        currentKeyProof:
+          $ref: '#/components/schemas/DetachedProof'
+        challengeId:
+          type: string
+          format: uuid
+    DeviceKeyRotationResult:
+      type: object
+      additionalProperties: false
+      required:
+      - keyVersion
+      - credentialChallengeRequired
+      properties:
+        keyVersion:
+          type: integer
+          minimum: 2
+        credentialChallengeRequired:
+          type: boolean
+    ManagedSessionCreated:
+      type: object
+      additionalProperties: false
+      required:
+      - session
+      - operatorPeerId
+      - operatorBootstrapToken
+      - hostDeliveryState
+      - localConsentRequired
+      - localNotificationRequired
+      properties:
+        session:
+          $ref: '#/components/schemas/Session'
+        operatorPeerId:
+          type: string
+          format: uuid
+        operatorBootstrapToken:
+          type: string
+          minLength: 32
+        hostDeliveryState:
+          type: string
+          enum:
+          - QUEUED
+          - DELIVERED
+          - ACKNOWLEDGED
+        localConsentRequired:
+          type: boolean
+        localNotificationRequired:
+          type: boolean
+    PendingManagedSessionRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - sessionId
+      - sessionType
+      - operator
+      - requestedScopes
+      - policyDecisionHash
+      - consentNonce
+      - expiresAt
+      - stateVersion
+      properties:
+        sessionId:
+          type: string
+          format: uuid
+        sessionType:
+          type: string
+          enum:
+          - MANAGED_ATTENDED
+          - UNATTENDED
+        operator:
+          type: object
+          additionalProperties: false
+          required:
+          - userId
+          - displayName
+          - tenantDisplayName
+          properties:
+            userId:
+              type: string
+              format: uuid
+            displayName:
+              type: string
+              minLength: 1
+              maxLength: 200
+            tenantDisplayName:
+              type: string
+              minLength: 1
+              maxLength: 200
+        requestedScopes:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/Scope'
+        policyDecisionHash:
+          type: string
+          pattern: ^[a-f0-9]{64}$
+        consentNonce:
+          type: string
+          minLength: 16
+          maxLength: 256
+        localConsentRequired:
+          type: boolean
+        localNotificationRequired:
+          type: boolean
+        expiresAt:
+          type: string
+          format: date-time
+        stateVersion:
+          type: integer
+          minimum: 1
+    PagedManagedSessionRequests:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PendingManagedSessionRequest'
+        nextPollAfterSeconds:
+          type: integer
+          minimum: 0
+          maximum: 30
+    ManagedHostDecision:
+      type: object
+      additionalProperties: false
+      required:
+      - approved
+      - grantedScopes
+      - consentNonce
+      - hostEphemeralPublicKey
+      - decisionProof
+      properties:
+        approved:
+          type: boolean
+        grantedScopes:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/Scope'
+        consentNonce:
+          type: string
+          minLength: 16
+          maxLength: 256
+        hostEphemeralPublicKey:
+          $ref: '#/components/schemas/PublicKeyJwk'
+        decisionProof:
+          $ref: '#/components/schemas/DetachedProof'
+    ManagedHostDecisionResult:
+      type: object
+      additionalProperties: false
+      required:
+      - session
+      - hostPeerId
+      properties:
+        session:
+          $ref: '#/components/schemas/Session'
+        hostPeerId:
+          type: string
+          format: uuid
+        hostBootstrapToken:
+          type:
+          - string
+          - 'null'
+          minLength: 32
+    Tenant:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - name
+      - slug
+      - status
+      - planCode
+      - dataRegion
+      - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - SUSPENDED
+          - CLOSED
+        planCode:
+          type: string
+        dataRegion:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    CreateTenantRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - name
+      - slug
+      - dataRegion
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        slug:
+          type: string
+          pattern: ^[a-z0-9][a-z0-9-]{2,62}$
+        dataRegion:
+          type: string
+          minLength: 2
+          maxLength: 32
+    TenantSettings:
+      type: object
+      additionalProperties: false
+      required:
+      - settingsVersion
+      - retentionDays
+      - allowedFeatures
+      - fileSizeLimitBytes
+      properties:
+        settingsVersion:
+          type: integer
+          minimum: 1
+        retentionDays:
+          type: integer
+          minimum: 1
+          maximum: 3650
+        allowedFeatures:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+            maxLength: 64
+        fileSizeLimitBytes:
+          type: integer
+          minimum: 0
+        recordingEnabled:
+          const: false
+    TenantSettingsPatch:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        retentionDays:
+          type: integer
+          minimum: 1
+          maximum: 3650
+        allowedFeatures:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+            maxLength: 64
+        fileSizeLimitBytes:
+          type: integer
+          minimum: 0
+    Membership:
+      type: object
+      additionalProperties: false
+      required:
+      - userId
+      - displayName
+      - roles
+      - status
+      - privilegeVersion
+      properties:
+        userId:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+        email:
+          type:
+          - string
+          - 'null'
+          format: email
+        roles:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            type: string
+            enum:
+            - OWNER
+            - ADMIN
+            - SECURITY_AUDITOR
+            - OPERATOR
+            - READ_ONLY_ANALYST
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - SUSPENDED
+          - REMOVED
+        privilegeVersion:
+          type: integer
+          minimum: 1
+    MembershipPatch:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        roles:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            type: string
+            enum:
+            - OWNER
+            - ADMIN
+            - SECURITY_AUDITOR
+            - OPERATOR
+            - READ_ONLY_ANALYST
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - SUSPENDED
+    InvitationRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - email
+      - roles
+      properties:
+        email:
+          type: string
+          format: email
+        roles:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            type: string
+            enum:
+            - ADMIN
+            - SECURITY_AUDITOR
+            - OPERATOR
+            - READ_ONLY_ANALYST
+        expiresInSeconds:
+          type: integer
+          minimum: 3600
+          maximum: 604800
+          default: 172800
+    Invitation:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - email
+      - roles
+      - status
+      - expiresAt
+      - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        roles:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum:
+          - PENDING
+          - ACCEPTED
+          - REVOKED
+          - EXPIRED
+        expiresAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+    DataExportRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        format:
+          type: string
+          enum:
+          - JSONL
+          - CSV_BUNDLE
+          default: JSONL
+    DataExportResult:
+      type: object
+      additionalProperties: false
+      required:
+      - requestId
+      - state
+      - requestedAt
+      properties:
+        requestId:
+          type: string
+          format: uuid
+        state:
+          type: string
+          enum:
+          - QUEUED
+          - RUNNING
+          - READY
+          - FAILED
+          - EXPIRED
+        requestedAt:
+          type: string
+          format: date-time
+        downloadExpiresAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        downloadUrl:
+          type:
+          - string
+          - 'null'
+          format: uri
+          description: Short-lived authorized URL returned only while READY.
+    TenantClosureRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - confirmationPhrase
+      - reason
+      properties:
+        confirmationPhrase:
+          type: string
+          minLength: 5
+          maxLength: 200
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 2000
+    TenantClosureResult:
+      type: object
+      additionalProperties: false
+      required:
+      - requestId
+      - state
+      - effectiveAt
+      - stateVersion
+      properties:
+        requestId:
+          type: string
+          format: uuid
+        state:
+          type: string
+          enum:
+          - PENDING_REAUTH
+          - COOLING_OFF
+          - SCHEDULED
+          - CANCELLED
+          - COMPLETED
+        effectiveAt:
+          type: string
+          format: date-time
+        stateVersion:
+          type: integer
+          minimum: 1
+    PagedMemberships:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Membership'
+        nextCursor:
+          type:
+          - string
+          - 'null'
+    PagedInvitations:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Invitation'
+        nextCursor:
+          type:
+          - string
+          - 'null'
+    InvitationAcceptanceRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - invitationToken
+      properties:
+        invitationToken:
+          type: string
+          minLength: 32
+          maxLength: 512
+    UpdateRootEnvelope:
+      type: object
+      description: Signed update trust-root metadata. The exact JSON Schema is the source of truth.
+      additionalProperties: true
+    PeerAuthorizationChallenge:
+      type: object
+      additionalProperties: false
+      required:
+      - challengeId
+      - sessionId
+      - peerId
+      - role
+      - nonce
+      - keyThumbprint
+      - transportEpoch
+      - expiresAt
+      - canonicalizationVersion
+      properties:
+        challengeId:
+          type: string
+          format: uuid
+        sessionId:
+          type: string
+          format: uuid
+        peerId:
+          type: string
+          format: uuid
+        role:
+          $ref: '#/components/schemas/PeerRole'
+        nonce:
+          type: string
+          minLength: 16
+          maxLength: 256
+        keyThumbprint:
+          type: string
+          pattern: ^[A-Za-z0-9_-]{43}$
+          description: RFC 7638 SHA-256 JWK thumbprint in unpadded base64url.
+        transportEpoch:
+          type: integer
+          minimum: 0
+        expiresAt:
+          type: string
+          format: date-time
+        canonicalizationVersion:
+          const: RSP-PEER-AUTH-V1
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Unauthorized:
+      description: Authentication required or invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Forbidden:
+      description: Authorization or policy denied
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    NotFound:
+      description: Resource unavailable
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Conflict:
+      description: State or version conflict
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    RateLimited:
+      description: Rate or abuse limit reached
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    InternalError:
+      description: Unexpected server failure
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Problem'

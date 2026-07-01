@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "018f24f0-7e2b-7f31-8cf7-f05e61c97a2f",
+  "tenantId": "018f24ef-a9aa-78b0-9d9f-c41a56dbb210",
+  "chainScope": "tenant:018f24ef-a9aa-78b0-9d9f-c41a56dbb210",
+  "chainSequence": 42,
+  "category": "SESSION_AUTHORIZATION",
+  "action": "SESSION_CONSENT_APPROVED",
+  "outcome": "SUCCEEDED",
+  "actor": {
+    "type": "HOST",
+    "id": "peer:018f24f0-2a58-7dd4-92f4-69b7bc962843"
+  },
+  "target": {
+    "type": "SESSION",
+    "id": "018f24f0-10bd-761a-bbbc-8cf0ab6e2739"
+  },
+  "correlationId": "018f24f0-aec0-7cd6-bf1b-3b43afc7f337",
+  "occurredAt": "2026-07-01T02:00:00Z",
+  "sourceIp": "203.0.113.10",
+  "details": {
+    "permissionRevision": 1,
+    "grantedScopes": ["VIEW_SCREEN", "CHAT"]
+  },
+  "previousHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "eventHash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+}

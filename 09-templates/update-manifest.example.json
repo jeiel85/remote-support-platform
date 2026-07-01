@@ -1,0 +1,36 @@
+{
+  "signed": {
+    "schemaVersion": 1,
+    "product": "remote-support-platform",
+    "channel": "stable",
+    "version": "1.0.0",
+    "releaseSequence": 100,
+    "minimumAllowedSequence": 95,
+    "rollout": {
+      "percentage": 10,
+      "seedVersion": 1
+    },
+    "issuedAt": "2026-07-01T00:00:00Z",
+    "expiresAt": "2026-07-08T00:00:00Z",
+    "releaseNotesUrl": "https://updates.example.com/releases/1.0.0",
+    "artifacts": [
+      {
+        "architecture": "x64",
+        "packageType": "MANAGED_HOST_INSTALLER",
+        "url": "https://updates.example.com/artifacts/managed-host-1.0.0-x64.msi",
+        "size": 104857600,
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "authenticodeSignerThumbprint": "0123456789ABCDEF0123456789ABCDEF01234567",
+        "minimumOsBuild": "19045"
+      }
+    ],
+    "rootVersion": 1
+  },
+  "signatures": [
+    {
+      "keyId": "updates-primary-2026",
+      "algorithm": "ed25519",
+      "signature": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    }
+  ]
+}
