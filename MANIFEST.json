@@ -129,8 +129,8 @@
     },
     {
       "path": "02-protocol/native/remote_support_native.h",
-      "bytes": 21127,
-      "sha256": "56af61a58f8cffa99fe5bf8784c963aad612b1c9fb274c24fbb4b71d8496f850"
+      "bytes": 21300,
+      "sha256": "38a954ef1179e92dc4dfd1c163c236a8c18c677eac4498d6fbd748c424f2c19c"
     },
     {
       "path": "02-protocol/openapi/openapi.yaml",
@@ -224,8 +224,8 @@
     },
     {
       "path": "03-client/media-kernel-contract.md",
-      "bytes": 6579,
-      "sha256": "3e6b0d4e6427dd9882559e37bedee925a4d6ac4eb706a799a7aec7ffb2edd940"
+      "bytes": 7072,
+      "sha256": "e4ef3aeffdf12b336b6d907b97ad0942c378128466e299b6f1a8ba56642a98af"
     },
     {
       "path": "03-client/native-bridge-contract.md",
@@ -619,8 +619,8 @@
     },
     {
       "path": "11-bootstrap/validate-bundle.py",
-      "bytes": 23087,
-      "sha256": "7447830c1b6f97706ffc09fba9a7d6b9857d591fcfdc48251445b09233fe20ae"
+      "bytes": 23124,
+      "sha256": "9f769a6b981783b96d81a8ee1374bec268d4b8f7dac684f456fb3527d80e7aa6"
     },
     {
       "path": "DOCUMENT_INDEX.md",

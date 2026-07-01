@@ -409,6 +409,7 @@ def main() -> int:
         "rs_runtime_create", "rs_runtime_enumerate_displays", "rs_capture_create", "rs_encoder_create",
         "rs_runtime_enumerate_encoders", "rs_encoder_reconfigure", "rs_decoder_create",
         "rs_decoder_submit_h264", "rs_renderer_create", "rs_renderer_set_transform",
+        "rs_renderer_submit_cursor",
         "rs_transport_create", "rs_transport_create_offer", "rs_transport_set_remote_description",
         "rs_transport_open_data_channel", "rs_transport_send_data", "rs_input_injector_create",
         "rs_input_release_all",

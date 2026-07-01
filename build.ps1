@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidateSet('Bootstrap', 'ValidateDesign', 'Restore', 'GenerateContracts', 'Build', 'Test', 'IntegrationTest', 'Package', 'VerifyRelease', 'CI')]
+    [ValidateSet('Bootstrap', 'ValidateDesign', 'Restore', 'GenerateContracts', 'Build', 'Test', 'HardwareTest', 'IntegrationTest', 'Package', 'VerifyRelease', 'CI')]
     [string]$Target = 'Build',
     [ValidateSet('Debug', 'Release')]
     [string]$Configuration = 'Debug',
@@ -27,8 +27,9 @@ function Invoke-GenerateContracts {
 
 function Invoke-NativeBuild {
     $cmake = Join-Path (Split-Path -Parent $python) 'cmake.exe'
+    $cppwinrt = & (Join-Path $root 'eng\generate-cppwinrt.ps1')
     $nativeBuild = Join-Path $root "artifacts\native\$Configuration"
-    & $cmake -S (Join-Path $root 'src\client\native') -B $nativeBuild -G 'MinGW Makefiles' "-DCMAKE_BUILD_TYPE=$Configuration" "-DRS_CONTRACT_ROOT=$root"
+    & $cmake -S (Join-Path $root 'src\client\native') -B $nativeBuild -G 'MinGW Makefiles' "-DCMAKE_BUILD_TYPE=$Configuration" "-DRS_CONTRACT_ROOT=$root" "-DRS_CPPWINRT_ROOT=$cppwinrt"
     & $cmake --build $nativeBuild --config $Configuration
     & $cmake --build $nativeBuild --target test
 }
@@ -46,14 +47,21 @@ switch ($Target) {
     'Build' {
         Invoke-Restore
         Invoke-GenerateContracts
-        & $dotnet build (Join-Path $root 'RemoteSupport.sln') -c $Configuration --no-restore
         Invoke-NativeBuild
+        & $dotnet build (Join-Path $root 'RemoteSupport.sln') -c $Configuration --no-restore
     }
     'Test' {
         Invoke-Restore
         Invoke-GenerateContracts
-        & $dotnet test (Join-Path $root 'RemoteSupport.sln') -c $Configuration --no-restore --logger "trx;LogFilePrefix=managed" --results-directory (Join-Path $root 'artifacts\test-results')
         Invoke-NativeBuild
+        & $dotnet test (Join-Path $root 'RemoteSupport.sln') -c $Configuration --no-restore --logger "trx;LogFilePrefix=managed" --results-directory (Join-Path $root 'artifacts\test-results')
+    }
+    'HardwareTest' {
+        Invoke-Restore
+        Invoke-NativeBuild
+        $nativeBuild = Join-Path $root "artifacts\native\$Configuration"
+        & (Join-Path $nativeBuild 'dxgi_capture_test.exe')
+        & (Join-Path $nativeBuild 'wgc_capture_test.exe')
     }
     'IntegrationTest' {
         & $python (Join-Path $root 'tools\database\verify_schema.py') $root
@@ -61,6 +69,7 @@ switch ($Target) {
     'Package' {
         Invoke-Restore
         Invoke-GenerateContracts
+        Invoke-NativeBuild
         & $dotnet build (Join-Path $root 'RemoteSupport.sln') -c $Configuration --no-restore
         & $python (Join-Path $root 'tools\supply-chain\create_sbom.py') $root
     }
@@ -72,9 +81,9 @@ switch ($Target) {
         Invoke-Restore
         Invoke-GenerateContracts
         & git diff --exit-code -- schemas src/shared-contracts/generated src/shared-contracts/native src/shared-contracts/RemoteSupport.Contracts/Generated
+        Invoke-NativeBuild
         & $dotnet build (Join-Path $root 'RemoteSupport.sln') -c $Configuration --no-restore
         & $dotnet test (Join-Path $root 'RemoteSupport.sln') -c $Configuration --no-build --logger "trx;LogFilePrefix=managed" --results-directory (Join-Path $root 'artifacts\test-results')
-        Invoke-NativeBuild
         & $python (Join-Path $root 'tools\security\scan_secrets.py') $root
         & $dotnet list (Join-Path $root 'RemoteSupport.sln') package --vulnerable --include-transitive
         & $python (Join-Path $root 'tools\supply-chain\create_sbom.py') $root

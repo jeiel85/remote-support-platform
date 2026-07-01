@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RemoteSupport.Application\RemoteSupport.Application.csproj" />
+    <ProjectReference Include="..\RemoteSupport.Infrastructure\RemoteSupport.Infrastructure.csproj" />
+    <None Include="..\..\..\..\artifacts\native\$(Configuration)\remote_support_native.dll"
+          Link="remote_support_native.dll" CopyToOutputDirectory="PreserveNewest"
+          Condition="Exists('..\..\..\..\artifacts\native\$(Configuration)\remote_support_native.dll')" />
+  </ItemGroup>
+</Project>

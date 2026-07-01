@@ -245,6 +245,8 @@ typedef struct rs_frame_info_v1 {
   uint32_t transfer_characteristics;
   uint32_t matrix_coefficients;
   void* d3d11_texture; /* Borrowed ID3D11Texture2D*. Valid only during callback/call. */
+  int32_t desktop_origin_x;
+  int32_t desktop_origin_y;
 } rs_frame_info_v1;
 
 typedef struct rs_encoder_options_v1 {
@@ -498,6 +500,7 @@ RS_API rs_status_v1 RS_CALL rs_renderer_set_target_window(rs_renderer_handle ren
 RS_API rs_status_v1 RS_CALL rs_renderer_set_view_mode(rs_renderer_handle renderer, rs_renderer_view_mode_v1 view_mode);
 RS_API rs_status_v1 RS_CALL rs_renderer_set_transform(rs_renderer_handle renderer, const rs_renderer_transform_v1* transform);
 RS_API rs_status_v1 RS_CALL rs_renderer_submit_d3d11_frame(rs_renderer_handle renderer, const rs_frame_info_v1* frame);
+RS_API rs_status_v1 RS_CALL rs_renderer_submit_cursor(rs_renderer_handle renderer, const rs_cursor_info_v1* cursor);
 RS_API rs_status_v1 RS_CALL rs_renderer_resize(rs_renderer_handle renderer, uint32_t pixel_width, uint32_t pixel_height);
 RS_API rs_status_v1 RS_CALL rs_renderer_clear(rs_renderer_handle renderer);
 RS_API void RS_CALL rs_renderer_destroy(rs_renderer_handle renderer);

@@ -26,6 +26,8 @@ Window target IDs are lowercase hexadecimal HWND values prefixed with `hwnd:`. A
 
 Topology generations start at one, increase after any monitor add/remove, mode, rotation, DPI, HDR, or adapter change, and never decrease in a runtime. A frame identifies the generation under which its target and dimensions were resolved.
 
+Each frame includes the selected target's `desktop_origin_x` and `desktop_origin_y` in canonical virtual-desktop physical pixels. The renderer subtracts that origin from cursor coordinates before applying the frame-to-view transform; this is required for negative monitor origins.
+
 ## 3. Cursor contract
 
 Cursor updates are independent of video frames. `on_cursor` carries position in canonical virtual-desktop physical pixels, visibility, hotspot, shape ID, dimensions, pitch, and an optional BGRA8 premultiplied shape. A repeated shape ID may omit bytes. A hidden cursor has zero shape bytes. Shape buffers are limited to 256 KiB and dimensions to 256 by 256.
@@ -38,6 +40,7 @@ The renderer composites the latest cursor whose display generation matches the r
 - ACTUAL_SIZE maps one source pixel to one destination physical pixel.
 - STRETCH fills the target rectangle.
 - `rs_renderer_set_transform` adds pan and zoom after the selected base view mode. Zoom is finite and in the inclusive range 0.25 through 8.0. Pan is expressed in source pixels.
+- `rs_renderer_submit_cursor` copies the bounded cursor payload and applies it only to frames with the same display generation. Shape bytes may be omitted when the submitted shape ID matches the renderer cache.
 - Resize and transform changes are applied before the next submitted frame. Rendering rejects frames from a different runtime device.
 
 ## 5. H.264 encoder contract
