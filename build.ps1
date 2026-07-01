@@ -28,8 +28,9 @@ function Invoke-GenerateContracts {
 function Invoke-NativeBuild {
     $cmake = Join-Path (Split-Path -Parent $python) 'cmake.exe'
     $cppwinrt = & (Join-Path $root 'eng\generate-cppwinrt.ps1')
+    $webrtc = & (Join-Path $root 'eng\bootstrap-webrtc.ps1')
     $nativeBuild = Join-Path $root "artifacts\native\$Configuration"
-    & $cmake -S (Join-Path $root 'src\client\native') -B $nativeBuild -G 'MinGW Makefiles' "-DCMAKE_BUILD_TYPE=$Configuration" "-DRS_CONTRACT_ROOT=$root" "-DRS_CPPWINRT_ROOT=$cppwinrt"
+    & $cmake -S (Join-Path $root 'src\client\native') -B $nativeBuild -G 'MinGW Makefiles' "-DCMAKE_BUILD_TYPE=$Configuration" "-DCMAKE_CXX_USE_RESPONSE_FILE_FOR_OBJECTS=ON" "-DRS_CONTRACT_ROOT=$root" "-DRS_CPPWINRT_ROOT=$cppwinrt" "-DRS_LIBDATACHANNEL_ROOT=$($webrtc.LibDataChannelRoot)" "-DRS_MBEDTLS_ROOT=$($webrtc.MbedTlsRoot)"
     & $cmake --build $nativeBuild --config $Configuration
     & $cmake --build $nativeBuild --target test
 }

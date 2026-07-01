@@ -36,6 +36,18 @@ Domain: `RSP-TRANSPORT-BINDING-V1`.
 
 Each peer signs the Protobuf-equivalent canonical payload using the algorithm registered with its authorized peer key containing `sessionId`, `senderPeerId`, `senderRole`, `transportEpoch`, `permissionRevision`, sorted `grantedScopes`, local and remote DTLS certificate fingerprints, `authorizationContextSha256`, and `bindingId`. Both peers exchange and verify `TransportBinding` and `TransportBindingAck` before enabling video, input, clipboard, chat, or file channels. A reconnect or ICE restart that changes the epoch or either fingerprint requires a new binding.
 
+Version `RSP-TRANSPORT-BINDING-V1` uses the following byte-exact canonical
+encoding. Strings are UTF-8 prefixed by an unsigned 32-bit big-endian byte
+length. Integers are unsigned big-endian. The sequence is: domain string,
+binding ID string, session ID string, sender peer ID string, 32-bit role,
+64-bit transport epoch, 64-bit permission revision, 32-bit scope count,
+lexicographically sorted scope strings, local fingerprint (32 raw bytes),
+remote fingerprint (32 raw bytes), authorization-context hash (32 raw bytes),
+and key ID string. The SHA-256 digest of those bytes is signed as an ECDSA P-256
+IEEE-P1363 `r || s` value (64 bytes). Duplicate scopes, unknown scope names,
+non-SHA-256 fingerprints, non-canonical key identifiers, or repeated binding
+IDs are rejected before content is enabled.
+
 ## 6. Update metadata
 
 Update root and manifest signed objects use JCS. Domains are `RSP-UPDATE-ROOT-V1` and `RSP-UPDATE-MANIFEST-V1`. The client embeds a bootstrap root. Root rotation requires threshold signatures valid under both the currently trusted root role and the proposed new root role. The manifest is accepted only when its `rootVersion`, product, channel, architecture, expiry, release sequence, minimum allowed sequence, artifact hash, and Authenticode signer match local policy. The baseline does not support delta updates.

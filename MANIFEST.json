@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "fileCount": 129,
+  "fileCount": 132,
   "files": [
     {
       "path": "00-product/commercialization-and-compliance.md",
@@ -44,8 +44,8 @@
     },
     {
       "path": "01-architecture/adr/0003-webrtc-transport.md",
-      "bytes": 570,
-      "sha256": "f80b752b9735e11df9988e2744e7a42fd232dc83a87ea689a83c5ce0448966bf"
+      "bytes": 1227,
+      "sha256": "7f67cb2e9c34655d95a6d473e2b10f9ce6750e23c61722d22111fdca759e37e6"
     },
     {
       "path": "01-architecture/adr/0004-attended-default.md",
@@ -99,8 +99,8 @@
     },
     {
       "path": "02-protocol/canonicalization-and-signatures.md",
-      "bytes": 4724,
-      "sha256": "275d39820359a75e3ada178f173e00c278915f6d2951198aadb7c20f2dedfaab"
+      "bytes": 5526,
+      "sha256": "4e10f6bde0fe670797cd29d863f197ae6b3bbadfeaad410328b8b57856589b0e"
     },
     {
       "path": "02-protocol/control-channel.md",
@@ -129,8 +129,8 @@
     },
     {
       "path": "02-protocol/native/remote_support_native.h",
-      "bytes": 21300,
-      "sha256": "38a954ef1179e92dc4dfd1c163c236a8c18c677eac4498d6fbd748c424f2c19c"
+      "bytes": 23437,
+      "sha256": "25d6aafb61c749d126c7e45847c1c66cbfeebdda519da19e40d41c5147a41095"
     },
     {
       "path": "02-protocol/openapi/openapi.yaml",
@@ -224,13 +224,18 @@
     },
     {
       "path": "03-client/media-kernel-contract.md",
-      "bytes": 7072,
-      "sha256": "e4ef3aeffdf12b336b6d907b97ad0942c378128466e299b6f1a8ba56642a98af"
+      "bytes": 8138,
+      "sha256": "efb1c3439862f971e865954fd909976ad5f65702b201c60927508dc6a3deeb4f"
     },
     {
       "path": "03-client/native-bridge-contract.md",
       "bytes": 4143,
       "sha256": "f1624b4487e39e254d57b44391122e74fc7a525095ee98775f3eb630f7288bcf"
+    },
+    {
+      "path": "03-client/native-webrtc-build.md",
+      "bytes": 1304,
+      "sha256": "c58b2ecf28d2f47cbbc86aabebcb886f5a263cf1782938a0d792956b0687d760"
     },
     {
       "path": "03-client/operator-console.md",
@@ -241,6 +246,11 @@
       "path": "03-client/portable-agent.md",
       "bytes": 1780,
       "sha256": "81baa95fe77bbd1838e7b66defb77eaeff1b42c3ba6cda723fb0825fd2ceef32"
+    },
+    {
+      "path": "03-client/transport-metrics.md",
+      "bytes": 766,
+      "sha256": "4641ac7e06d4ac94ada4b9cf9d4b3d9a28437f2add452e8d326aa12e29570979"
     },
     {
       "path": "03-client/webrtc-integration.md",
@@ -386,6 +396,11 @@
       "path": "07-delivery/coding-standards.md",
       "bytes": 1683,
       "sha256": "3c2729a1f21fe47e08fa7a7b7a2a10949065e4de1cd480f873231af89829047f"
+    },
+    {
+      "path": "07-delivery/evidence/goal-04.md",
+      "bytes": 1749,
+      "sha256": "563c1009fb82182c37a56cda0f8f44cf2eba63ef534a5cb01f15de823f56e7a8"
     },
     {
       "path": "07-delivery/goals/goal-01-foundation.md",

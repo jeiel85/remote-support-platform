@@ -329,7 +329,9 @@ HRESULT drain_encoder(rs_encoder_t* encoder, const rs_frame_info_v1* source_fram
   frame.stream_format = RS_H264_STREAM_FORMAT_ANNEX_B;
   frame.h264_profile_idc = encoder->options.quality_profile == RS_QUALITY_PROFILE_MOTION ? 77u : 66u;
   frame.h264_level_idc = encoder->options.width * encoder->options.height > 1920u * 1080u ? 51u : 42u;
-  if (encoder->runtime->callbacks.on_encoded_frame != nullptr) {
+  if (encoder->output_callback != nullptr) {
+    if (!encoder->suppress_output) encoder->output_callback(encoder->output_callback_context, &frame);
+  } else if (encoder->runtime->callbacks.on_encoded_frame != nullptr) {
     if (!encoder->suppress_output) {
       encoder->runtime->callbacks.on_encoded_frame(encoder->runtime->callbacks.user_context, &frame);
     }
@@ -575,7 +577,9 @@ HRESULT emit_decoded_frame(rs_decoder_t* decoder, const rs_encoded_frame_v1* sou
   frame.height = height;
   frame.pixel_format = RS_PIXEL_FORMAT_BGRA8;
   frame.d3d11_texture = decoder->output_texture.Get();
-  if (decoder->runtime->callbacks.on_decoded_frame != nullptr) {
+  if (decoder->remote_transport_output && decoder->runtime->callbacks.on_remote_video_frame != nullptr) {
+    decoder->runtime->callbacks.on_remote_video_frame(decoder->runtime->callbacks.user_context, &frame);
+  } else if (decoder->runtime->callbacks.on_decoded_frame != nullptr) {
     decoder->runtime->callbacks.on_decoded_frame(decoder->runtime->callbacks.user_context, &frame);
   }
   return S_OK;

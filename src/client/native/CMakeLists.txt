@@ -7,6 +7,35 @@ endif()
 if(NOT DEFINED RS_CPPWINRT_ROOT)
   message(FATAL_ERROR "RS_CPPWINRT_ROOT must point to generated C++/WinRT headers")
 endif()
+if(NOT DEFINED RS_LIBDATACHANNEL_ROOT OR NOT EXISTS "${RS_LIBDATACHANNEL_ROOT}/CMakeLists.txt")
+  message(FATAL_ERROR "RS_LIBDATACHANNEL_ROOT must point to pinned libdatachannel sources")
+endif()
+if(NOT DEFINED RS_MBEDTLS_ROOT OR NOT EXISTS "${RS_MBEDTLS_ROOT}/CMakeLists.txt")
+  message(FATAL_ERROR "RS_MBEDTLS_ROOT must point to pinned Mbed TLS sources")
+endif()
+
+set(ENABLE_PROGRAMS OFF CACHE BOOL "" FORCE)
+set(ENABLE_TESTING OFF CACHE BOOL "" FORCE)
+set(USE_STATIC_MBEDTLS_LIBRARY ON CACHE BOOL "" FORCE)
+set(USE_SHARED_MBEDTLS_LIBRARY OFF CACHE BOOL "" FORCE)
+set(MBEDTLS_USER_CONFIG_FILE
+  "${CMAKE_CURRENT_SOURCE_DIR}/third_party/mbedtls_user_config.h"
+  CACHE FILEPATH "Mbed TLS options required by WebRTC" FORCE)
+add_subdirectory("${RS_MBEDTLS_ROOT}" "${CMAKE_BINARY_DIR}/third_party/mbedtls" EXCLUDE_FROM_ALL)
+add_library(MbedTLS::MbedTLS INTERFACE IMPORTED GLOBAL)
+set_property(TARGET MbedTLS::MbedTLS PROPERTY INTERFACE_LINK_LIBRARIES
+  "MbedTLS::mbedtls;MbedTLS::mbedx509;MbedTLS::mbedcrypto")
+
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+set(USE_MBEDTLS ON CACHE BOOL "" FORCE)
+set(ENABLE_MBEDTLS OFF CACHE BOOL "Use libSRTP built-in crypto" FORCE)
+set(ENABLE_WARNINGS_AS_ERRORS OFF CACHE BOOL "Third-party warnings are audited separately" FORCE)
+set(NO_EXAMPLES ON CACHE BOOL "" FORCE)
+set(NO_TESTS ON CACHE BOOL "" FORCE)
+set(NO_MEDIA OFF CACHE BOOL "" FORCE)
+set(NO_WEBSOCKET OFF CACHE BOOL "" FORCE)
+set(PREFER_SYSTEM_LIB OFF CACHE BOOL "" FORCE)
+add_subdirectory("${RS_LIBDATACHANNEL_ROOT}" "${CMAKE_BINARY_DIR}/third_party/libdatachannel" EXCLUDE_FROM_ALL)
 
 enable_testing()
 
@@ -18,6 +47,9 @@ add_library(remote_support_native SHARED
   src/renderer.cpp
   src/gpu_color_converter.cpp
   src/media_foundation_codec.cpp
+  src/transport_crypto.cpp
+  src/transport_protocol.cpp
+  src/transport.cpp
   src/phased_exports.cpp)
 target_include_directories(remote_support_native PRIVATE
   "${CMAKE_CURRENT_SOURCE_DIR}/src"
@@ -25,7 +57,7 @@ target_include_directories(remote_support_native PRIVATE
 target_include_directories(remote_support_native SYSTEM PRIVATE "${RS_CPPWINRT_ROOT}")
 target_compile_definitions(remote_support_native PRIVATE RS_NATIVE_EXPORTS WIN32_LEAN_AND_MEAN NOMINMAX _WIN32_WINNT=0x0A00 NTDDI_VERSION=0x0A000000)
 target_compile_definitions(remote_support_native PRIVATE $<$<CONFIG:Debug>:RS_ENABLE_TEST_FAULT_INJECTION>)
-target_link_libraries(remote_support_native PRIVATE d3d11 dxgi d2d1 shcore user32 gdi32 ole32 runtimeobject mf mfplat mfuuid wmcodecdspuuid propsys)
+target_link_libraries(remote_support_native PRIVATE datachannel bcrypt d3d11 dxgi d2d1 shcore user32 gdi32 ole32 runtimeobject mf mfplat mfuuid wmcodecdspuuid propsys)
 set_property(TARGET remote_support_native PROPERTY CXX_STANDARD 20)
 set_property(TARGET remote_support_native PROPERTY CXX_STANDARD_REQUIRED ON)
 set_target_properties(remote_support_native PROPERTIES PREFIX "" OUTPUT_NAME "remote_support_native")
@@ -95,6 +127,12 @@ target_link_libraries(hardware_encoder_test PRIVATE remote_support_native)
 set_property(TARGET hardware_encoder_test PROPERTY CXX_STANDARD 20)
 set_property(TARGET hardware_encoder_test PROPERTY CXX_STANDARD_REQUIRED ON)
 
+add_executable(transport_integration_test tests/transport_integration_test.cpp)
+target_include_directories(transport_integration_test PRIVATE "${RS_CONTRACT_ROOT}/02-protocol/native")
+target_link_libraries(transport_integration_test PRIVATE remote_support_native)
+set_property(TARGET transport_integration_test PROPERTY CXX_STANDARD 20)
+set_property(TARGET transport_integration_test PROPERTY CXX_STANDARD_REQUIRED ON)
+
 if(MSVC)
   target_compile_options(abi_c_test PRIVATE /W4 /WX)
   target_compile_options(abi_cpp_test PRIVATE /W4 /WX /permissive-)
@@ -108,6 +146,7 @@ if(MSVC)
   target_compile_options(codec_benchmark PRIVATE /W4 /WX /permissive- /EHsc)
   target_compile_options(codec_capability_probe PRIVATE /W4 /WX /permissive- /EHsc)
   target_compile_options(hardware_encoder_test PRIVATE /W4 /WX /permissive- /EHsc)
+  target_compile_options(transport_integration_test PRIVATE /W4 /WX /permissive- /EHsc)
 else()
   target_compile_options(abi_c_test PRIVATE -Wall -Wextra -Wpedantic -Werror)
   target_compile_options(abi_cpp_test PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -121,6 +160,7 @@ else()
   target_compile_options(codec_benchmark PRIVATE -Wall -Wextra -Wpedantic -Werror)
   target_compile_options(codec_capability_probe PRIVATE -Wall -Wextra -Wpedantic -Werror)
   target_compile_options(hardware_encoder_test PRIVATE -Wall -Wextra -Wpedantic -Werror)
+  target_compile_options(transport_integration_test PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 
 add_test(NAME AT-NFR-MNT-002-abi-c COMMAND abi_c_test)
@@ -130,3 +170,12 @@ add_test(NAME AT-FR-SCR-003-local-render COMMAND renderer_smoke_test)
 add_test(NAME AT-FR-SCR-005-codec-roundtrip COMMAND codec_roundtrip_test)
 add_test(NAME AT-FR-SCR-005-codec-capabilities COMMAND codec_capability_probe)
 add_test(NAME AT-FR-SCR-005-codec-benchmark COMMAND codec_benchmark "${CMAKE_CURRENT_BINARY_DIR}/goal-03-codec-benchmark.json")
+add_test(NAME AT-FR-NET-001-lan-webrtc COMMAND transport_integration_test)
+add_test(NAME AT-SEC-TRN-001-binding-authorization-negative COMMAND transport_integration_test authorization-mismatch)
+add_test(NAME AT-SEC-TRN-001-binding-scope-negative COMMAND transport_integration_test scope-mismatch)
+add_test(NAME AT-SEC-TRN-001-binding-epoch-negative COMMAND transport_integration_test epoch-mismatch)
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+  add_test(NAME AT-SEC-TRN-001-binding-fingerprint-negative COMMAND transport_integration_test fingerprint-mismatch)
+  add_test(NAME AT-SEC-TRN-001-binding-replay-negative COMMAND transport_integration_test binding-replay)
+  add_test(NAME AT-FR-NET-001-protocol-version-negative COMMAND transport_integration_test protocol-version)
+endif()

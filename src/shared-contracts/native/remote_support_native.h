@@ -21,7 +21,7 @@ extern "C" {
 #endif
 
 #define RS_NATIVE_ABI_MAJOR 1u
-#define RS_NATIVE_ABI_MINOR 1u
+#define RS_NATIVE_ABI_MINOR 2u
 #define RS_DATA_CHANNEL_ID_INVALID 0xffffffffu
 
 typedef struct rs_runtime_t* rs_runtime_handle;
@@ -124,6 +124,29 @@ typedef enum rs_transport_state_v1 {
   RS_TRANSPORT_STATE_FAILED = 4,
   RS_TRANSPORT_STATE_CLOSED = 5
 } rs_transport_state_v1;
+
+typedef enum rs_peer_role_v1 {
+  RS_PEER_ROLE_UNKNOWN = 0,
+  RS_PEER_ROLE_HOST = 1,
+  RS_PEER_ROLE_OPERATOR = 2
+} rs_peer_role_v1;
+
+typedef enum rs_transport_binding_state_v1 {
+  RS_TRANSPORT_BINDING_NOT_STARTED = 0,
+  RS_TRANSPORT_BINDING_LOCAL_SENT = 1,
+  RS_TRANSPORT_BINDING_REMOTE_VERIFIED = 2,
+  RS_TRANSPORT_BINDING_VERIFIED = 3,
+  RS_TRANSPORT_BINDING_FAILED = 4
+} rs_transport_binding_state_v1;
+
+typedef enum rs_route_class_v1 {
+  RS_ROUTE_CLASS_UNKNOWN = 0,
+  RS_ROUTE_CLASS_DIRECT_UDP = 1,
+  RS_ROUTE_CLASS_DIRECT_TCP = 2,
+  RS_ROUTE_CLASS_TURN_UDP = 3,
+  RS_ROUTE_CLASS_TURN_TCP = 4,
+  RS_ROUTE_CLASS_TURN_TLS = 5
+} rs_route_class_v1;
 
 typedef enum rs_video_input_mode_v1 {
   RS_VIDEO_INPUT_MODE_UNKNOWN = 0,
@@ -345,6 +368,28 @@ typedef struct rs_ice_server_v1 {
   rs_string_view_v1 credential_utf8;
 } rs_ice_server_v1;
 
+typedef struct rs_peer_key_pair_v1 {
+  uint32_t struct_size;
+  uint8_t private_key_p256[32];
+  uint8_t public_key_uncompressed_p256[65];
+} rs_peer_key_pair_v1;
+
+typedef struct rs_transport_binding_options_v1 {
+  uint32_t struct_size;
+  rs_string_view_v1 remote_peer_id_utf8;
+  rs_peer_role_v1 local_role;
+  rs_peer_role_v1 remote_role;
+  uint64_t permission_revision;
+  const rs_string_view_v1* granted_scopes_utf8;
+  uint32_t granted_scope_count;
+  rs_byte_view_v1 authorization_context_sha256; /* Exactly 32 bytes. */
+  rs_byte_view_v1 local_private_key_p256; /* Exactly 32 bytes; copied into locked process memory. */
+  rs_byte_view_v1 local_public_key_uncompressed_p256; /* 0x04 || X || Y, exactly 65 bytes. */
+  rs_byte_view_v1 remote_public_key_uncompressed_p256; /* 0x04 || X || Y, exactly 65 bytes. */
+  rs_string_view_v1 local_key_id_utf8;
+  rs_string_view_v1 remote_key_id_utf8;
+} rs_transport_binding_options_v1;
+
 typedef struct rs_transport_options_v1 {
   uint32_t struct_size;
   rs_string_view_v1 session_id_utf8;
@@ -356,6 +401,7 @@ typedef struct rs_transport_options_v1 {
   uint32_t max_data_message_bytes;
   uint32_t buffered_amount_low_threshold_bytes;
   uint32_t flags;
+  const rs_transport_binding_options_v1* binding;
 } rs_transport_options_v1;
 
 typedef struct rs_session_description_v1 {
@@ -399,7 +445,7 @@ typedef struct rs_transport_stats_v1 {
   uint64_t bytes_sent;
   uint64_t bytes_received;
   uint64_t data_channel_buffered_bytes;
-  uint32_t route_class; /* Implementation-defined stable enum documented with build. */
+  rs_route_class_v1 route_class;
 } rs_transport_stats_v1;
 
 typedef struct rs_input_options_v1 {
@@ -445,6 +491,8 @@ typedef void (RS_CALL *rs_local_ice_candidate_callback_v1)(void* user_context, c
 typedef void (RS_CALL *rs_data_channel_state_callback_v1)(void* user_context, uint32_t channel_id, rs_string_view_v1 label, rs_data_channel_state_v1 state);
 typedef void (RS_CALL *rs_data_message_callback_v1)(void* user_context, const rs_data_message_v1* message);
 typedef void (RS_CALL *rs_buffered_amount_low_callback_v1)(void* user_context, uint32_t channel_id, uint64_t buffered_amount_bytes);
+typedef void (RS_CALL *rs_transport_binding_callback_v1)(void* user_context, rs_transport_binding_state_v1 state, rs_string_view_v1 stable_reason);
+typedef void (RS_CALL *rs_transport_video_feedback_callback_v1)(void* user_context, uint32_t target_bitrate_bps, uint32_t target_fps, uint32_t request_keyframe);
 
 typedef struct rs_callbacks_v1 {
   uint32_t struct_size;
@@ -463,6 +511,8 @@ typedef struct rs_callbacks_v1 {
   rs_cursor_callback_v1 on_cursor;
   rs_frame_callback_v1 on_decoded_frame;
   rs_encoder_fallback_callback_v1 on_encoder_fallback;
+  rs_transport_binding_callback_v1 on_transport_binding_state;
+  rs_transport_video_feedback_callback_v1 on_transport_video_feedback;
 } rs_callbacks_v1;
 
 RS_API uint32_t RS_CALL rs_native_get_abi_major(void);
@@ -474,6 +524,7 @@ RS_API void RS_CALL rs_runtime_destroy(rs_runtime_handle runtime);
 RS_API rs_status_v1 RS_CALL rs_runtime_get_last_error(rs_runtime_handle runtime, char* utf8_buffer, uint32_t buffer_capacity, uint32_t* out_required_length);
 RS_API rs_status_v1 RS_CALL rs_runtime_enumerate_displays(rs_runtime_handle runtime, rs_display_info_callback_v1 callback, void* callback_context);
 RS_API rs_status_v1 RS_CALL rs_runtime_enumerate_encoders(rs_runtime_handle runtime, rs_encoder_capability_callback_v1 callback, void* callback_context);
+RS_API rs_status_v1 RS_CALL rs_runtime_generate_peer_key_pair(rs_runtime_handle runtime, rs_peer_key_pair_v1* out_key_pair);
 
 RS_API rs_status_v1 RS_CALL rs_capture_create(rs_runtime_handle runtime, const rs_capture_options_v1* options, rs_capture_handle* out_capture);
 RS_API rs_status_v1 RS_CALL rs_capture_start(rs_capture_handle capture);

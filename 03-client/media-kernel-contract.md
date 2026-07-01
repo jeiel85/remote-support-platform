@@ -79,3 +79,9 @@ All invalid sizes, enum values, struct sizes, null pointers, and incompatible ru
 ## 8. Required evidence split
 
 Deterministic CI evidence covers the synthetic source, bounded queues, timestamp monotonicity, profile decisions, encode/decode stream semantics, keyframe/reset, fallback state machine, ABI layout, and repeated teardown. Windows hardware-lab evidence separately covers DXGI, WGC, real cursor shapes, D3D11 rendering, Media Foundation hardware transforms, adapter loss, display changes, latency, GPU memory, and vendor compatibility. Goal completion requires both sets; a synthetic result cannot be presented as hardware evidence.
+
+## 9. Transport binding inputs
+
+ABI 1.2 requires `rs_transport_binding_options_v1` for every peer transport. The caller supplies the authenticated remote peer ID and role, current permission revision and canonical scope names, a 32-byte authorization-context hash, and an authorized ephemeral P-256 key pair plus the reciprocal peer public key. Raw private scalars are copied on create, locked in process memory when supported, zeroed on every close path, and never logged.
+
+`rs_runtime_generate_peer_key_pair` produces a P-256 private scalar and SEC1 uncompressed public point for the authorization flow. A transport parses the local and remote SHA-256 DTLS fingerprints from the descriptions active in the WebRTC peer connection, signs `RSP-TRANSPORT-BINDING-V1` with ECDSA P-256/SHA-256 in P1363 form, and verifies the reciprocal binding. A transport remains pre-content until both the binding and its acknowledgement verify. Any identity, role, epoch, permission revision, scope, authorization hash, fingerprint, key ID, signature, or replay mismatch is fatal.
