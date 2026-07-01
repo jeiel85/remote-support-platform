@@ -1,0 +1,250 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.example.com/remote-support/policy-document-v1.json",
+  "title": "Remote Support Policy Document",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "rules"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "rules": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 500,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "effect",
+          "subjects",
+          "resources",
+          "sessionTypes",
+          "scopes"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "effect": {
+            "enum": [
+              "ALLOW",
+              "DENY"
+            ]
+          },
+          "subjects": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "roles": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "OWNER",
+                    "ADMIN",
+                    "SECURITY_AUDITOR",
+                    "OPERATOR",
+                    "READ_ONLY_ANALYST"
+                  ]
+                }
+              },
+              "userIds": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "groups": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "maxLength": 200
+                }
+              }
+            },
+            "minProperties": 1
+          },
+          "resources": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "allDevices": {
+                "type": "boolean"
+              },
+              "deviceIds": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "deviceGroupIds": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              },
+              "tags": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "maxLength": 100
+                }
+              }
+            },
+            "minProperties": 1
+          },
+          "sessionTypes": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                "ATTENDED",
+                "MANAGED_ATTENDED",
+                "UNATTENDED"
+              ]
+            }
+          },
+          "scopes": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                "VIEW_SCREEN",
+                "CONTROL_POINTER",
+                "CONTROL_KEYBOARD",
+                "SYNC_CLIPBOARD_TEXT_HOST_TO_OPERATOR",
+                "SYNC_CLIPBOARD_TEXT_OPERATOR_TO_HOST",
+                "TRANSFER_FILE_HOST_TO_OPERATOR",
+                "TRANSFER_FILE_OPERATOR_TO_HOST",
+                "CHAT",
+                "SWITCH_MONITOR",
+                "REQUEST_REBOOT",
+                "RECONNECT_AFTER_REBOOT",
+                "UNATTENDED_SESSION"
+              ]
+            }
+          },
+          "conditions": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "requireMfa": {
+                "type": "boolean"
+              },
+              "maxAuthenticationAgeSeconds": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 86400
+              },
+              "requireLocalConsent": {
+                "type": "boolean"
+              },
+              "sourceCidrs": {
+                "type": "array",
+                "maxItems": 100,
+                "items": {
+                  "type": "string",
+                  "minLength": 3,
+                  "maxLength": 64,
+                  "pattern": "^(?:[0-9a-fA-F:.]+)/(?:[0-9]|[1-9][0-9]|1[01][0-9]|12[0-8])$"
+                }
+              },
+              "schedule": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "timezone",
+                  "windows"
+                ],
+                "properties": {
+                  "timezone": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "windows": {
+                    "type": "array",
+                    "maxItems": 50,
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "daysOfWeek",
+                        "startLocal",
+                        "endLocal"
+                      ],
+                      "properties": {
+                        "daysOfWeek": {
+                          "type": "array",
+                          "minItems": 1,
+                          "uniqueItems": true,
+                          "items": {
+                            "enum": [
+                              "MO",
+                              "TU",
+                              "WE",
+                              "TH",
+                              "FR",
+                              "SA",
+                              "SU"
+                            ]
+                          }
+                        },
+                        "startLocal": {
+                          "type": "string",
+                          "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$"
+                        },
+                        "endLocal": {
+                          "type": "string",
+                          "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$"
+                        },
+                        "allowOvernight": {
+                          "type": "boolean",
+                          "default": false
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "limits": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "maxSessionDurationSeconds": {
+                "type": "integer",
+                "minimum": 60,
+                "maximum": 28800
+              },
+              "maxFileBytes": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1099511627776
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

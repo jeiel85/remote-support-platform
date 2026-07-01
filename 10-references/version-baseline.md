@@ -4,7 +4,7 @@ Verified on 2026-07-01. These values are an implementation starting point, not p
 
 | Component | Verified candidate baseline | Pinning and upgrade policy |
 |---|---|---|
-| .NET | .NET 10 LTS; SDK 10.0.301 with runtime 10.0.8 at verification | pin SDK via `global.json`; remain on the approved supported patch after validation |
+| .NET | .NET 10 LTS; SDK 10.0.301 with runtime 10.0.9 at verification | pin SDK via `global.json`; remain on the approved supported patch after validation |
 | C++ | C++20 with supported MSVC and Windows SDK | pin protected Windows build image and toolset |
 | Windows client | Microsoft-supported Windows 10/11 builds at release | publish exact tested build matrix; remove unsupported builds |
 | coturn | 4.14.0 / immutable image revision 4.14.0-r0 available | pin image digest; monitor upstream security releases; validate before promotion |

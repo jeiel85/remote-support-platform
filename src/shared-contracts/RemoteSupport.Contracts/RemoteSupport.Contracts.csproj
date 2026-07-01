@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" />
+    <PackageReference Include="Grpc.Tools" PrivateAssets="all" />
+    <Protobuf Include="..\..\..\schemas\protobuf\remote_support.proto" ProtoRoot="..\..\..\schemas\protobuf" GrpcServices="None" />
+    <Protobuf Include="..\..\..\schemas\protobuf\service_ipc.proto" ProtoRoot="..\..\..\schemas\protobuf" GrpcServices="None" />
+  </ItemGroup>
+
+</Project>

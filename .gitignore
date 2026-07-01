@@ -1,0 +1,15 @@
+.tools/
+.vs/
+.vscode/
+artifacts/**
+!artifacts/README.md
+**/bin/
+**/obj/
+**/TestResults/
+*.user
+*.suo
+*.nupkg
+*.snupkg
+cmake-build-*/
+out/
+

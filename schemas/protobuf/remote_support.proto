@@ -1,0 +1,365 @@
+syntax = "proto3";
+
+package remote_support.v1;
+
+option csharp_namespace = "RemoteSupport.Protocol.V1";
+
+// Peer-to-peer application protocol carried over versioned WebRTC data channels.
+// String UUID fields use canonical lowercase RFC 4122 text until generated UUID
+// wrappers are introduced. No field number may be reused after release.
+
+enum CapabilityScope {
+  CAPABILITY_SCOPE_UNSPECIFIED = 0;
+  VIEW_SCREEN = 1;
+  CONTROL_POINTER = 2;
+  CONTROL_KEYBOARD = 3;
+  SYNC_CLIPBOARD_TEXT_HOST_TO_OPERATOR = 4;
+  SYNC_CLIPBOARD_TEXT_OPERATOR_TO_HOST = 5;
+  TRANSFER_FILE_HOST_TO_OPERATOR = 6;
+  TRANSFER_FILE_OPERATOR_TO_HOST = 7;
+  CHAT = 8;
+  SWITCH_MONITOR = 9;
+  REQUEST_REBOOT = 10;
+  RECONNECT_AFTER_REBOOT = 11;
+  UNATTENDED_SESSION = 12;
+}
+
+enum PeerRole {
+  PEER_ROLE_UNSPECIFIED = 0;
+  HOST = 1;
+  OPERATOR = 2;
+}
+
+enum ProtocolErrorSeverity {
+  PROTOCOL_ERROR_SEVERITY_UNSPECIFIED = 0;
+  WARNING = 1;
+  MESSAGE_REJECTED = 2;
+  CHANNEL_FATAL = 3;
+  SESSION_FATAL = 4;
+}
+
+message Envelope {
+  uint32 protocol_major = 1;
+  uint32 protocol_minor = 2;
+  string message_id = 3;
+  string session_id = 4;
+  string sender_peer_id = 5;
+  PeerRole sender_role = 6;
+  uint64 transport_epoch = 7;
+  uint64 permission_revision = 8;
+  uint64 sequence = 9;
+  int64 monotonic_timestamp_ns = 10;
+  string correlation_id = 11;
+
+  oneof body {
+    ProtocolHello protocol_hello = 20;
+    ProtocolHelloAck protocol_hello_ack = 21;
+    DisplayTopology display_topology = 22;
+    SelectDisplay select_display = 23;
+    SelectDisplayResult select_display_result = 24;
+    PermissionState permission_state = 25;
+    PointerEvent pointer_event = 26;
+    KeyboardEvent keyboard_event = 27;
+    ReleaseAllInput release_all_input = 28;
+    InputAck input_ack = 29;
+    ClipboardOffer clipboard_offer = 30;
+    ClipboardDecision clipboard_decision = 31;
+    ClipboardText clipboard_text = 32;
+    FileOffer file_offer = 33;
+    FileDecision file_decision = 34;
+    FileChunk file_chunk = 35;
+    FileAck file_ack = 36;
+    FileCancel file_cancel = 37;
+    ChatMessage chat_message = 38;
+    ChatAck chat_ack = 39;
+    RebootRequest reboot_request = 40;
+    RebootDecision reboot_decision = 41;
+    Heartbeat heartbeat = 42;
+    TransportStats transport_stats = 43;
+    ProtocolError protocol_error = 44;
+    SessionEnd session_end = 45;
+    TransportBinding transport_binding = 46;
+    TransportBindingAck transport_binding_ack = 47;
+  }
+}
+
+
+message TransportBinding {
+  string binding_id = 1;
+  string session_id = 2;
+  string sender_peer_id = 3;
+  PeerRole sender_role = 4;
+  uint64 transport_epoch = 5;
+  uint64 permission_revision = 6;
+  repeated CapabilityScope granted_scopes = 7;
+  bytes local_dtls_fingerprint_sha256 = 8;
+  bytes remote_dtls_fingerprint_sha256 = 9;
+  bytes authorization_context_sha256 = 10;
+  string key_id = 11;
+  bytes signature = 12;
+  string canonicalization_version = 13; // RSP-TRANSPORT-BINDING-V1
+  string signature_algorithm = 14; // ed25519 or ecdsa-p256-sha256-p1363
+}
+
+message TransportBindingAck {
+  string binding_id = 1;
+  bool verified = 2;
+  string reason_code = 3;
+  bytes verified_binding_sha256 = 4;
+}
+
+message ProtocolHello {
+  string app_version = 1;
+  string os_build = 2;
+  string architecture = 3;
+  PeerRole role = 4;
+  repeated string codecs = 5;
+  repeated string feature_names = 6;
+  repeated CapabilityScope supported_scopes = 7;
+  uint32 max_control_message_bytes = 8;
+  uint32 max_file_chunk_bytes = 9;
+  uint64 display_generation = 10;
+}
+
+message ProtocolHelloAck {
+  bool accepted = 1;
+  uint32 selected_protocol_major = 2;
+  uint32 selected_protocol_minor = 3;
+  repeated string negotiated_features = 4;
+  uint32 negotiated_max_control_message_bytes = 5;
+  uint32 negotiated_max_file_chunk_bytes = 6;
+  string rejection_code = 7;
+}
+
+message DisplayTopology {
+  uint64 generation = 1;
+  int32 virtual_left = 2;
+  int32 virtual_top = 3;
+  int32 virtual_width = 4;
+  int32 virtual_height = 5;
+  repeated Display displays = 6;
+  string active_display_id = 7;
+}
+
+message Display {
+  string display_id = 1;
+  string stable_hint = 2;
+  string display_name = 3;
+  int32 left = 4;
+  int32 top = 5;
+  int32 width = 6;
+  int32 height = 7;
+  uint32 rotation_degrees = 8;
+  uint32 dpi_x = 9;
+  uint32 dpi_y = 10;
+  bool primary = 11;
+  bool hdr_enabled = 12;
+  bool capture_available = 13;
+}
+
+message SelectDisplay {
+  string display_id = 1;
+  uint64 expected_topology_generation = 2;
+}
+
+message SelectDisplayResult {
+  string display_id = 1;
+  uint64 topology_generation = 2;
+  bool accepted = 3;
+  string reason_code = 4;
+}
+
+message PermissionState {
+  uint64 revision = 1;
+  repeated CapabilityScope active_scopes = 2;
+  repeated CapabilityScope revoked_scopes = 3;
+  uint64 effective_at_reliable_input_sequence = 4;
+  string reason_code = 5;
+}
+
+message PointerEvent {
+  enum Kind {
+    KIND_UNSPECIFIED = 0;
+    MOVE = 1;
+    BUTTON_DOWN = 2;
+    BUTTON_UP = 3;
+    WHEEL = 4;
+    H_WHEEL = 5;
+  }
+  enum Button {
+    BUTTON_UNSPECIFIED = 0;
+    LEFT = 1;
+    RIGHT = 2;
+    MIDDLE = 3;
+    X1 = 4;
+    X2 = 5;
+  }
+  Kind kind = 1;
+  int32 desktop_x = 2;
+  int32 desktop_y = 3;
+  Button button = 4;
+  int32 wheel_delta = 5;
+  uint64 display_generation = 6;
+  uint64 input_sequence = 7;
+}
+
+message KeyboardEvent {
+  enum Kind {
+    KIND_UNSPECIFIED = 0;
+    KEY_DOWN = 1;
+    KEY_UP = 2;
+    UNICODE_TEXT = 3;
+  }
+  Kind kind = 1;
+  uint32 scan_code = 2;
+  uint32 virtual_key = 3;
+  bool extended = 4;
+  bool repeat = 5;
+  string text = 6;
+  uint64 input_sequence = 7;
+  uint32 keyboard_layout_id = 8;
+}
+
+message ReleaseAllInput {
+  uint64 through_input_sequence = 1;
+  string reason_code = 2;
+}
+
+message InputAck {
+  uint64 last_applied_input_sequence = 1;
+  uint64 last_rejected_input_sequence = 2;
+  string rejection_code = 3;
+  uint64 display_generation = 4;
+}
+
+message ClipboardOffer {
+  string offer_id = 1;
+  string content_type = 2; // Initial GA: text/plain;charset=utf-8 only.
+  uint64 utf8_size = 3;
+  bytes sha256 = 4;
+  uint64 clipboard_revision = 5;
+}
+
+message ClipboardDecision {
+  string offer_id = 1;
+  bool accepted = 2;
+  string reason_code = 3;
+  uint32 max_accepted_bytes = 4;
+}
+
+message ClipboardText {
+  string offer_id = 1;
+  string text = 2;
+  bytes sha256 = 3;
+  uint64 clipboard_revision = 4;
+}
+
+message FileOffer {
+  string transfer_id = 1;
+  string display_name = 2;
+  uint64 size = 3;
+  bytes sha256 = 4;
+  string mime_hint = 5;
+  uint32 proposed_chunk_size = 6;
+  uint64 proposed_chunk_count = 7;
+  PeerRole source_role = 8;
+  PeerRole destination_role = 9;
+  int64 created_utc_unix_ms = 10;
+}
+
+message FileDecision {
+  string transfer_id = 1;
+  bool accepted = 2;
+  uint32 chunk_size = 3;
+  string reason_code = 4;
+  repeated ChunkRange already_verified = 5;
+  uint64 max_in_flight_bytes = 6;
+}
+
+message ChunkRange {
+  uint64 start_inclusive = 1;
+  uint64 end_exclusive = 2;
+}
+
+message FileChunk {
+  string transfer_id = 1;
+  uint64 chunk_index = 2;
+  uint64 offset = 3;
+  bytes data = 4;
+  bytes chunk_sha256 = 5;
+}
+
+message FileAck {
+  string transfer_id = 1;
+  repeated ChunkRange verified = 2;
+  bool complete = 3;
+  string error_code = 4;
+  uint64 received_bytes = 5;
+}
+
+message FileCancel {
+  string transfer_id = 1;
+  string reason_code = 2;
+  bool delete_partial_file = 3;
+}
+
+message ChatMessage {
+  string chat_message_id = 1;
+  string text = 2;
+  int64 sent_utc_unix_ms = 3;
+}
+
+message ChatAck {
+  string chat_message_id = 1;
+  int64 received_utc_unix_ms = 2;
+}
+
+message RebootRequest {
+  string request_id = 1;
+  string reason = 2;
+  bool request_reconnect = 3;
+  uint32 countdown_seconds = 4;
+}
+
+message RebootDecision {
+  string request_id = 1;
+  bool approved = 2;
+  string reason_code = 3;
+}
+
+message Heartbeat {
+  uint64 last_control_sequence = 1;
+  uint64 last_reliable_input_sequence = 2;
+  uint64 permission_revision = 3;
+  uint64 display_generation = 4;
+  uint32 rtt_ms = 5;
+  uint32 packet_loss_permyriad = 6;
+  uint32 buffered_control_bytes = 7;
+  uint32 buffered_file_bytes = 8;
+}
+
+message TransportStats {
+  uint32 rtt_ms = 1;
+  uint32 jitter_ms = 2;
+  uint32 packet_loss_permyriad = 3;
+  uint64 available_outgoing_bitrate_bps = 4;
+  uint64 actual_video_bitrate_bps = 5;
+  uint32 capture_fps_milli = 6;
+  uint32 render_fps_milli = 7;
+  uint32 encode_queue_ms = 8;
+  string route_class = 9;
+}
+
+message ProtocolError {
+  string code = 1;
+  string message = 2;
+  ProtocolErrorSeverity severity = 3;
+  string rejected_message_id = 4;
+  bool retryable = 5;
+}
+
+message SessionEnd {
+  string reason_code = 1;
+  PeerRole initiated_by_role = 2;
+  int64 ended_utc_unix_ms = 3;
+}

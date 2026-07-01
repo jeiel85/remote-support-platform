@@ -28,6 +28,15 @@ BUNDLE_ROOT_FILES = {
 }
 
 
+def iter_bundle_files(root: Path) -> Iterable[Path]:
+    for path in root.rglob("*"):
+        if not path.is_file() or path.name == "MANIFEST.json":
+            continue
+        relative = path.relative_to(root)
+        if relative.parts[0] in BUNDLE_DIRECTORIES or relative.as_posix() in BUNDLE_ROOT_FILES:
+            yield path
+
+
 def fail(message: str) -> None:
     raise AssertionError(message)
 
@@ -195,7 +204,8 @@ def main() -> int:
             fail(f"Missing required contract: {rel}")
 
     json_ids: set[str] = set()
-    for path in root.rglob("*.json"):
+    bundle_files = list(iter_bundle_files(root))
+    for path in (path for path in bundle_files if path.suffix.lower() == ".json"):
         document = json.loads(path.read_text(encoding="utf-8"))
         if isinstance(document, dict) and "$schema" in document:
             Draft202012Validator.check_schema(document)
@@ -204,7 +214,7 @@ def main() -> int:
             if schema_id in json_ids:
                 fail(f"Duplicate JSON Schema $id: {schema_id}")
             json_ids.add(schema_id)
-    for path in [*root.rglob("*.yaml"), *root.rglob("*.yml")]:
+    for path in (path for path in bundle_files if path.suffix.lower() in {".yaml", ".yml"}):
         yaml.safe_load(path.read_text(encoding="utf-8"))
 
     schema_pairs = [
@@ -276,7 +286,7 @@ def main() -> int:
 
     missing_links: list[tuple[Path, str]] = []
     link_pattern = re.compile(r"\[[^\]]*\]\(([^)]+)\)")
-    for path in root.rglob("*.md"):
+    for path in (path for path in bundle_files if path.suffix.lower() == ".md"):
         text = path.read_text(encoding="utf-8")
         for target in link_pattern.findall(text):
             clean = target.split("#", 1)[0]
@@ -408,8 +418,8 @@ def main() -> int:
         fail(f"Native ABI missing required symbols: {missing_symbols}")
 
     forbidden = re.compile(r"\b(TODO|TBD|FIXME|CHANGEME|REPLACE_ME)\b")
-    for path in root.rglob("*"):
-        if path.is_file() and path.suffix.lower() in TEXT_SUFFIXES:
+    for path in bundle_files:
+        if path.suffix.lower() in TEXT_SUFFIXES:
             match = forbidden.search(path.read_text(encoding="utf-8"))
             if match:
                 fail(f"Unresolved placeholder {match.group(1)} in {path.relative_to(root)}")
@@ -418,16 +428,7 @@ def main() -> int:
     if manifest_path.exists():
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         listed = {entry["path"]: entry for entry in manifest["files"]}
-        actual = {
-            p.relative_to(root).as_posix(): p
-            for p in root.rglob("*")
-            if p.is_file()
-            and p.name != "MANIFEST.json"
-            and (
-                p.relative_to(root).parts[0] in BUNDLE_DIRECTORIES
-                or p.relative_to(root).as_posix() in BUNDLE_ROOT_FILES
-            )
-        }
+        actual = {p.relative_to(root).as_posix(): p for p in bundle_files}
         if set(listed) != set(actual):
             fail(f"Manifest file set mismatch: missing={set(actual)-set(listed)}, extra={set(listed)-set(actual)}")
         if manifest.get("fileCount") != len(actual):

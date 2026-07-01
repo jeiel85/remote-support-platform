@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\RemoteSupport.Application\RemoteSupport.Application.csproj" />
+    <ProjectReference Include="..\RemoteSupport.Protocol\RemoteSupport.Protocol.csproj" />
+    <ProjectReference Include="..\RemoteSupport.Ipc\RemoteSupport.Ipc.csproj" />
+    <ProjectReference Include="..\RemoteSupport.Security\RemoteSupport.Security.csproj" />
+    <ProjectReference Include="..\RemoteSupport.Observability\RemoteSupport.Observability.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

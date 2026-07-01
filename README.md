@@ -23,3 +23,18 @@ The final audit separates attended GA, Managed Host, and unattended release trai
 - Goal 14: separately approved unattended access.
 
 The canonical machine-readable contracts are OpenAPI, Protobuf, JSON Schemas, native C ABI header, PostgreSQL schema, requirements traceability CSV and acceptance-test CSV. Markdown explains intent but does not override those contracts.
+
+## Implementation quick start
+
+The design bundle and implementation now coexist in this repository. On Windows PowerShell 7, the canonical local flow is:
+
+```powershell
+./build.ps1 -Target Bootstrap
+./build.ps1 -Target ValidateDesign
+./build.ps1 -Target Build
+./build.ps1 -Target Test
+./build.ps1 -Target IntegrationTest
+./build.ps1 -Target Package -Configuration Release
+```
+
+The bootstrap downloads the pinned .NET SDK and hash-locked Python/CMake tools into ignored `.tools/` storage. Generated contracts are committed; CI regenerates and rejects drift. See `docs/implementation/module-ownership.md` and the goal evidence under `docs/implementation/goals/`.

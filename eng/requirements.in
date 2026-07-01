@@ -1,0 +1,3 @@
+-r ../11-bootstrap/requirements.txt
+cmake==4.3.4
+

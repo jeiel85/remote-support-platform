@@ -1,0 +1,192 @@
+syntax = "proto3";
+
+package remote_support.ipc.v1;
+
+option csharp_namespace = "RemoteSupport.Ipc.V1";
+
+import "remote_support.proto";
+
+// Local named-pipe protocol between signed product processes. Pipe ACLs,
+// OS-obtained process identity, image verification, and launch-nonce proof are
+// required in addition to this message contract. Message-provided PID/session
+// values are claims to compare with OS facts, never trusted identity inputs.
+
+enum BrokerCapability {
+  BROKER_CAPABILITY_UNSPECIFIED = 0;
+  QUERY_CAPABILITIES = 1;
+  PRIVILEGED_INPUT = 2;
+  REBOOT_GRANT_STORAGE = 3;
+  SYSTEM_REBOOT = 4;
+  HEALTH_REPORTING = 5;
+}
+
+enum InstalledAgentState {
+  INSTALLED_AGENT_STATE_UNSPECIFIED = 0;
+  STARTING = 1;
+  IDLE = 2;
+  SESSION_PENDING = 3;
+  SESSION_ACTIVE = 4;
+  RECONNECTING = 5;
+  STOPPING = 6;
+  DEGRADED = 7;
+}
+
+enum ServiceEventType {
+  SERVICE_EVENT_TYPE_UNSPECIFIED = 0;
+  PRIVILEGED_CONTEXT_EXPIRED = 1;
+  DESKTOP_CHANGED = 2;
+  REBOOT_GRANT_EXPIRED = 3;
+  CHILD_PROCESS_EXITED = 4;
+  SERVICE_DEGRADED = 5;
+}
+
+message IpcEnvelope {
+  uint32 protocol_major = 1;
+  uint32 protocol_minor = 2;
+  string request_id = 3;
+  uint32 caller_process_id = 4;
+  uint32 caller_windows_session_id = 5;
+  string product_session_id = 6;
+  BrokerCapability broker_capability = 7;
+  uint64 sequence = 8;
+
+  oneof body {
+    ClientHello client_hello = 20;
+    ServiceHello service_hello = 21;
+    ChallengeResponse challenge_response = 22;
+    CapabilityQuery capability_query = 23;
+    CapabilityResult capability_result = 24;
+    StartPrivilegedInput start_privileged_input = 25;
+    StopPrivilegedInput stop_privileged_input = 26;
+    InputBatch input_batch = 27;
+    InputBatchResult input_batch_result = 28;
+    StoreRebootGrant store_reboot_grant = 29;
+    ConsumeRebootGrant consume_reboot_grant = 30;
+    RebootGrantResult reboot_grant_result = 31;
+    RequestSystemReboot request_system_reboot = 32;
+    CommandResult command_result = 33;
+    AgentHeartbeat agent_heartbeat = 34;
+    ServiceEvent service_event = 35;
+  }
+}
+
+message ClientHello {
+  bytes launch_nonce_proof = 1;
+  bytes client_nonce = 2;
+  string executable_version = 3;
+  bytes executable_sha256 = 4;
+  repeated BrokerCapability requested_capabilities = 5;
+}
+
+message ServiceHello {
+  bytes service_nonce = 1;
+  bytes client_nonce_signature = 2;
+  string service_version = 3;
+  uint64 max_message_bytes = 4;
+  repeated BrokerCapability granted_capabilities = 5;
+  int64 capability_expires_utc_unix_ms = 6;
+}
+
+message ChallengeResponse {
+  bytes service_nonce_signature = 1;
+}
+
+message CapabilityQuery {}
+
+message CapabilityResult {
+  bool installed_mode = 1;
+  bool privileged_input_available = 2;
+  bool reboot_available = 3;
+  bool secure_desktop_supported = 4;
+  string secure_desktop_status_code = 5;
+  repeated BrokerCapability active_capabilities = 6;
+}
+
+message StartPrivilegedInput {
+  string peer_id = 1;
+  uint64 permission_revision = 2;
+  uint64 display_generation = 3;
+  int64 expires_utc_unix_ms = 4;
+  bytes server_authorization_proof = 5;
+  repeated remote_support.v1.CapabilityScope granted_input_scopes = 6;
+  uint64 transport_epoch = 7;
+}
+
+message StopPrivilegedInput {
+  string reason_code = 1;
+}
+
+message PrivilegedInputEvent {
+  oneof event {
+    remote_support.v1.PointerEvent pointer = 1;
+    remote_support.v1.KeyboardEvent keyboard = 2;
+    remote_support.v1.ReleaseAllInput release_all = 3;
+  }
+}
+
+message InputBatch {
+  uint64 permission_revision = 1;
+  uint64 display_generation = 2;
+  uint64 first_input_sequence = 3;
+  repeated PrivilegedInputEvent events = 4;
+  uint64 transport_epoch = 5;
+}
+
+message InputBatchResult {
+  uint64 last_applied_input_sequence = 1;
+  uint64 last_rejected_input_sequence = 2;
+  string error_code = 3;
+  uint64 active_permission_revision = 4;
+  uint64 active_display_generation = 5;
+}
+
+message StoreRebootGrant {
+  string session_id = 1;
+  bytes encrypted_grant = 2;
+  int64 expires_utc_unix_ms = 3;
+  bytes grant_hash = 4;
+  string device_id = 5;
+  string operator_id = 6;
+}
+
+message ConsumeRebootGrant {
+  string session_id = 1;
+  bytes grant_hash = 2;
+  bytes launch_nonce_proof = 3;
+}
+
+message RebootGrantResult {
+  bool found = 1;
+  bytes encrypted_grant = 2;
+  string error_code = 3;
+  int64 expires_utc_unix_ms = 4;
+}
+
+message RequestSystemReboot {
+  string session_id = 1;
+  uint32 countdown_seconds = 2;
+  string reason = 3;
+  bytes server_authorization_proof = 4;
+  bytes reconnect_grant_hash = 5;
+}
+
+message CommandResult {
+  bool succeeded = 1;
+  string error_code = 2;
+  string correlation_id = 3;
+}
+
+message AgentHeartbeat {
+  string agent_version = 1;
+  uint32 windows_session_id = 2;
+  InstalledAgentState state = 3;
+  int64 sent_utc_unix_ms = 4;
+  string active_product_session_id = 5;
+}
+
+message ServiceEvent {
+  ServiceEventType event_type = 1;
+  string reason_code = 2;
+  uint64 sequence = 3;
+  int64 occurred_utc_unix_ms = 4;
+}

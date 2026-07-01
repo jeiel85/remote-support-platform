@@ -1,0 +1,9 @@
+# Initial single-owner mapping. Split into protected teams before attended GA.
+/src/client/native/ @jeiel85
+/src/client/managed/RemoteSupport.Ipc/ @jeiel85
+/src/client/managed/RemoteSupport.Security/ @jeiel85
+/02-protocol/ @jeiel85
+/schemas/ @jeiel85
+/eng/ @jeiel85
+/tools/supply-chain/ @jeiel85
+/deploy/ @jeiel85

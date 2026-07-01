@@ -595,7 +595,7 @@
     {
       "path": "10-references/version-baseline.md",
       "bytes": 1641,
-      "sha256": "bcf52e143597edb0b26a68f9e1f587a4dba594bb78cc7d9d2c8408607bd1fae7"
+      "sha256": "44b9f9645bef403b89d1dd74e22ca291c03704fcbaadf2d16a1e761033f66082"
     },
     {
       "path": "11-bootstrap/README.md",
@@ -619,8 +619,8 @@
     },
     {
       "path": "11-bootstrap/validate-bundle.py",
-      "bytes": 22883,
-      "sha256": "8cc5a064d2fd74dfddf8f3d66bd9bfa61c662db6e4c0097b6bb6364a2613001b"
+      "bytes": 23087,
+      "sha256": "7447830c1b6f97706ffc09fba9a7d6b9857d591fcfdc48251445b09233fe20ae"
     },
     {
       "path": "DOCUMENT_INDEX.md",
@@ -639,8 +639,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 1327,
-      "sha256": "77af2a92e56c6aaff7385579523cdff771527d83e17a90d2298f1053e3b7ca07"
+      "bytes": 1989,
+      "sha256": "cd1a24001f8b9789f33271b4947edef304be8896982c66d51689e08c8a3dd6cc"
     },
     {
       "path": "START_HERE.md",
