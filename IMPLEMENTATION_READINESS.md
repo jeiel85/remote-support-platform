@@ -2,7 +2,7 @@
 
 ## Decision
 
-**Begin Goal 01.** The architecture-significant contracts are sufficiently specified to create the repository, generated clients/contracts, database migrations, server modules, Windows clients and test harnesses without reopening the core product/security model.
+**Begin Goal 01.** The architecture-significant contracts are sufficiently specified to create the repository, generated clients/contracts, database migrations, server modules, Windows clients and test harnesses without reopening the core product/security model. ABI minor version 1 and `03-client/media-kernel-contract.md` additionally make the Goal 02 capture/render and Goal 03 encode/decode boundary executable without implementer-defined public APIs.
 
 ## Goal 01 completion prerequisites
 
@@ -12,6 +12,8 @@
 - Working PowerShell bootstrap on a clean supported Windows worker.
 - Dependency locks, SBOM/provenance, secret scanning and artifact signing design.
 - Named Product, Security, Privacy, Operations and Legal owners.
+
+The repository bootstrap pins .NET SDK 10.0.301 and obtains it through the non-admin `dotnet-install` flow when it is not already installed. Native Windows hardware evidence still requires a protected worker with a compatible MSVC/Windows SDK toolchain; LLVM-MinGW may run portable contract and state-machine tests but does not replace the release toolchain.
 
 ## Stop-and-redesign conditions
 

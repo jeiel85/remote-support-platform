@@ -11,6 +11,8 @@
 - Released enum numeric values and exported symbol semantics are never reused.
 - Managed startup checks ABI major, minimum minor, build ID, architecture, and signed module provenance before creating a runtime.
 
+ABI 1.1 adds display and encoder discovery, cursor metadata, renderer transforms, atomic encoder reconfiguration, fallback diagnostics, and H.264 decoder lifecycle. These are additive tail fields and exports; ABI 1.0 callers remain layout-compatible, while Goals 02 and 03 require a minimum minor version of 1.
+
 ## 3. Ownership and threading
 
 - Opaque handles are native-owned and released only by their matching destroy function.

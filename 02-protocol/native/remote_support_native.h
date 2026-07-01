@@ -21,12 +21,13 @@ extern "C" {
 #endif
 
 #define RS_NATIVE_ABI_MAJOR 1u
-#define RS_NATIVE_ABI_MINOR 0u
+#define RS_NATIVE_ABI_MINOR 1u
 #define RS_DATA_CHANNEL_ID_INVALID 0xffffffffu
 
 typedef struct rs_runtime_t* rs_runtime_handle;
 typedef struct rs_capture_t* rs_capture_handle;
 typedef struct rs_encoder_t* rs_encoder_handle;
+typedef struct rs_decoder_t* rs_decoder_handle;
 typedef struct rs_renderer_t* rs_renderer_handle;
 typedef struct rs_transport_t* rs_transport_handle;
 typedef struct rs_input_injector_t* rs_input_injector_handle;
@@ -67,6 +68,46 @@ typedef enum rs_codec_v1 {
   RS_CODEC_UNKNOWN = 0,
   RS_CODEC_H264 = 1
 } rs_codec_v1;
+
+typedef enum rs_capture_source_v1 {
+  RS_CAPTURE_SOURCE_UNKNOWN = 0,
+  RS_CAPTURE_SOURCE_AUTO = 1,
+  RS_CAPTURE_SOURCE_DXGI = 2,
+  RS_CAPTURE_SOURCE_WGC = 3,
+  RS_CAPTURE_SOURCE_SYNTHETIC = 4
+} rs_capture_source_v1;
+
+typedef enum rs_capture_target_kind_v1 {
+  RS_CAPTURE_TARGET_UNKNOWN = 0,
+  RS_CAPTURE_TARGET_DISPLAY = 1,
+  RS_CAPTURE_TARGET_WINDOW = 2,
+  RS_CAPTURE_TARGET_SYNTHETIC = 3
+} rs_capture_target_kind_v1;
+
+typedef enum rs_quality_profile_v1 {
+  RS_QUALITY_PROFILE_UNKNOWN = 0,
+  RS_QUALITY_PROFILE_TEXT = 1,
+  RS_QUALITY_PROFILE_BALANCED = 2,
+  RS_QUALITY_PROFILE_MOTION = 3
+} rs_quality_profile_v1;
+
+typedef enum rs_encoder_backend_v1 {
+  RS_ENCODER_BACKEND_UNKNOWN = 0,
+  RS_ENCODER_BACKEND_MEDIA_FOUNDATION_HARDWARE = 1,
+  RS_ENCODER_BACKEND_MEDIA_FOUNDATION_SOFTWARE = 2
+} rs_encoder_backend_v1;
+
+typedef enum rs_h264_stream_format_v1 {
+  RS_H264_STREAM_FORMAT_UNKNOWN = 0,
+  RS_H264_STREAM_FORMAT_ANNEX_B = 1
+} rs_h264_stream_format_v1;
+
+typedef enum rs_cursor_shape_v1 {
+  RS_CURSOR_SHAPE_UNKNOWN = 0,
+  RS_CURSOR_SHAPE_MONOCHROME = 1,
+  RS_CURSOR_SHAPE_COLOR = 2,
+  RS_CURSOR_SHAPE_MASKED_COLOR = 3
+} rs_cursor_shape_v1;
 
 typedef enum rs_sdp_type_v1 {
   RS_SDP_TYPE_UNKNOWN = 0,
@@ -151,7 +192,45 @@ typedef struct rs_capture_options_v1 {
   uint32_t max_height;
   uint32_t flags;
   rs_string_view_v1 display_id_utf8;
+  rs_capture_source_v1 source;
+  rs_capture_target_kind_v1 target_kind;
+  uint32_t frame_queue_capacity;
+  uint32_t acquire_timeout_ms;
 } rs_capture_options_v1;
+
+typedef struct rs_display_info_v1 {
+  uint32_t struct_size;
+  rs_string_view_v1 display_id_utf8;
+  rs_string_view_v1 device_name_utf8;
+  int32_t desktop_x;
+  int32_t desktop_y;
+  uint32_t width;
+  uint32_t height;
+  uint32_t rotation_degrees;
+  uint32_t dpi_x;
+  uint32_t dpi_y;
+  uint32_t adapter_luid_low;
+  int32_t adapter_luid_high;
+  uint64_t display_generation;
+  uint32_t flags;
+} rs_display_info_v1;
+
+typedef struct rs_cursor_info_v1 {
+  uint32_t struct_size;
+  uint64_t frame_id;
+  uint64_t display_generation;
+  uint64_t shape_id;
+  int32_t desktop_x;
+  int32_t desktop_y;
+  int32_t hotspot_x;
+  int32_t hotspot_y;
+  uint32_t visible;
+  rs_cursor_shape_v1 shape_kind;
+  uint32_t width;
+  uint32_t height;
+  uint32_t pitch_bytes;
+  rs_byte_view_v1 bgra8_premultiplied;
+} rs_cursor_info_v1;
 
 typedef struct rs_frame_info_v1 {
   uint32_t struct_size;
@@ -177,7 +256,41 @@ typedef struct rs_encoder_options_v1 {
   uint32_t max_bitrate_bps;
   rs_codec_v1 codec;
   uint32_t flags;
+  rs_quality_profile_v1 quality_profile;
+  uint32_t frame_queue_capacity;
+  uint32_t prefer_hardware;
+  uint32_t allow_software_fallback;
+  uint32_t max_keyframe_interval_ms;
 } rs_encoder_options_v1;
+
+typedef struct rs_encoder_reconfigure_v1 {
+  uint32_t struct_size;
+  uint32_t width;
+  uint32_t height;
+  uint32_t target_fps;
+  uint32_t target_bitrate_bps;
+  uint32_t max_bitrate_bps;
+  rs_quality_profile_v1 quality_profile;
+  uint32_t flags;
+} rs_encoder_reconfigure_v1;
+
+typedef struct rs_encoder_capability_v1 {
+  uint32_t struct_size;
+  rs_encoder_backend_v1 backend;
+  rs_codec_v1 codec;
+  rs_string_view_v1 implementation_name_utf8;
+  uint32_t min_width;
+  uint32_t min_height;
+  uint32_t max_width;
+  uint32_t max_height;
+  uint32_t max_fps;
+  uint32_t max_bitrate_bps;
+  uint32_t supports_dynamic_rate;
+  uint32_t supports_dynamic_resolution;
+  uint32_t adapter_luid_low;
+  int32_t adapter_luid_high;
+  uint32_t flags;
+} rs_encoder_capability_v1;
 
 typedef struct rs_encoded_frame_v1 {
   uint32_t struct_size;
@@ -190,7 +303,22 @@ typedef struct rs_encoded_frame_v1 {
   int32_t qp;
   uint32_t width;
   uint32_t height;
+  rs_h264_stream_format_v1 stream_format;
+  uint32_t h264_profile_idc;
+  uint32_t h264_level_idc;
 } rs_encoded_frame_v1;
+
+typedef struct rs_decoder_options_v1 {
+  uint32_t struct_size;
+  rs_codec_v1 codec;
+  rs_h264_stream_format_v1 stream_format;
+  uint32_t max_width;
+  uint32_t max_height;
+  uint32_t output_queue_capacity;
+  uint32_t prefer_hardware;
+  uint32_t allow_software_fallback;
+  uint32_t flags;
+} rs_decoder_options_v1;
 
 typedef struct rs_renderer_options_v1 {
   uint32_t struct_size;
@@ -198,6 +326,14 @@ typedef struct rs_renderer_options_v1 {
   rs_renderer_view_mode_v1 view_mode;
   uint32_t flags;
 } rs_renderer_options_v1;
+
+typedef struct rs_renderer_transform_v1 {
+  uint32_t struct_size;
+  float zoom;
+  float pan_source_x;
+  float pan_source_y;
+  uint32_t flags;
+} rs_renderer_transform_v1;
 
 typedef struct rs_ice_server_v1 {
   uint32_t struct_size;
@@ -295,7 +431,11 @@ typedef struct rs_keyboard_input_v1 {
 
 typedef void (RS_CALL *rs_log_callback_v1)(void* user_context, uint32_t level, rs_string_view_v1 component, rs_string_view_v1 message);
 typedef void (RS_CALL *rs_frame_callback_v1)(void* user_context, const rs_frame_info_v1* frame);
+typedef void (RS_CALL *rs_display_info_callback_v1)(void* user_context, const rs_display_info_v1* display);
+typedef void (RS_CALL *rs_cursor_callback_v1)(void* user_context, const rs_cursor_info_v1* cursor);
 typedef void (RS_CALL *rs_encoded_frame_callback_v1)(void* user_context, const rs_encoded_frame_v1* frame);
+typedef void (RS_CALL *rs_encoder_capability_callback_v1)(void* user_context, const rs_encoder_capability_v1* capability);
+typedef void (RS_CALL *rs_encoder_fallback_callback_v1)(void* user_context, rs_encoder_backend_v1 failed_backend, rs_encoder_backend_v1 selected_backend, rs_string_view_v1 stable_reason);
 typedef void (RS_CALL *rs_error_callback_v1)(void* user_context, rs_status_v1 status, rs_string_view_v1 stable_code);
 typedef void (RS_CALL *rs_transport_state_callback_v1)(void* user_context, rs_transport_state_v1 state, rs_string_view_v1 stable_reason);
 typedef void (RS_CALL *rs_local_description_callback_v1)(void* user_context, const rs_session_description_v1* description);
@@ -318,6 +458,9 @@ typedef struct rs_callbacks_v1 {
   rs_data_channel_state_callback_v1 on_data_channel_state;
   rs_data_message_callback_v1 on_data_message;
   rs_buffered_amount_low_callback_v1 on_buffered_amount_low;
+  rs_cursor_callback_v1 on_cursor;
+  rs_frame_callback_v1 on_decoded_frame;
+  rs_encoder_fallback_callback_v1 on_encoder_fallback;
 } rs_callbacks_v1;
 
 RS_API uint32_t RS_CALL rs_native_get_abi_major(void);
@@ -327,6 +470,8 @@ RS_API rs_string_view_v1 RS_CALL rs_native_get_build_id(void);
 RS_API rs_status_v1 RS_CALL rs_runtime_create(const rs_runtime_options_v1* options, const rs_callbacks_v1* callbacks, rs_runtime_handle* out_runtime);
 RS_API void RS_CALL rs_runtime_destroy(rs_runtime_handle runtime);
 RS_API rs_status_v1 RS_CALL rs_runtime_get_last_error(rs_runtime_handle runtime, char* utf8_buffer, uint32_t buffer_capacity, uint32_t* out_required_length);
+RS_API rs_status_v1 RS_CALL rs_runtime_enumerate_displays(rs_runtime_handle runtime, rs_display_info_callback_v1 callback, void* callback_context);
+RS_API rs_status_v1 RS_CALL rs_runtime_enumerate_encoders(rs_runtime_handle runtime, rs_encoder_capability_callback_v1 callback, void* callback_context);
 
 RS_API rs_status_v1 RS_CALL rs_capture_create(rs_runtime_handle runtime, const rs_capture_options_v1* options, rs_capture_handle* out_capture);
 RS_API rs_status_v1 RS_CALL rs_capture_start(rs_capture_handle capture);
@@ -337,13 +482,21 @@ RS_API void RS_CALL rs_capture_destroy(rs_capture_handle capture);
 RS_API rs_status_v1 RS_CALL rs_encoder_create(rs_runtime_handle runtime, const rs_encoder_options_v1* options, rs_encoder_handle* out_encoder);
 RS_API rs_status_v1 RS_CALL rs_encoder_submit_d3d11_frame(rs_encoder_handle encoder, const rs_frame_info_v1* frame);
 RS_API rs_status_v1 RS_CALL rs_encoder_set_rate(rs_encoder_handle encoder, uint32_t target_bitrate_bps, uint32_t target_fps);
+RS_API rs_status_v1 RS_CALL rs_encoder_reconfigure(rs_encoder_handle encoder, const rs_encoder_reconfigure_v1* options);
 RS_API rs_status_v1 RS_CALL rs_encoder_request_keyframe(rs_encoder_handle encoder);
 RS_API rs_status_v1 RS_CALL rs_encoder_flush(rs_encoder_handle encoder, uint32_t timeout_ms);
 RS_API void RS_CALL rs_encoder_destroy(rs_encoder_handle encoder);
 
+RS_API rs_status_v1 RS_CALL rs_decoder_create(rs_runtime_handle runtime, const rs_decoder_options_v1* options, rs_decoder_handle* out_decoder);
+RS_API rs_status_v1 RS_CALL rs_decoder_submit_h264(rs_decoder_handle decoder, const rs_encoded_frame_v1* frame);
+RS_API rs_status_v1 RS_CALL rs_decoder_reset(rs_decoder_handle decoder);
+RS_API rs_status_v1 RS_CALL rs_decoder_flush(rs_decoder_handle decoder, uint32_t timeout_ms);
+RS_API void RS_CALL rs_decoder_destroy(rs_decoder_handle decoder);
+
 RS_API rs_status_v1 RS_CALL rs_renderer_create(rs_runtime_handle runtime, const rs_renderer_options_v1* options, rs_renderer_handle* out_renderer);
 RS_API rs_status_v1 RS_CALL rs_renderer_set_target_window(rs_renderer_handle renderer, uintptr_t target_hwnd);
 RS_API rs_status_v1 RS_CALL rs_renderer_set_view_mode(rs_renderer_handle renderer, rs_renderer_view_mode_v1 view_mode);
+RS_API rs_status_v1 RS_CALL rs_renderer_set_transform(rs_renderer_handle renderer, const rs_renderer_transform_v1* transform);
 RS_API rs_status_v1 RS_CALL rs_renderer_submit_d3d11_frame(rs_renderer_handle renderer, const rs_frame_info_v1* frame);
 RS_API rs_status_v1 RS_CALL rs_renderer_resize(rs_renderer_handle renderer, uint32_t pixel_width, uint32_t pixel_height);
 RS_API rs_status_v1 RS_CALL rs_renderer_clear(rs_renderer_handle renderer);

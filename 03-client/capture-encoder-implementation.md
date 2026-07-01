@@ -76,3 +76,5 @@ CPU readback is a fallback, not the default.
 - deterministic color bars and moving grid;
 - capture timing and frame-drop counters;
 - GPU memory leak detector over repeated monitor switches.
+
+The exact target identifiers, callback serialization, queue limits, cursor payload, H.264 access-unit format, profile behavior, fallback deadline, decoder reset rules, and reconfiguration semantics are defined in `media-kernel-contract.md`. Implementations must not substitute private entry points for the ABI 1.1 exports.

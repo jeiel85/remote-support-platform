@@ -1,9 +1,6 @@
 {
   "schemaVersion": 1,
-  "bundleRevision": "1.3-final-re-audited",
-  "generatedAtUtc": "2026-07-01T03:37:50Z",
-  "fileCount": 127,
-  "hashAlgorithm": "SHA-256",
+  "fileCount": 129,
   "files": [
     {
       "path": "00-product/commercialization-and-compliance.md",
@@ -132,8 +129,8 @@
     },
     {
       "path": "02-protocol/native/remote_support_native.h",
-      "bytes": 15793,
-      "sha256": "9de5c2c3014a39b4e1244c17a4a7d8d87cf739c77a955b3a0f92bbaea30d3a00"
+      "bytes": 21127,
+      "sha256": "56af61a58f8cffa99fe5bf8784c963aad612b1c9fb274c24fbb4b71d8496f850"
     },
     {
       "path": "02-protocol/openapi/openapi.yaml",
@@ -197,8 +194,8 @@
     },
     {
       "path": "03-client/capture-encoder-implementation.md",
-      "bytes": 2112,
-      "sha256": "a3fd953362e99a8b5058a70c7cf27d3fe071694b13503fe402ddb373cd59f439"
+      "bytes": 2436,
+      "sha256": "cf108ac5e87b64ed732393f26e171214523df9312d7a4208252e2d92d16795e1"
     },
     {
       "path": "03-client/client-solution-structure.md",
@@ -226,9 +223,14 @@
       "sha256": "396c074b923322ce2f040561050427551b9fd2f14ed0e8dd1e246622510517d1"
     },
     {
+      "path": "03-client/media-kernel-contract.md",
+      "bytes": 6579,
+      "sha256": "3e6b0d4e6427dd9882559e37bedee925a4d6ac4eb706a799a7aec7ffb2edd940"
+    },
+    {
       "path": "03-client/native-bridge-contract.md",
-      "bytes": 3831,
-      "sha256": "bd8517e6416c20fd54f00ba92294dec7b18655f48e55df625181696471ca0a18"
+      "bytes": 4143,
+      "sha256": "f1624b4487e39e254d57b44391122e74fc7a525095ee98775f3eb630f7288bcf"
     },
     {
       "path": "03-client/operator-console.md",
@@ -392,13 +394,13 @@
     },
     {
       "path": "07-delivery/goals/goal-02-capture-render.md",
-      "bytes": 2120,
-      "sha256": "e66c68879fb853369e4677d1b6dd4f1df25c4bc55c41fc7446cebc607ccc77cd"
+      "bytes": 2159,
+      "sha256": "a370b4f2448dd58cdcdfdf168eb52d6df1939d3839b364cf8f6b2ba20cbaa6e8"
     },
     {
       "path": "07-delivery/goals/goal-03-encoding.md",
-      "bytes": 2215,
-      "sha256": "960ff30d783577b3f866e0aa9191c3f38898193027344c28dd1abfbbaac8ce8c"
+      "bytes": 2254,
+      "sha256": "ed1d38f641b4e2a2555f8fa4938d48da8bb731b8ab7e9bf13f03a3618145dbfd"
     },
     {
       "path": "07-delivery/goals/goal-04-lan-transport.md",
@@ -592,13 +594,13 @@
     },
     {
       "path": "10-references/version-baseline.md",
-      "bytes": 1637,
-      "sha256": "a44fe592ed4dd0f35b2db77dd930010099591ecdfb13348d2810756f203598f2"
+      "bytes": 1641,
+      "sha256": "bcf52e143597edb0b26a68f9e1f587a4dba594bb78cc7d9d2c8408607bd1fae7"
     },
     {
       "path": "11-bootstrap/README.md",
-      "bytes": 1331,
-      "sha256": "24b2ce749a0a3ca33140de59468f7cffb1eafb2e8c359d9fb47ed7751595c00a"
+      "bytes": 1718,
+      "sha256": "b1988531a70fbd322099cedc7315011be77c0f2e0e23e17679c92df60927dad1"
     },
     {
       "path": "11-bootstrap/initialize-repository.ps1",
@@ -611,14 +613,19 @@
       "sha256": "8c9368a82d28292cd5f8a18f2ed9e63d147fd77b17218b847d99d21c9daf632b"
     },
     {
+      "path": "11-bootstrap/update-manifest.py",
+      "bytes": 1633,
+      "sha256": "636afafadb309f33b22dfd0fa06155d0a71a0dba49af5e3703e9c262334cfc0f"
+    },
+    {
       "path": "11-bootstrap/validate-bundle.py",
-      "bytes": 22096,
-      "sha256": "959486a04dc101fc0887010ddfc9bcd03ca75494482152db5c909113a24ae80b"
+      "bytes": 22883,
+      "sha256": "8cc5a064d2fd74dfddf8f3d66bd9bfa61c662db6e4c0097b6bb6364a2613001b"
     },
     {
       "path": "DOCUMENT_INDEX.md",
-      "bytes": 5711,
-      "sha256": "6fde511cf966e397753e569eff850d45fa48848ecc4375a0cdab640c31f4255d"
+      "bytes": 5750,
+      "sha256": "c1c96b64a66da14d5b75c5348e19af9b360c5971c56870a2fb9c61c89abd03e8"
     },
     {
       "path": "FINAL_AUDIT_REPORT.md",
@@ -627,8 +634,8 @@
     },
     {
       "path": "IMPLEMENTATION_READINESS.md",
-      "bytes": 1848,
-      "sha256": "c09626dc12fc86d5f83ba8b477f3e4e164c797eb169756285bed6076e88cb9be"
+      "bytes": 2401,
+      "sha256": "10b3275d1beae95bec06d06df689c6c8be2a078a10e6464b6c62172997c77487"
     },
     {
       "path": "README.md",

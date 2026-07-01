@@ -4,6 +4,7 @@ These files are implementation helpers. They do not replace the contracts or goa
 
 - `initialize-repository.ps1` creates the initial .NET repository skeleton on Windows.
 - `validate-bundle.py` validates JSON Schemas and examples, OpenAPI 3.1, Protobuf compilation, PostgreSQL parsing, local links, scope/state synchronization, native ABI symbols, requirement traceability, acceptance coverage, placeholders, and the SHA-256 manifest.
+- `update-manifest.py` deterministically refreshes the design-bundle manifest after an approved contract or design change. Implementation files outside the numbered bundle directories are intentionally out of manifest scope.
 
 Install validator dependencies in an isolated Python environment:
 
@@ -18,6 +19,13 @@ On Linux/macOS, activate with `source .venv/bin/activate`.
 Run bundle validation from the bundle root:
 
 ```powershell
+python ./11-bootstrap/validate-bundle.py .
+```
+
+After an approved bundle edit, refresh and revalidate it:
+
+```powershell
+python ./11-bootstrap/update-manifest.py
 python ./11-bootstrap/validate-bundle.py .
 ```
 

@@ -18,6 +18,14 @@ from pglast import parse_sql
 
 HTTP_METHODS = {"get", "post", "put", "patch", "delete"}
 TEXT_SUFFIXES = {".md", ".yaml", ".yml", ".json", ".proto", ".sql", ".h", ".ps1", ".csv"}
+BUNDLE_DIRECTORIES = {f"{index:02d}-{name}" for index, name in enumerate([
+    "product", "architecture", "protocol", "client", "backend", "security",
+    "quality", "delivery", "operations", "templates", "references", "bootstrap",
+])}
+BUNDLE_ROOT_FILES = {
+    "DOCUMENT_INDEX.md", "FINAL_AUDIT_REPORT.md", "IMPLEMENTATION_READINESS.md",
+    "README.md", "START_HERE.md",
+}
 
 
 def fail(message: str) -> None:
@@ -388,7 +396,9 @@ def main() -> int:
 
     header = (root / "02-protocol/native/remote_support_native.h").read_text(encoding="utf-8")
     required_symbols = {
-        "rs_runtime_create", "rs_capture_create", "rs_encoder_create", "rs_renderer_create",
+        "rs_runtime_create", "rs_runtime_enumerate_displays", "rs_capture_create", "rs_encoder_create",
+        "rs_runtime_enumerate_encoders", "rs_encoder_reconfigure", "rs_decoder_create",
+        "rs_decoder_submit_h264", "rs_renderer_create", "rs_renderer_set_transform",
         "rs_transport_create", "rs_transport_create_offer", "rs_transport_set_remote_description",
         "rs_transport_open_data_channel", "rs_transport_send_data", "rs_input_injector_create",
         "rs_input_release_all",
@@ -408,7 +418,16 @@ def main() -> int:
     if manifest_path.exists():
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         listed = {entry["path"]: entry for entry in manifest["files"]}
-        actual = {p.relative_to(root).as_posix(): p for p in root.rglob("*") if p.is_file() and p.name != "MANIFEST.json"}
+        actual = {
+            p.relative_to(root).as_posix(): p
+            for p in root.rglob("*")
+            if p.is_file()
+            and p.name != "MANIFEST.json"
+            and (
+                p.relative_to(root).parts[0] in BUNDLE_DIRECTORIES
+                or p.relative_to(root).as_posix() in BUNDLE_ROOT_FILES
+            )
+        }
         if set(listed) != set(actual):
             fail(f"Manifest file set mismatch: missing={set(actual)-set(listed)}, extra={set(listed)-set(actual)}")
         if manifest.get("fileCount") != len(actual):

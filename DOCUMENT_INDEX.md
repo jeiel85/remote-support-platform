@@ -59,6 +59,7 @@ Generated for the final re-audited bundle. Machine-readable contracts are marked
 - `03-client/accessibility-localization.md`
 - `03-client/admin-portal.md`
 - `03-client/capture-encoder-implementation.md`
+- `03-client/media-kernel-contract.md`
 - `03-client/client-solution-structure.md`
 - `03-client/elevation-broker.md`
 - `03-client/input-clipboard.md`

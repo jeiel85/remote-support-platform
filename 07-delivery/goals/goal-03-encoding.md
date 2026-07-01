@@ -44,6 +44,7 @@ Add an adaptive H.264 encoding and decoding pipeline with hardware preference, s
 The implementation for this goal must treat the following files as binding inputs:
 
 - `03-client/webrtc-integration.md`
+- `03-client/media-kernel-contract.md`
 - `01-architecture/media-pipeline.md`
 - `02-protocol/native/remote_support_native.h`
 - `06-quality/performance-and-slo.md`
