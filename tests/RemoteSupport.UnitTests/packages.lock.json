@@ -101,6 +101,9 @@
       },
       "remotesupport.domain": {
         "type": "Project"
+      },
+      "remotesupport.media": {
+        "type": "Project"
       }
     }
   }

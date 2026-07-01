@@ -62,6 +62,7 @@ switch ($Target) {
         $nativeBuild = Join-Path $root "artifacts\native\$Configuration"
         & (Join-Path $nativeBuild 'dxgi_capture_test.exe')
         & (Join-Path $nativeBuild 'wgc_capture_test.exe')
+        & (Join-Path $nativeBuild 'hardware_encoder_test.exe')
     }
     'IntegrationTest' {
         & $python (Join-Path $root 'tools\database\verify_schema.py') $root

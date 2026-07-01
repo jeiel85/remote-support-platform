@@ -187,6 +187,7 @@ void run_synthetic(rs_capture_t* capture, std::stop_token stop) {
   bool topology_injected = false;
   while (!stop.stop_requested()) {
     const uint64_t frame_id = capture->next_frame_id++;
+    const uint64_t content_frame_id = (capture->options.flags & rs_test_capture_static_content) != 0 ? 0 : frame_id;
     if (!topology_injected && (capture->options.flags & rs_test_capture_inject_topology_change) != 0 && frame_id >= 15) {
       capture->runtime->topology_generation.fetch_add(1, std::memory_order_relaxed);
       topology_injected = true;
@@ -199,9 +200,10 @@ void run_synthetic(rs_capture_t* capture, std::stop_token stop) {
     for (uint32_t y = 0; y < height; ++y) {
       auto* row = reinterpret_cast<uint32_t*>(static_cast<uint8_t*>(mapped.pData) + static_cast<size_t>(mapped.RowPitch) * y);
       for (uint32_t x = 0; x < width; ++x) {
-        const uint8_t red = static_cast<uint8_t>((x + frame_id * 3u) & 0xffu);
-        const uint8_t green = static_cast<uint8_t>((y + frame_id * 2u) & 0xffu);
-        const uint8_t blue = static_cast<uint8_t>(((x / 32u) ^ (y / 32u)) * 48u);
+        const uint8_t red = static_cast<uint8_t>((x + content_frame_id * 3u) & 0xffu);
+        const uint8_t green = static_cast<uint8_t>((y + content_frame_id * 2u) & 0xffu);
+        const uint8_t blue = static_cast<uint8_t>((((x / 16u + content_frame_id) ^
+            (y / 16u + content_frame_id * 3u)) * 37u) & 0xffu);
         row[x] = 0xff000000u | static_cast<uint32_t>(red) << 16u | static_cast<uint32_t>(green) << 8u | blue;
       }
     }

@@ -45,6 +45,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteSupport.Native.Depend
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteSupport.LocalViewer.App", "src\client\managed\RemoteSupport.LocalViewer.App\RemoteSupport.LocalViewer.App.csproj", "{F67FFB16-BB69-4CD0-B026-2CEF78E3AB94}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteSupport.Media", "src\client\managed\RemoteSupport.Media\RemoteSupport.Media.csproj", "{0F9F00BE-90C2-485E-9146-020928AA9091}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -223,6 +225,18 @@ Global
 		{F67FFB16-BB69-4CD0-B026-2CEF78E3AB94}.Release|x64.Build.0 = Release|Any CPU
 		{F67FFB16-BB69-4CD0-B026-2CEF78E3AB94}.Release|x86.ActiveCfg = Release|Any CPU
 		{F67FFB16-BB69-4CD0-B026-2CEF78E3AB94}.Release|x86.Build.0 = Release|Any CPU
+		{0F9F00BE-90C2-485E-9146-020928AA9091}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F9F00BE-90C2-485E-9146-020928AA9091}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F9F00BE-90C2-485E-9146-020928AA9091}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0F9F00BE-90C2-485E-9146-020928AA9091}.Debug|x64.Build.0 = Debug|Any CPU
+		{0F9F00BE-90C2-485E-9146-020928AA9091}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0F9F00BE-90C2-485E-9146-020928AA9091}.Debug|x86.Build.0 = Debug|Any CPU
+		{0F9F00BE-90C2-485E-9146-020928AA9091}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F9F00BE-90C2-485E-9146-020928AA9091}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F9F00BE-90C2-485E-9146-020928AA9091}.Release|x64.ActiveCfg = Release|Any CPU
+		{0F9F00BE-90C2-485E-9146-020928AA9091}.Release|x64.Build.0 = Release|Any CPU
+		{0F9F00BE-90C2-485E-9146-020928AA9091}.Release|x86.ActiveCfg = Release|Any CPU
+		{0F9F00BE-90C2-485E-9146-020928AA9091}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -247,5 +261,6 @@ Global
 		{73FF665A-E275-B950-2CB0-311690F4797A} = {429030F3-2556-B0AC-5E27-E3F14B63B085}
 		{1A83C748-3049-49C7-8ABE-3573BBF1DCD2} = {73FF665A-E275-B950-2CB0-311690F4797A}
 		{F67FFB16-BB69-4CD0-B026-2CEF78E3AB94} = {C53F926E-EF29-395D-66B6-043B6FE31570}
+		{0F9F00BE-90C2-485E-9146-020928AA9091} = {C53F926E-EF29-395D-66B6-043B6FE31570}
 	EndGlobalSection
 EndGlobal

@@ -8,7 +8,7 @@ constexpr char build_id[] = "remote-support-native/0.2.0+abi1.1";
 rs_status_v1 create_device(rs_runtime_t* runtime) {
   constexpr std::array<D3D_FEATURE_LEVEL, 2> levels{D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0};
   D3D_FEATURE_LEVEL selected{};
-  UINT flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+  UINT flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT | D3D11_CREATE_DEVICE_VIDEO_SUPPORT;
 #if defined(_DEBUG)
   flags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
@@ -99,19 +99,36 @@ rs_status_v1 RS_CALL rs_runtime_create(const rs_runtime_options_v1* options, con
     return RS_STATUS_NOT_SUPPORTED;
   }
   auto runtime = std::make_unique<rs_runtime_t>();
+  runtime->owner_thread_id = GetCurrentThreadId();
+  const HRESULT com_result = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+  runtime->com_initialized_by_runtime = SUCCEEDED(com_result);
   if (callbacks != nullptr) {
     if (!struct_has(callbacks->struct_size, offsetof(rs_callbacks_v1, on_error), sizeof(callbacks->on_error))) {
+      if (runtime->com_initialized_by_runtime) CoUninitialize();
       return RS_STATUS_INVALID_ARGUMENT;
     }
     runtime->callbacks = copy_prefix(callbacks);
   }
   const rs_status_v1 status = create_device(runtime.get());
-  if (status != RS_STATUS_OK) return status;
+  if (status != RS_STATUS_OK) {
+    if (runtime->com_initialized_by_runtime) CoUninitialize();
+    return status;
+  }
+  if (FAILED(MFStartup(MF_VERSION, MFSTARTUP_FULL))) {
+    if (runtime->com_initialized_by_runtime) CoUninitialize();
+    return RS_STATUS_NOT_SUPPORTED;
+  }
+  runtime->media_foundation_started = true;
   *out_runtime = runtime.release();
   return RS_STATUS_OK;
 }
 
-void RS_CALL rs_runtime_destroy(rs_runtime_handle runtime) { delete runtime; }
+void RS_CALL rs_runtime_destroy(rs_runtime_handle runtime) {
+  if (runtime == nullptr) return;
+  if (runtime->media_foundation_started) MFShutdown();
+  if (runtime->com_initialized_by_runtime && runtime->owner_thread_id == GetCurrentThreadId()) CoUninitialize();
+  delete runtime;
+}
 
 rs_status_v1 RS_CALL rs_runtime_get_last_error(rs_runtime_handle runtime, char* utf8_buffer, uint32_t buffer_capacity, uint32_t* out_required_length) {
   if (runtime == nullptr || out_required_length == nullptr) return RS_STATUS_INVALID_ARGUMENT;

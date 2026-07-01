@@ -2,6 +2,7 @@
 
 #include <atomic>
 #include <chrono>
+#include <cstdio>
 #include <string>
 #include <thread>
 
@@ -45,6 +46,6 @@ int main() {
   rs_capture_stop(capture);
   rs_capture_destroy(capture);
   rs_runtime_destroy(runtime);
+  std::printf("wgc frames=%u status=%d\n", frame_count.load(), static_cast<int>(error_status.load()));
   return frame_count.load() >= 10 && error_status.load() == RS_STATUS_OK ? 0 : 4;
 }
-
