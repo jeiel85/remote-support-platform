@@ -28,6 +28,16 @@ public sealed record ProofOfPossession(string Nonce, string Signature, JsonEleme
 public sealed record PeerAuthorizationRequest(Guid ChallengeId, string Role, ProofOfPossession Proof);
 public sealed record PeerAuthorization(Guid SessionId, Guid PeerId, string Role, string PeerToken,
     IReadOnlyList<string> GrantedScopes, long PermissionRevision, long TransportEpoch, DateTimeOffset ExpiresAt);
+public sealed record SignalingTicket(string Ticket, string SignalingUrl, DateTimeOffset ExpiresAt,
+    long TransportEpoch);
+public sealed record IceServer(IReadOnlyList<string> Urls, string Username, string Credential);
+public sealed record TurnCredentials(string Region, IReadOnlyList<IceServer> IceServers,
+    DateTimeOffset ExpiresAt);
+public sealed record TurnUsageReport(Guid EventId, string Username, string Region, string Transport,
+    string NodeId, ulong BytesFromClient, ulong BytesToClient, DateTimeOffset StartedAt,
+    DateTimeOffset EndedAt);
+public sealed record TurnUsageAccepted(Guid EventId, Guid SessionId, Guid? TenantId, string Region,
+    string Transport, ulong TotalBytes);
 public sealed record ProblemContract(string Code, string Message, Guid CorrelationId, bool Retryable,
     int? RetryAfterSeconds = null);
 
@@ -41,4 +51,8 @@ public sealed record ProblemContract(string Code, string Message, Guid Correlati
 [JsonSerializable(typeof(PeerAuthorizationChallenge))]
 [JsonSerializable(typeof(PeerAuthorizationRequest))]
 [JsonSerializable(typeof(PeerAuthorization))]
+[JsonSerializable(typeof(SignalingTicket))]
+[JsonSerializable(typeof(TurnCredentials))]
+[JsonSerializable(typeof(TurnUsageReport))]
+[JsonSerializable(typeof(TurnUsageAccepted))]
 internal sealed partial class ControlPlaneJsonContext : JsonSerializerContext;

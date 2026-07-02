@@ -33,7 +33,9 @@ Method: STRIDE-inspired analysis with abuse-case emphasis.
 | Support-code guessing or database disclosure | attacker enumerates short codes or steals lookup rows | 50-bit CSPRNG Crockford codes, versioned HMAC-SHA-256 lookup, account/tenant/edge/prefix/global rate limits, generic failures, short expiry; no raw code persistence |
 | Consent or peer-proof replay | captured approval/bootstrap/challenge is reused | signed domain-separated canonical payloads, keyed nonce hashes, single-use state, state-version/epoch binding, short bootstrap and peer-token lifetimes |
 | Test authentication enabled in production | deployment selects test environment or in-memory store | test OIDC handler and non-production adapters are Debug-only; Release startup requires OIDC, 256-bit keys and PostgreSQL |
-| TURN abuse | stolen/static credentials create relay allocations | short-lived session credentials, quotas, no anonymous access |
+| DPoP or signaling replay | stolen peer token/proof/ticket or old SDP/ICE is replayed | ES256 DPoP method/URI/token/key binding, persisted hashed `jti`, one-time 60-second tickets, current epoch and contiguous persisted sequence |
+| TURN abuse | stolen/static credentials create relay allocations | DPoP-gated ten-minute session/peer credentials, no client static secret, private-destination deny list, allocation/bandwidth quotas, signed usage metering |
+| TURN SSRF | authenticated allocation targets control-plane/private services | coturn peer deny ranges plus cloud firewall egress deny; no loopback, ULA, link-local, multicast or management reachability |
 | Service IPC abuse | local process sends privileged commands | pipe ACL, mutual challenge, command allowlist, capability token |
 | Update compromise | attacker publishes malicious binary | code signing, threshold metadata, hashes, anti-rollback, staged rollout |
 | Tenant breakout | API query omits tenant filter | explicit tenant context, repository rules, DB constraints/RLS, isolation tests |

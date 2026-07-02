@@ -148,6 +148,11 @@ typedef enum rs_route_class_v1 {
   RS_ROUTE_CLASS_TURN_TLS = 5
 } rs_route_class_v1;
 
+typedef enum rs_transport_flags_v1 {
+  RS_TRANSPORT_FLAG_NONE = 0,
+  RS_TRANSPORT_FLAG_RELAY_ONLY = 1u << 0
+} rs_transport_flags_v1;
+
 typedef enum rs_video_input_mode_v1 {
   RS_VIDEO_INPUT_MODE_UNKNOWN = 0,
   RS_VIDEO_INPUT_MODE_ENCODED_H264 = 1,

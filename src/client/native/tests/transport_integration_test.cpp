@@ -3,6 +3,7 @@
 #include <array>
 #include <atomic>
 #include <chrono>
+#include <cstdlib>
 #include <cstdint>
 #include <cstring>
 #include <mutex>
@@ -138,7 +139,8 @@ bool create_runtime(peer& value) {
 
 bool create_transport(peer& local, const peer& remote, const char* local_id, const char* remote_id,
     rs_peer_role_v1 local_role, rs_peer_role_v1 remote_role, const std::array<uint8_t, 32>& authorization,
-    uint32_t flags = 0, uint64_t epoch = 11, uint32_t scope_count = 3) {
+    uint32_t flags = 0, uint64_t epoch = 11, uint32_t scope_count = 3,
+    const char* ice_url = nullptr, const char* ice_username = nullptr, const char* ice_credential = nullptr) {
   const rs_string_view_v1 scopes[]{{"VIEW_SCREEN", 11}, {"CONTROL_POINTER", 15}, {"CONTROL_KEYBOARD", 16}};
   rs_transport_binding_options_v1 binding{};
   binding.struct_size = sizeof(binding);
@@ -164,6 +166,18 @@ bool create_transport(peer& local, const peer& remote, const char* local_id, con
   options.buffered_amount_low_threshold_bytes = 32 * 1024;
   options.flags = flags;
   options.binding = &binding;
+  rs_string_view_v1 ice_url_view{};
+  rs_ice_server_v1 ice_server{};
+  if (ice_url != nullptr && ice_username != nullptr && ice_credential != nullptr) {
+    ice_url_view = {ice_url, static_cast<uint32_t>(std::strlen(ice_url))};
+    ice_server.struct_size = sizeof(ice_server);
+    ice_server.urls = &ice_url_view;
+    ice_server.url_count = 1;
+    ice_server.username_utf8 = {ice_username, static_cast<uint32_t>(std::strlen(ice_username))};
+    ice_server.credential_utf8 = {ice_credential, static_cast<uint32_t>(std::strlen(ice_credential))};
+    options.ice_servers = &ice_server;
+    options.ice_server_count = 1;
+  }
   return rs_transport_create(local.runtime, &options, &local.transport) == RS_STATUS_OK;
 }
 
@@ -184,20 +198,35 @@ int main(int argc, char** argv) {
   const std::string mode = argc > 1 ? argv[1] : "normal";
   auto operator_authorization = authorization;
   uint32_t host_flags = 0;
+  uint32_t operator_flags = 0;
   uint64_t operator_epoch = 11;
   uint32_t operator_scope_count = 3;
+  const char* ice_url = nullptr;
+  const char* ice_username = nullptr;
+  const char* ice_credential = nullptr;
+  rs_route_class_v1 expected_route = RS_ROUTE_CLASS_UNKNOWN;
   if (mode == "authorization-mismatch") operator_authorization[0] ^= 0xff;
   else if (mode == "scope-mismatch") operator_scope_count = 2;
   else if (mode == "epoch-mismatch") operator_epoch = 12;
   else if (mode == "fingerprint-mismatch") host_flags = 0x80000000u;
   else if (mode == "binding-replay") host_flags = 0x40000000u;
   else if (mode == "protocol-version") host_flags = 0x20000000u;
-  else if (mode != "normal") return 15;
-  const bool expect_failure = mode != "normal";
+  else if (mode == "turn-udp" || mode == "turn-tcp" || mode == "turn-tls") {
+    host_flags = RS_TRANSPORT_FLAG_RELAY_ONLY;
+    operator_flags = RS_TRANSPORT_FLAG_RELAY_ONLY;
+    ice_url = std::getenv("RS_TEST_TURN_URL");
+    ice_username = std::getenv("RS_TEST_TURN_USERNAME");
+    ice_credential = std::getenv("RS_TEST_TURN_CREDENTIAL");
+    if (ice_url == nullptr || ice_username == nullptr || ice_credential == nullptr) return 15;
+    expected_route = mode == "turn-udp" ? RS_ROUTE_CLASS_TURN_UDP :
+        mode == "turn-tcp" ? RS_ROUTE_CLASS_TURN_TCP : RS_ROUTE_CLASS_TURN_TLS;
+  } else if (mode != "normal") return 15;
+  const bool expect_failure = mode != "normal" && expected_route == RS_ROUTE_CLASS_UNKNOWN;
   if (!create_transport(host, oper, "host-peer", "operator-peer", RS_PEER_ROLE_HOST, RS_PEER_ROLE_OPERATOR,
-          authorization, host_flags) ||
+          authorization, host_flags, 11, 3, ice_url, ice_username, ice_credential) ||
       !create_transport(oper, host, "operator-peer", "host-peer", RS_PEER_ROLE_OPERATOR, RS_PEER_ROLE_HOST,
-          operator_authorization, 0, operator_epoch, operator_scope_count)) return 2;
+          operator_authorization, operator_flags, operator_epoch, operator_scope_count,
+          ice_url, ice_username, ice_credential)) return 2;
   if (rs_transport_create_offer(host.transport, 0) != RS_STATUS_OK) return 3;
 
   bool operator_answered = false;
@@ -285,6 +314,7 @@ int main(int argc, char** argv) {
   stats.struct_size = sizeof(stats);
   if (rs_transport_get_stats(host.transport, &stats) != RS_STATUS_OK || stats.bytes_sent < payload.size() ||
       stats.route_class == RS_ROUTE_CLASS_UNKNOWN) return 14;
+  if (expected_route != RS_ROUTE_CLASS_UNKNOWN && stats.route_class != expected_route) return 18;
   destroy_peer(host);
   destroy_peer(oper);
   return 0;

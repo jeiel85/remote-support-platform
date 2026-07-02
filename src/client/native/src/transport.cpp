@@ -851,10 +851,15 @@ void wipe_binding(rs_transport_t* transport) {
 extern "C" {
 rs_status_v1 RS_CALL rs_transport_create(rs_runtime_handle runtime, const rs_transport_options_v1* options,
     rs_transport_handle* out_transport) {
+  uint32_t allowed_flags = RS_TRANSPORT_FLAG_RELAY_ONLY;
+#if defined(RS_ENABLE_TEST_FAULT_INJECTION)
+  allowed_flags |= 0xe0000000u;
+#endif
   if (runtime == nullptr || options == nullptr || out_transport == nullptr ||
       options->struct_size < sizeof(rs_transport_options_v1) || !valid_binding_options(options->binding) ||
       options->transport_epoch == 0 || options->ice_server_count > 8 ||
-      (options->ice_server_count != 0 && options->ice_servers == nullptr)) return RS_STATUS_INVALID_ARGUMENT;
+      (options->ice_server_count != 0 && options->ice_servers == nullptr) ||
+      (options->flags & ~allowed_flags) != 0) return RS_STATUS_INVALID_ARGUMENT;
   *out_transport = nullptr;
   try {
     auto transport = std::make_unique<rs_transport_t>();
@@ -903,7 +908,8 @@ rs_status_v1 RS_CALL rs_transport_create(rs_runtime_handle runtime, const rs_tra
     configuration.iceServers = ice_pointers.empty() ? nullptr : ice_pointers.data();
     configuration.iceServersCount = static_cast<int>(ice_pointers.size());
     configuration.certificateType = RTC_CERTIFICATE_ECDSA;
-    configuration.iceTransportPolicy = RTC_TRANSPORT_POLICY_ALL;
+    configuration.iceTransportPolicy = (options->flags & RS_TRANSPORT_FLAG_RELAY_ONLY) != 0
+        ? RTC_TRANSPORT_POLICY_RELAY : RTC_TRANSPORT_POLICY_ALL;
     configuration.enableIceTcp = true;
     configuration.disableAutoNegotiation = true;
     configuration.forceMediaTransport = true;

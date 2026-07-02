@@ -37,6 +37,11 @@ else
 }
 builder.Services.AddSingleton<AttendedSessionService>();
 builder.Services.AddSingleton<ResolveAbuseGuard>();
+builder.Services.AddSingleton<PeerAccessService>();
+builder.Services.AddSingleton<SignalingTicketService>();
+builder.Services.AddSingleton<TurnCredentialService>();
+builder.Services.AddSingleton<SignalingProtocolValidator>();
+builder.Services.AddSingleton<SignalingHub>();
 
 #if DEBUG
 if (testing)
@@ -76,6 +81,15 @@ builder.Services.AddRateLimiter(options =>
             QueueLimit = 0,
             AutoReplenishment = true,
         }));
+    options.AddPolicy("peerCredential", context => RateLimitPartition.GetFixedWindowLimiter(
+        context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 120,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0,
+            AutoReplenishment = true,
+        }));
 });
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
@@ -84,6 +98,10 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 });
 
 WebApplication app = builder.Build();
+app.UseWebSockets(new WebSocketOptions
+{
+    KeepAliveInterval = TimeSpan.FromSeconds(20),
+});
 app.Use(async (context, next) =>
 {
     context.Response.Headers.CacheControl = "no-store";
@@ -129,6 +147,43 @@ app.MapPost("/v1/sessions/{sessionId:guid}/peer-authorization-challenges", (Guid
 app.MapPost("/v1/sessions/{sessionId:guid}/peer-authorization", (Guid sessionId,
     PeerAuthorizationRequest body, HttpRequest request, AttendedSessionService service) => Results.Ok(
         service.AuthorizePeer(sessionId, BootstrapToken(request), body))).AllowAnonymous();
+
+app.MapPost("/v1/sessions/{sessionId:guid}/signaling-tickets", (Guid sessionId, HttpRequest request,
+    PeerAccessService peers, SignalingTicketService tickets) => Results.Ok(
+        tickets.Issue(sessionId, peers.Authenticate(request, sessionId), request)))
+    .AllowAnonymous().RequireRateLimiting("peerCredential");
+
+app.MapPost("/v1/sessions/{sessionId:guid}/turn-credentials", (Guid sessionId, HttpRequest request,
+    PeerAccessService peers, TurnCredentialService turn) => Results.Ok(
+        turn.Issue(sessionId, peers.Authenticate(request, sessionId))))
+    .AllowAnonymous().RequireRateLimiting("peerCredential");
+
+app.MapGet("/v1/signaling", async (HttpContext context, SignalingTicketService tickets,
+    SignalingHub hub, CancellationToken cancellationToken) =>
+{
+    if (!context.WebSockets.IsWebSocketRequest ||
+        !context.WebSockets.WebSocketRequestedProtocols.Contains("rsp.signaling.v1", StringComparer.Ordinal) ||
+        context.Request.Query["ticket"].Count != 1)
+        return Results.BadRequest(new ProblemContract("SIGNAL_UPGRADE_REQUIRED", "A valid signaling WebSocket upgrade is required.",
+            Guid.NewGuid(), false));
+    SignalingConnectionBinding binding = tickets.Consume(context.Request.Query["ticket"][0]);
+    using System.Net.WebSockets.WebSocket socket = await context.WebSockets.AcceptWebSocketAsync("rsp.signaling.v1");
+    await hub.RunAsync(socket, binding, cancellationToken);
+    return Results.Empty;
+}).AllowAnonymous();
+
+app.MapPost("/internal/v1/turn-usage", async (HttpRequest request, TurnCredentialService turn,
+    CancellationToken cancellationToken) =>
+{
+    if (request.ContentLength is null or < 2 or > 16_384 ||
+        request.Headers["X-RSP-Turn-Timestamp"].Count != 1 ||
+        request.Headers["X-RSP-Turn-Signature"].Count != 1)
+        throw new ControlPlaneException(401, "TURN_USAGE_AUTHENTICATION_FAILED", "TURN usage authentication failed.");
+    using MemoryStream body = new((int)request.ContentLength.Value);
+    await request.Body.CopyToAsync(body, cancellationToken);
+    return Results.Ok(turn.AcceptUsage(body.ToArray(), request.Headers["X-RSP-Turn-Timestamp"][0]!,
+        request.Headers["X-RSP-Turn-Signature"][0]!));
+}).AllowAnonymous();
 
 app.MapGet("/v1/sessions/{sessionId:guid}", (Guid sessionId, AttendedSessionService service) =>
     Results.Ok(service.Get(sessionId))).RequireAuthorization("Operator");

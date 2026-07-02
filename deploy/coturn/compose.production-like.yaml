@@ -1,0 +1,46 @@
+services:
+  turn:
+    image: coturn/coturn@sha256:0c0e8fc0c263b85a134e9e4242b5e46e1f4c077c5029633511191c05b5c2c814
+    read_only: true
+    restart: unless-stopped
+    network_mode: host
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=16m,mode=0700
+    entrypoint: [/bin/sh, /opt/rsp/render-and-run.sh]
+    environment:
+      TURN_REALM: ${TURN_REALM:?required}
+      TURN_LISTENER_MODE: ${TURN_LISTENER_MODE:?UDP, TCP, or TLS required}
+      LISTENING_IP: ${LISTENING_IP:?required}
+      RELAY_IP: ${RELAY_IP:?required}
+      EXTERNAL_IP: ${EXTERNAL_IP:?required}
+      MIN_RELAY_PORT: ${MIN_RELAY_PORT:-50000}
+      MAX_RELAY_PORT: ${MAX_RELAY_PORT:-51999}
+      USER_QUOTA: ${USER_QUOTA:-2}
+      TOTAL_QUOTA: ${TOTAL_QUOTA:-1600}
+      MAX_BPS: ${MAX_BPS:-10000000}
+      BPS_CAPACITY: ${BPS_CAPACITY:-625000000}
+    volumes:
+      - ./turnserver.conf.template:/opt/rsp/turnserver.conf.template:ro
+      - ./render-and-run.sh:/opt/rsp/render-and-run.sh:ro
+    secrets:
+      - turn_shared_secret
+      - source: turn_fullchain
+        target: turn_fullchain.pem
+      - source: turn_private_key
+        target: turn_private_key.pem
+      - turn_redis_statsdb
+      - turn_denied_peers
+
+secrets:
+  turn_shared_secret:
+    file: ${TURN_SHARED_SECRET_FILE:?required}
+  turn_fullchain:
+    file: ${TURN_FULLCHAIN_FILE:?required}
+  turn_private_key:
+    file: ${TURN_PRIVATE_KEY_FILE:?required}
+  turn_redis_statsdb:
+    file: ${TURN_REDIS_STATSDB_FILE:?required}
+  turn_denied_peers:
+    file: ${TURN_DENIED_PEERS_FILE:?required}

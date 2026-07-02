@@ -1,6 +1,16 @@
 cmake_minimum_required(VERSION 4.0)
 project(RemoteSupportNative LANGUAGES C CXX)
 
+set(RS_ICE_BACKEND "libjuice" CACHE STRING "ICE backend: libjuice (UDP TURN) or libnice (TURN UDP/TCP/TLS)")
+set_property(CACHE RS_ICE_BACKEND PROPERTY STRINGS libjuice libnice)
+if(RS_ICE_BACKEND STREQUAL "libnice")
+  set(USE_NICE ON CACHE BOOL "Use libnice for TURN TCP/TLS support" FORCE)
+elseif(RS_ICE_BACKEND STREQUAL "libjuice")
+  set(USE_NICE OFF CACHE BOOL "Use libjuice UDP ICE backend" FORCE)
+else()
+  message(FATAL_ERROR "RS_ICE_BACKEND must be libjuice or libnice")
+endif()
+
 if(NOT DEFINED RS_CONTRACT_ROOT)
   message(FATAL_ERROR "RS_CONTRACT_ROOT must point to the repository root")
 endif()

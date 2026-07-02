@@ -29,8 +29,10 @@ function Invoke-NativeBuild {
     $cmake = Join-Path (Split-Path -Parent $python) 'cmake.exe'
     $cppwinrt = & (Join-Path $root 'eng\generate-cppwinrt.ps1')
     $webrtc = & (Join-Path $root 'eng\bootstrap-webrtc.ps1')
+    $iceBackend = if ([string]::IsNullOrWhiteSpace($env:RS_ICE_BACKEND)) { 'libjuice' } else { $env:RS_ICE_BACKEND }
+    if ($iceBackend -notin @('libjuice', 'libnice')) { throw 'RS_ICE_BACKEND must be libjuice or libnice.' }
     $nativeBuild = Join-Path $root "artifacts\native\$Configuration"
-    & $cmake -S (Join-Path $root 'src\client\native') -B $nativeBuild -G 'MinGW Makefiles' "-DCMAKE_BUILD_TYPE=$Configuration" "-DCMAKE_CXX_USE_RESPONSE_FILE_FOR_OBJECTS=ON" "-DRS_CONTRACT_ROOT=$root" "-DRS_CPPWINRT_ROOT=$cppwinrt" "-DRS_LIBDATACHANNEL_ROOT=$($webrtc.LibDataChannelRoot)" "-DRS_MBEDTLS_ROOT=$($webrtc.MbedTlsRoot)"
+    & $cmake -S (Join-Path $root 'src\client\native') -B $nativeBuild -G 'MinGW Makefiles' "-DCMAKE_BUILD_TYPE=$Configuration" "-DCMAKE_CXX_USE_RESPONSE_FILE_FOR_OBJECTS=ON" "-DRS_CONTRACT_ROOT=$root" "-DRS_CPPWINRT_ROOT=$cppwinrt" "-DRS_LIBDATACHANNEL_ROOT=$($webrtc.LibDataChannelRoot)" "-DRS_MBEDTLS_ROOT=$($webrtc.MbedTlsRoot)" "-DRS_ICE_BACKEND=$iceBackend"
     & $cmake --build $nativeBuild --config $Configuration
     & $cmake --build $nativeBuild --target test
 }
@@ -67,6 +69,7 @@ switch ($Target) {
     }
     'IntegrationTest' {
         & $python (Join-Path $root 'tools\database\verify_schema.py') $root
+        & $python (Join-Path $root 'tools\network\verify_goal07.py') $root
     }
     'Package' {
         Invoke-Restore

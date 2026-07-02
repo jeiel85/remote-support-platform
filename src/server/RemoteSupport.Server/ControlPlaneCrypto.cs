@@ -158,6 +158,36 @@ internal sealed class ControlPlaneCrypto
             DSASignatureFormat.IeeeP1363FixedFieldConcatenation);
     }
 
+    public static bool VerifyP256Jws(JsonElement jwk, string signingInput, string encodedSignature)
+    {
+        JwkParameters parameters;
+        byte[] signature;
+        try
+        {
+            parameters = ParseJwk(jwk);
+            signature = Base64UrlDecode(encodedSignature);
+        }
+        catch (Exception exception) when (exception is FormatException or KeyNotFoundException or InvalidOperationException)
+        {
+            return false;
+        }
+        if (parameters.Kty != "EC" || parameters.Crv != "P-256" || parameters.Y is null || signature.Length != 64)
+            return false;
+        using ECDsa ecdsa = ECDsa.Create(new ECParameters
+        {
+            Curve = ECCurve.NamedCurves.nistP256,
+            Q = new ECPoint { X = Base64UrlDecode(parameters.X), Y = Base64UrlDecode(parameters.Y) },
+        });
+        return ecdsa.VerifyData(Encoding.ASCII.GetBytes(signingInput), signature, HashAlgorithmName.SHA256,
+            DSASignatureFormat.IeeeP1363FixedFieldConcatenation);
+    }
+
+    public string SignalingRoutingKey(Guid sessionId)
+    {
+        byte[] input = Encoding.ASCII.GetBytes($"RSP-SIGNALING-SHARD-V1\0{sessionId:D}");
+        return Base64UrlEncode(HMACSHA256.HashData(tokenKey, input))[..16];
+    }
+
     public static byte[] ConsentBytes(SessionAggregate session, ConsentDecision decision)
     {
         ArrayBufferWriter<byte> buffer = new();

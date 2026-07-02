@@ -76,3 +76,19 @@ After DTLS establishment and before application content, each peer reads the loc
 ## API proof key reuse
 
 The ephemeral peer signing key authorized during peer exchange is also the DPoP key for peer REST calls. Its private key remains in the peer process, is never serialized, and is destroyed at session end. A transport restart changes epoch and transport binding but does not silently replace the peer key; key replacement requires a new explicit authorization flow.
+
+## ICE backend and forced-route testing
+
+Production clients that advertise TURN/TCP or TURN/TLS are built with
+`RS_ICE_BACKEND=libnice`. The default developer build uses libjuice and claims
+TURN/UDP only; libdatachannel does not provide TURN TCP/TLS control connections
+through libjuice. `RS_TRANSPORT_FLAG_RELAY_ONLY` is restricted to route/lab
+policy and forces relay candidate selection without weakening peer token,
+DTLS, scope, or reciprocal transport-binding checks. Normal operation uses the
+all-candidate policy so a secure direct route remains preferred. The managed
+route planner first supplies one TURN/UDP endpoint under the all-candidate
+policy, so ICE prefers host/server-reflexive direct candidates and falls back
+to UDP relay. Later attempts supply one TCP or TLS endpoint under relay-only
+policy. A transport therefore receives only one endpoint, keeping native route
+diagnostics accurate; the explicit UDP relay-only flag remains available to
+the network lab.

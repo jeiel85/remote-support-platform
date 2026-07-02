@@ -6,10 +6,11 @@ artifacts/**
 **/bin/
 **/obj/
 **/TestResults/
+**/__pycache__/
+*.pyc
 *.user
 *.suo
 *.nupkg
 *.snupkg
 cmake-build-*/
 out/
-

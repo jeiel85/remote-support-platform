@@ -305,7 +305,7 @@ internal sealed class AttendedSessionService(
         AppendLifecycle(session, "SESSION_EXPIRED", "SYSTEM", null, now, new { session.StateVersion });
     }
 
-    private static void AppendLifecycle(SessionAggregate session, string action, string actorType, string? actorId,
+    internal static void AppendLifecycle(SessionAggregate session, string action, string actorType, string? actorId,
         DateTimeOffset now, object details)
     {
         JsonElement detailElement = JsonSerializer.SerializeToElement(details);

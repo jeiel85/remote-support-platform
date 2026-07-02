@@ -1,0 +1,7 @@
+component=coturn
+version=4.14.0
+source_tag=4.14.0
+source_commit=8cd19518d31a70f340185b6bbd629b28947148aa
+image=coturn/coturn:4.14.0-r0-debian
+image_index_digest=sha256:0c0e8fc0c263b85a134e9e4242b5e46e1f4c077c5029633511191c05b5c2c814
+linux_amd64_digest=sha256:509d7e73fd74baabfde20286feb1c3bb4c33696fce9b43b80b0bd3dc69a6ef18

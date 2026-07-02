@@ -18,6 +18,13 @@ Each node has:
 
 Use short-lived credentials derived from a server-side secret or supported OAuth method. Username encodes expiry and opaque session/tenant reference without sensitive identifiers. Credential lifetime is slightly longer than expected negotiation and renewed only for active authorized sessions.
 
+The implemented credential is valid for at most ten minutes and never exceeds
+the peer token or session expiry. Issuance requires a current DPoP-bound peer
+token. Username format is `<unix-expiry>:<24-char-opaque-id>` and coturn REST
+password format is `base64(HMAC-SHA1(shared-secret, username))`. Persistence
+keeps only the opaque ID and issuance dimensions, never the password or shared
+secret.
+
 ## Configuration requirements
 
 - authenticated TURN only;
@@ -39,6 +46,12 @@ Use short-lived credentials derived from a server-side secret or supported OAuth
 - CPU, memory, NIC, packet drops and socket errors;
 - relay port utilization;
 - source/tenant anomaly rates.
+
+Prometheus username labels stay disabled. coturn publishes final allocation
+traffic through protected Redis; `tools/network/turn_usage_collector.py`
+spools events in SQLite before sending them to the HMAC-authenticated internal
+usage endpoint. The API joins the opaque username to session/tenant and stores
+idempotent, bounded region/node/transport byte dimensions.
 
 ## Scaling trigger examples
 

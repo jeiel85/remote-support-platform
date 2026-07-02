@@ -32,6 +32,18 @@
 - ICE candidate burst allowance followed by lower sustained rate;
 - maximum concurrent pending/active connections per tenant/account/source.
 
+Implemented baseline limits are 64 KiB per text envelope, 32 KiB per SDP, 2
+KiB per candidate, 256 candidates per connection, 30 candidates per 10
+seconds, and 120 total messages per minute. Each socket must start with `HELLO`.
+Peer sequence is strictly contiguous and persists across signaling reconnects;
+reconnect therefore reconciles signaling state without changing a healthy
+WebRTC epoch. A five-second bounded socket send supplies backpressure.
+
+Authentication uses a 60-second, 256-bit, one-time ticket whose stored record
+binds session, peer, role, key thumbprint, scopes, permission revision, epoch,
+and protocol. Ticket issuance requires a current RFC 9449 DPoP peer request.
+The ticket and all SDP/ICE values are excluded from logs and storage.
+
 ## Shutdown
 
 - stop accepting new sockets;

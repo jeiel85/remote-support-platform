@@ -38,7 +38,9 @@ Input move events may be coalesced; button/key transitions must not be silently 
 ## 4. TURN
 
 - coturn deployed as independent regional nodes.
-- Current production baseline at bundle creation: 4.14.0 or later patched release.
+- Current production baseline at bundle creation: coturn 4.14.0, pinned by
+  immutable image digest and release commit; promotion still applies the CVE
+  and provenance gate.
 - Use short-lived REST-derived credentials or equivalent ephemeral credentials.
 - Disable anonymous access and web admin unless operationally required and isolated.
 - Deny relay to private/control-plane/database networks.

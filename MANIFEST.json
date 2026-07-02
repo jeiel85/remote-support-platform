@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "fileCount": 135,
+  "fileCount": 138,
   "files": [
     {
       "path": "00-product/commercialization-and-compliance.md",
@@ -68,6 +68,11 @@
       "sha256": "5c930f07d031f2428c98199d5c7fcd9e4ad6563ceef77434e3caa0a6dda30e8a"
     },
     {
+      "path": "01-architecture/adr/0008-internet-signaling-and-turn.md",
+      "bytes": 2775,
+      "sha256": "5fa49529a55840811505aed4eb385064d4bd725efd62b1fc2a80dd08a7455963"
+    },
+    {
       "path": "01-architecture/data-architecture.md",
       "bytes": 3251,
       "sha256": "57a1bd8632c9e4d29bbd14436572ca100e7e24bde1891bce1d1977dbd6dddf4e"
@@ -79,8 +84,8 @@
     },
     {
       "path": "01-architecture/networking-and-turn.md",
-      "bytes": 3575,
-      "sha256": "6db3a4a0f621ebcbfdbf82ed86a70fbd6dacc61d4475943f591d907706712164"
+      "bytes": 3667,
+      "sha256": "1661895aa1c5787ecc7e36303541db3bc17f2a54ecb03aaf660137efae1167b8"
     },
     {
       "path": "01-architecture/runtime-sequences.md",
@@ -134,8 +139,8 @@
     },
     {
       "path": "02-protocol/native/remote_support_native.h",
-      "bytes": 24395,
-      "sha256": "ff8bf6ec3f4272162aea289a7c6b217f73f3d7e696227616d39bc91eaf994c21"
+      "bytes": 24529,
+      "sha256": "8a506b0f10b4efd167a1e8348ed57c78dbdc0ebe547db87bd81b4734dc81483a"
     },
     {
       "path": "02-protocol/openapi/openapi.yaml",
@@ -259,8 +264,8 @@
     },
     {
       "path": "03-client/webrtc-integration.md",
-      "bytes": 4474,
-      "sha256": "d5ebbba6d0c09e8d104ade838760df3a55315d6c0f54ac2271138c79075917ed"
+      "bytes": 5453,
+      "sha256": "60d8ba724f7d93cf5991aad08caf1c5019f8c25f889f4d81675046c337d8e388"
     },
     {
       "path": "03-client/windows-service.md",
@@ -309,13 +314,13 @@
     },
     {
       "path": "04-backend/signaling-service.md",
-      "bytes": 1370,
-      "sha256": "6de2bdb4ed35cd6fd6f089476083e84ca8d83d940fc1a7623a373f75d156d4d1"
+      "bytes": 2128,
+      "sha256": "995fcd9e628d0f76fa37badd7d6038683d21769c7cbb83994101c291be810979"
     },
     {
       "path": "04-backend/turn-service.md",
-      "bytes": 1655,
-      "sha256": "60775d4117fbcc6accc2dc4944c1a7f94cb3fb0eddc1129c8235162fb9aea5b8"
+      "bytes": 2421,
+      "sha256": "c5d3e860c43b0bb1bad18c09ceecf0a0e3b50e7f0312fa1839b5eb777a03ac3e"
     },
     {
       "path": "05-security/abuse-prevention.md",
@@ -349,8 +354,8 @@
     },
     {
       "path": "05-security/threat-model.md",
-      "bytes": 4937,
-      "sha256": "5ccbf1862773161bc6e82f2fbc9392c48ad47d893c634c9c1e7f248dc37fa9ed"
+      "bytes": 5469,
+      "sha256": "9e13467a143d3f83426501033448f541e06958dac26c051b7a32eae1b11da37d"
     },
     {
       "path": "06-quality/compatibility-matrix.md",
@@ -416,6 +421,11 @@
       "path": "07-delivery/evidence/goal-06.md",
       "bytes": 1587,
       "sha256": "ad70047e50346d940aebe2b079b8f851bc4c7be0a3c161083fae0bfedbf0465a"
+    },
+    {
+      "path": "07-delivery/evidence/goal-07.md",
+      "bytes": 2254,
+      "sha256": "e4be46ea09700c313ee0fe9d4caffd45be105d6fea231ace2a3fbc4da6f09e36"
     },
     {
       "path": "07-delivery/goals/goal-01-foundation.md",
@@ -553,6 +563,11 @@
       "sha256": "27e2d59547af42cf3b3d193571fdbcb5021373537c69b08676e1f032381911b7"
     },
     {
+      "path": "08-operations/turn-capacity-model.md",
+      "bytes": 1495,
+      "sha256": "db851c733c7196493f593598c05e19158977de9c27f61f2c523642e558a8b559"
+    },
+    {
       "path": "09-templates/appsettings.example.json",
       "bytes": 1103,
       "sha256": "633d6030464a804aacd48f3686d6ed19562a0cebecdd36faf13268580d4314aa"
@@ -574,8 +589,8 @@
     },
     {
       "path": "09-templates/coturn.production.example.conf",
-      "bytes": 990,
-      "sha256": "f00e6336617d305255c4a8ae0d822d4e28e83464f9cd940de9dd9760451552da"
+      "bytes": 1469,
+      "sha256": "ab0fabad623553fc0a0e3df62c4b34b2c91508c95d27d674a07b583fb9c97a90"
     },
     {
       "path": "09-templates/definition-of-done.md",
