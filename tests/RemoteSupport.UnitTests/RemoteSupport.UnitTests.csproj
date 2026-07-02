@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\client\managed\RemoteSupport.Domain\RemoteSupport.Domain.csproj" />
+    <ProjectReference Include="..\..\src\client\managed\RemoteSupport.Application\RemoteSupport.Application.csproj" />
     <ProjectReference Include="..\..\src\client\managed\RemoteSupport.Media\RemoteSupport.Media.csproj" />
   </ItemGroup>
 

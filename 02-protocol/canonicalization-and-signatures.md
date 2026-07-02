@@ -18,6 +18,17 @@ Domain: `RSP-CONSENT-DECISION-V1`.
 
 Payload fields: `sessionId`, `consentRequestId`, `consentNonce`, `approved`, sorted `grantedScopes`, `hostPeerId`, `hostEphemeralKeyThumbprint`, `stateVersion`, and `expiresAt`. The nonce is single-use and stored only as a keyed or cryptographic digest. Approval is invalid if the displayed operator identity or requested scopes differ from the signed payload.
 
+## 2.1 Peer authorization proof
+
+Domain: `RSP-PEER-AUTH-V1`.
+
+The JCS payload contains `challengeId`, `expiresAt`, `keyThumbprint`, `nonce`,
+`peerId`, `role`, `sessionId`, and `transportEpoch`. The challenge is
+single-use, valid for at most two minutes, bootstrap-bound to one peer and role,
+and invalid after an epoch change. The proof public key must have the RFC 7638
+thumbprint already bound to that peer; the exchange cannot replace the
+authorized key.
+
 ## 3. Managed-host decision
 
 Domain: `RSP-MANAGED-HOST-DECISION-V1`.

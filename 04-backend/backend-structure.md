@@ -52,6 +52,11 @@ Each module exposes:
 
 No module reads another module's tables directly. Read models use explicit projections or interfaces.
 
+For attended sessions, ADR-0007 defines a versioned JSONB command aggregate.
+The Sessions module owns that aggregate and atomically appends audit/outbox
+rows. Normalized session tables are cross-module projections, not an alternate
+write path.
+
 ## Request pipeline
 
 1. Correlation and trace context.

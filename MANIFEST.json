@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "fileCount": 133,
+  "fileCount": 135,
   "files": [
     {
       "path": "00-product/commercialization-and-compliance.md",
@@ -63,6 +63,11 @@
       "sha256": "3220bffc886e62e1f0a22f9b6b4fee20860841689b782ec3c8b909786d0013b9"
     },
     {
+      "path": "01-architecture/adr/0007-attended-session-aggregate.md",
+      "bytes": 1719,
+      "sha256": "5c930f07d031f2428c98199d5c7fcd9e4ad6563ceef77434e3caa0a6dda30e8a"
+    },
+    {
       "path": "01-architecture/data-architecture.md",
       "bytes": 3251,
       "sha256": "57a1bd8632c9e4d29bbd14436572ca100e7e24bde1891bce1d1977dbd6dddf4e"
@@ -99,8 +104,8 @@
     },
     {
       "path": "02-protocol/canonicalization-and-signatures.md",
-      "bytes": 5526,
-      "sha256": "4e10f6bde0fe670797cd29d863f197ae6b3bbadfeaad410328b8b57856589b0e"
+      "bytes": 5985,
+      "sha256": "a6a06569e7e896f928158b0b63cb5f7cbb60ff13771a06b9cec20d6b500ad356"
     },
     {
       "path": "02-protocol/control-channel.md",
@@ -269,8 +274,8 @@
     },
     {
       "path": "04-backend/backend-structure.md",
-      "bytes": 1734,
-      "sha256": "d15d702f65ddbf594dd215269a370ff969eef0a65bf1d66d56c86024f791f463"
+      "bytes": 1979,
+      "sha256": "845257d5b25bef38de86cc0f66165bc4b35c5bc0e4ee6664dacfc728638eba68"
     },
     {
       "path": "04-backend/capacity-and-cost.md",
@@ -279,8 +284,8 @@
     },
     {
       "path": "04-backend/database-schema.sql",
-      "bytes": 32076,
-      "sha256": "98f715b59234f5c414c9699fabbdf61247fc89c16f2c98b6cdd08c03eec75948"
+      "bytes": 33641,
+      "sha256": "94df202907303f9ac0c8e20c4c013c228df8daf2bce0ff0f250f3e6577d7bbae"
     },
     {
       "path": "04-backend/deployment-topology.md",
@@ -344,8 +349,8 @@
     },
     {
       "path": "05-security/threat-model.md",
-      "bytes": 4202,
-      "sha256": "03c0128a6b87e46960c515be778671fb30165a9c0fdd00a9cc6ff872dc9c655e"
+      "bytes": 4937,
+      "sha256": "5ccbf1862773161bc6e82f2fbc9392c48ad47d893c634c9c1e7f248dc37fa9ed"
     },
     {
       "path": "06-quality/compatibility-matrix.md",
@@ -406,6 +411,11 @@
       "path": "07-delivery/evidence/goal-05.md",
       "bytes": 1513,
       "sha256": "91a8245782b2e08438be919cfb484047d96deb56fa39bde3bb49cec6b43253d4"
+    },
+    {
+      "path": "07-delivery/evidence/goal-06.md",
+      "bytes": 1587,
+      "sha256": "ad70047e50346d940aebe2b079b8f851bc4c7be0a3c161083fae0bfedbf0465a"
     },
     {
       "path": "07-delivery/goals/goal-01-foundation.md",

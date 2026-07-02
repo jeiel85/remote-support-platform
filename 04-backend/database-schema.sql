@@ -362,6 +362,42 @@ create table session_bootstrap_credentials (
 create index ix_bootstrap_expiry on session_bootstrap_credentials(expires_at)
   where consumed_at is null;
 
+-- Sessions-module command aggregate (ADR-0007). Sensitive one-time values are represented only by keyed hashes.
+create table attended_session_aggregates (
+    id uuid primary key,
+    tenant_id uuid references tenants(id),
+    state text not null check (state in (
+      'WAITING_FOR_OPERATOR','CONSENT_PENDING','AUTHORIZED','EXPIRED','REJECTED','FAILED','CANCELLED','ENDED'
+    )),
+    state_version bigint not null check (state_version >= 1),
+    code_lookup_hash bytea not null unique check (octet_length(code_lookup_hash) = 32),
+    expires_at timestamptz not null,
+    document jsonb not null,
+    updated_at timestamptz not null
+);
+create index ix_attended_sessions_expiry on attended_session_aggregates(expires_at)
+  where state not in ('EXPIRED','REJECTED','FAILED','CANCELLED','ENDED');
+
+create table attended_audit_events (
+    id uuid primary key,
+    session_id uuid not null references attended_session_aggregates(id) on delete cascade,
+    tenant_id uuid references tenants(id),
+    chain_sequence bigint not null check (chain_sequence >= 1),
+    action text not null,
+    outcome text not null,
+    actor_type text not null,
+    actor_id text,
+    occurred_at timestamptz not null,
+    state_version bigint not null,
+    details jsonb not null,
+    previous_hash bytea,
+    event_hash bytea not null,
+    unique (session_id, chain_sequence),
+    check (previous_hash is null or octet_length(previous_hash) = 32),
+    check (octet_length(event_hash) = 32)
+);
+create index ix_attended_audit_session on attended_audit_events(session_id, occurred_at);
+
 -- code_lookup_hash is HMAC-SHA-256 over the canonical support code using a versioned server lookup key; raw/unkeyed code material is never stored.
 create table session_code_lookups (
     session_id uuid primary key references support_sessions(id) on delete cascade,

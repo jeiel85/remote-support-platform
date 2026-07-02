@@ -30,6 +30,9 @@ Method: STRIDE-inspired analysis with abuse-case emphasis.
 | Code guessing | attacker brute-forces support codes | high entropy + short expiry, rate limits, code not sole secret, generic errors |
 | Fake operator | attacker requests session under misleading identity | authenticated operator, tenant display, signed identity, host consent |
 | Signaling MITM | compromised signaling rewrites SDP, ICE or peer details | TLS plus mandatory reciprocal signed binding of both observed DTLS fingerprints, peer authorization context, epoch and scopes; optional out-of-band SAS for high-assurance policy |
+| Support-code guessing or database disclosure | attacker enumerates short codes or steals lookup rows | 50-bit CSPRNG Crockford codes, versioned HMAC-SHA-256 lookup, account/tenant/edge/prefix/global rate limits, generic failures, short expiry; no raw code persistence |
+| Consent or peer-proof replay | captured approval/bootstrap/challenge is reused | signed domain-separated canonical payloads, keyed nonce hashes, single-use state, state-version/epoch binding, short bootstrap and peer-token lifetimes |
+| Test authentication enabled in production | deployment selects test environment or in-memory store | test OIDC handler and non-production adapters are Debug-only; Release startup requires OIDC, 256-bit keys and PostgreSQL |
 | TURN abuse | stolen/static credentials create relay allocations | short-lived session credentials, quotas, no anonymous access |
 | Service IPC abuse | local process sends privileged commands | pipe ACL, mutual challenge, command allowlist, capability token |
 | Update compromise | attacker publishes malicious binary | code signing, threshold metadata, hashes, anti-rollback, staged rollout |

@@ -99,6 +99,12 @@
           "xunit.extensibility.core": "[2.9.3]"
         }
       },
+      "remotesupport.application": {
+        "type": "Project",
+        "dependencies": {
+          "RemoteSupport.Domain": "[1.0.0, )"
+        }
+      },
       "remotesupport.domain": {
         "type": "Project"
       },
