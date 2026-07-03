@@ -25,14 +25,18 @@ public static class OpenApiContract
         new("createPolicyVersion", "POST", "/tenant/policies/{policyId}/versions"),
         new("createReconnectGrant", "POST", "/sessions/{sessionId}/reconnect-grants"),
         new("createSignalingTicket", "POST", "/sessions/{sessionId}/signaling-tickets"),
+        new("createSupportGrant", "POST", "/tenant/support-grants"),
         new("createTenant", "POST", "/tenants"),
         new("createTurnCredentials", "POST", "/sessions/{sessionId}/turn-credentials"),
         new("decideAttendedConsent", "POST", "/attended-sessions/{sessionId}/consent"),
         new("decideManagedHostSession", "POST", "/sessions/{sessionId}/managed-host-decision"),
+        new("downloadTenantDataExport", "GET", "/tenant/data-exports/{requestId}/download"),
         new("endSession", "DELETE", "/sessions/{sessionId}"),
         new("enrollDevice", "POST", "/devices/enrollments"),
+        new("evaluateTenantPolicy", "POST", "/tenant/policy-evaluations"),
         new("exchangeDeviceCredential", "POST", "/devices/{deviceId}/credentials"),
         new("exchangePeerAuthorization", "POST", "/sessions/{sessionId}/peer-authorization"),
+        new("exportTenantAuditEvents", "GET", "/tenant/audit-events/export"),
         new("getDevice", "GET", "/devices/{deviceId}"),
         new("getPendingConsent", "GET", "/attended-sessions/{sessionId}/pending-consent"),
         new("getSession", "GET", "/sessions/{sessionId}"),
@@ -60,6 +64,7 @@ public static class OpenApiContract
         new("revokeSessionScopes", "POST", "/sessions/{sessionId}/scope-revocations"),
         new("rotateDeviceKey", "POST", "/devices/{deviceId}/keys/rotate"),
         new("terminateSession", "POST", "/sessions/{sessionId}/termination"),
+        new("verifyTenantAuditChain", "GET", "/tenant/audit-events/verification"),
     ];
 }
 
@@ -79,14 +84,18 @@ public interface IRemoteSupportApiClient
     ValueTask<ApiContractResponse> CreatePolicyVersionAsync(ApiContractRequest request, CancellationToken cancellationToken);
     ValueTask<ApiContractResponse> CreateReconnectGrantAsync(ApiContractRequest request, CancellationToken cancellationToken);
     ValueTask<ApiContractResponse> CreateSignalingTicketAsync(ApiContractRequest request, CancellationToken cancellationToken);
+    ValueTask<ApiContractResponse> CreateSupportGrantAsync(ApiContractRequest request, CancellationToken cancellationToken);
     ValueTask<ApiContractResponse> CreateTenantAsync(ApiContractRequest request, CancellationToken cancellationToken);
     ValueTask<ApiContractResponse> CreateTurnCredentialsAsync(ApiContractRequest request, CancellationToken cancellationToken);
     ValueTask<ApiContractResponse> DecideAttendedConsentAsync(ApiContractRequest request, CancellationToken cancellationToken);
     ValueTask<ApiContractResponse> DecideManagedHostSessionAsync(ApiContractRequest request, CancellationToken cancellationToken);
+    ValueTask<ApiContractResponse> DownloadTenantDataExportAsync(ApiContractRequest request, CancellationToken cancellationToken);
     ValueTask<ApiContractResponse> EndSessionAsync(ApiContractRequest request, CancellationToken cancellationToken);
     ValueTask<ApiContractResponse> EnrollDeviceAsync(ApiContractRequest request, CancellationToken cancellationToken);
+    ValueTask<ApiContractResponse> EvaluateTenantPolicyAsync(ApiContractRequest request, CancellationToken cancellationToken);
     ValueTask<ApiContractResponse> ExchangeDeviceCredentialAsync(ApiContractRequest request, CancellationToken cancellationToken);
     ValueTask<ApiContractResponse> ExchangePeerAuthorizationAsync(ApiContractRequest request, CancellationToken cancellationToken);
+    ValueTask<ApiContractResponse> ExportTenantAuditEventsAsync(ApiContractRequest request, CancellationToken cancellationToken);
     ValueTask<ApiContractResponse> GetDeviceAsync(ApiContractRequest request, CancellationToken cancellationToken);
     ValueTask<ApiContractResponse> GetPendingConsentAsync(ApiContractRequest request, CancellationToken cancellationToken);
     ValueTask<ApiContractResponse> GetSessionAsync(ApiContractRequest request, CancellationToken cancellationToken);
@@ -114,6 +123,7 @@ public interface IRemoteSupportApiClient
     ValueTask<ApiContractResponse> RevokeSessionScopesAsync(ApiContractRequest request, CancellationToken cancellationToken);
     ValueTask<ApiContractResponse> RotateDeviceKeyAsync(ApiContractRequest request, CancellationToken cancellationToken);
     ValueTask<ApiContractResponse> TerminateSessionAsync(ApiContractRequest request, CancellationToken cancellationToken);
+    ValueTask<ApiContractResponse> VerifyTenantAuditChainAsync(ApiContractRequest request, CancellationToken cancellationToken);
 }
 
 public interface IRemoteSupportApiHandler
@@ -132,14 +142,18 @@ public interface IRemoteSupportApiHandler
     ValueTask<ApiContractResponse> CreatePolicyVersionAsync(ApiContractRequest request, CancellationToken cancellationToken);
     ValueTask<ApiContractResponse> CreateReconnectGrantAsync(ApiContractRequest request, CancellationToken cancellationToken);
     ValueTask<ApiContractResponse> CreateSignalingTicketAsync(ApiContractRequest request, CancellationToken cancellationToken);
+    ValueTask<ApiContractResponse> CreateSupportGrantAsync(ApiContractRequest request, CancellationToken cancellationToken);
     ValueTask<ApiContractResponse> CreateTenantAsync(ApiContractRequest request, CancellationToken cancellationToken);
     ValueTask<ApiContractResponse> CreateTurnCredentialsAsync(ApiContractRequest request, CancellationToken cancellationToken);
     ValueTask<ApiContractResponse> DecideAttendedConsentAsync(ApiContractRequest request, CancellationToken cancellationToken);
     ValueTask<ApiContractResponse> DecideManagedHostSessionAsync(ApiContractRequest request, CancellationToken cancellationToken);
+    ValueTask<ApiContractResponse> DownloadTenantDataExportAsync(ApiContractRequest request, CancellationToken cancellationToken);
     ValueTask<ApiContractResponse> EndSessionAsync(ApiContractRequest request, CancellationToken cancellationToken);
     ValueTask<ApiContractResponse> EnrollDeviceAsync(ApiContractRequest request, CancellationToken cancellationToken);
+    ValueTask<ApiContractResponse> EvaluateTenantPolicyAsync(ApiContractRequest request, CancellationToken cancellationToken);
     ValueTask<ApiContractResponse> ExchangeDeviceCredentialAsync(ApiContractRequest request, CancellationToken cancellationToken);
     ValueTask<ApiContractResponse> ExchangePeerAuthorizationAsync(ApiContractRequest request, CancellationToken cancellationToken);
+    ValueTask<ApiContractResponse> ExportTenantAuditEventsAsync(ApiContractRequest request, CancellationToken cancellationToken);
     ValueTask<ApiContractResponse> GetDeviceAsync(ApiContractRequest request, CancellationToken cancellationToken);
     ValueTask<ApiContractResponse> GetPendingConsentAsync(ApiContractRequest request, CancellationToken cancellationToken);
     ValueTask<ApiContractResponse> GetSessionAsync(ApiContractRequest request, CancellationToken cancellationToken);
@@ -167,4 +181,5 @@ public interface IRemoteSupportApiHandler
     ValueTask<ApiContractResponse> RevokeSessionScopesAsync(ApiContractRequest request, CancellationToken cancellationToken);
     ValueTask<ApiContractResponse> RotateDeviceKeyAsync(ApiContractRequest request, CancellationToken cancellationToken);
     ValueTask<ApiContractResponse> TerminateSessionAsync(ApiContractRequest request, CancellationToken cancellationToken);
+    ValueTask<ApiContractResponse> VerifyTenantAuditChainAsync(ApiContractRequest request, CancellationToken cancellationToken);
 }

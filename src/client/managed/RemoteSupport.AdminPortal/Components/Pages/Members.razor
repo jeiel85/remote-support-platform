@@ -1,0 +1,53 @@
+@page "/members"
+@inject ControlPlaneBffClient Api
+@inject IHttpContextAccessor Context
+
+<PageTitle>구성원 · Remote Support</PageTitle>
+<h1>구성원</h1>
+<p class="lead">역할 변경과 초대는 모두 낙관적 동시성 및 감사 기록으로 보호됩니다.</p>
+@if (!string.IsNullOrEmpty(invitationToken))
+{
+    <aside class="panel" role="status">
+        <h2>초대 토큰이 생성되었습니다</h2>
+        <p><strong>@invitationEmail</strong>에게 안전한 별도 채널로 한 번만 전달하세요. 이 화면을 벗어나면 다시 표시되지 않습니다.</p>
+        <code>@invitationToken</code>
+    </aside>
+}
+<section class="panel">
+    <h2>구성원 초대</h2>
+    <form class="form-grid" method="post" action="/actions/invitations">
+        <AntiforgeryToken />
+        <div><label for="email">이메일</label><input id="email" name="email" type="email" required /></div>
+        <div><label for="role">역할</label><select id="role" name="role">
+            <option value="OPERATOR">Operator</option><option value="ADMIN">Admin</option>
+            <option value="SECURITY_AUDITOR">Security Auditor</option>
+            <option value="READ_ONLY_ANALYST">Read-only Analyst</option>
+        </select></div>
+        <button type="submit">초대 만들기</button>
+    </form>
+</section>
+<section class="panel table-wrap" aria-labelledby="member-list">
+    <h2 id="member-list">현재 구성원</h2>
+    @if (members is null) { <p>테넌트를 먼저 선택하세요.</p> }
+    else {
+        <table><thead><tr><th>이름</th><th>이메일</th><th>역할</th><th>상태</th></tr></thead><tbody>
+        @foreach (MembershipView member in members.Items) {
+            <tr><td>@member.DisplayName</td><td>@member.Email</td><td>@string.Join(", ", member.Roles)</td><td>@member.Status</td></tr>
+        }
+        </tbody></table>
+    }
+</section>
+
+@code {
+    private PagedMembershipsView? members;
+    private string? invitationToken;
+    private string? invitationEmail;
+    protected override async Task OnInitializedAsync()
+    {
+        invitationToken = Context.HttpContext?.Session.GetString("invitation-token");
+        invitationEmail = Context.HttpContext?.Session.GetString("invitation-email");
+        Context.HttpContext?.Session.Remove("invitation-token");
+        Context.HttpContext?.Session.Remove("invitation-email");
+        members = await Api.GetMemberships();
+    }
+}

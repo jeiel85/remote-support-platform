@@ -257,7 +257,12 @@ internal sealed class AttendedSessionService(
         });
     }
 
-    public SessionResponse Get(Guid sessionId) => store.Execute(collection => ToResponse(RequireSession(collection, sessionId)));
+    public SessionResponse Get(Guid sessionId, OperatorIdentity identity) => store.Execute(collection =>
+    {
+        SessionAggregate session = RequireSession(collection, sessionId);
+        if (session.TenantId != identity.TenantId || session.Operator?.Subject != identity.Subject) throw NotFound();
+        return ToResponse(session);
+    });
 
     public SessionResponse Terminate(Guid sessionId, PeerAccessContext access, SessionTerminationRequest request)
     {

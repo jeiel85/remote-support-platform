@@ -1,0 +1,23 @@
+@page "/devices"
+@inject ControlPlaneBffClient Api
+
+<PageTitle>장치 · Remote Support</PageTitle>
+<h1>관리 장치</h1>
+<p class="lead">등록 상태와 권한 버전을 확인하고 폐기된 자격 증명을 추적합니다.</p>
+<section class="panel table-wrap">
+@if (devices is null) { <p>테넌트를 먼저 선택하세요.</p> }
+else if (devices.Items.Length == 0) { <p>등록된 장치가 없습니다.</p> }
+else {
+    <table><thead><tr><th>장치</th><th>OS</th><th>앱</th><th>상태</th><th>최근 연결</th></tr></thead><tbody>
+    @foreach (DeviceView device in devices.Items) {
+        <tr><td>@device.DisplayName</td><td>@device.OsVersion</td><td>@device.AppVersion</td>
+            <td>@device.Status</td><td>@(device.LastSeenAt?.ToString("u") ?? "—")</td></tr>
+    }
+    </tbody></table>
+}
+</section>
+
+@code {
+    private PagedDevicesView? devices;
+    protected override async Task OnInitializedAsync() => devices = await Api.GetDevices();
+}

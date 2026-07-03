@@ -1,0 +1,26 @@
+@inherits LayoutComponentBase
+
+<a class="skip-link" href="#main">본문으로 건너뛰기</a>
+<header class="topbar">
+    <a class="brand" href="/overview" aria-label="Remote Support 관리자 홈">
+        <span class="brand-mark" aria-hidden="true">RS</span>
+        <span>Remote Support <small>Admin</small></span>
+    </a>
+    <form method="post" action="/signout">
+        <AntiforgeryToken />
+        <button class="quiet" type="submit">로그아웃</button>
+    </form>
+</header>
+<div class="shell">
+    <nav aria-label="관리 메뉴">
+        <NavLink href="/overview">개요</NavLink>
+        <NavLink href="/members">구성원</NavLink>
+        <NavLink href="/devices">장치</NavLink>
+        <NavLink href="/policies">정책</NavLink>
+        <NavLink href="/audit">감사</NavLink>
+        <NavLink href="/settings">설정</NavLink>
+        <NavLink href="/privacy/export">데이터 내보내기</NavLink>
+        <NavLink href="/tenant/close">테넌트 폐쇄</NavLink>
+    </nav>
+    <main id="main" tabindex="-1">@Body</main>
+</div>

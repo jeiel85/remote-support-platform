@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "fileCount": 143,
+  "fileCount": 144,
   "files": [
     {
       "path": "00-product/commercialization-and-compliance.md",
-      "bytes": 3683,
-      "sha256": "bb76db00e0335da3c0c27e306b5668881775ecc76a15d24a9b9e9995a812d5b8"
+      "bytes": 6340,
+      "sha256": "c6adf42d7dc105f956116b5703aa236fc3e2bec5a668d91fcfdadcb593213ec9"
     },
     {
       "path": "00-product/functional-requirements.md",
@@ -149,8 +149,8 @@
     },
     {
       "path": "02-protocol/openapi/openapi.yaml",
-      "bytes": 86663,
-      "sha256": "a09308d2245ff3feb99a6b053366a152ba997461a282a1efec11417715b61376"
+      "bytes": 94207,
+      "sha256": "5a4ebf0544b96d2628d005e2c99e962f0179d621c41b70c2210aca4099f9b172"
     },
     {
       "path": "02-protocol/protobuf/remote_support.proto",
@@ -453,6 +453,11 @@
       "sha256": "ab25c662c75e8992252e9ba185636fc70b407f0d56df81ebdd57ab1041f72b0b"
     },
     {
+      "path": "07-delivery/evidence/goal-10.md",
+      "bytes": 3281,
+      "sha256": "3d4a5cde247511701dbf1809f477a4860ea9fee3a2885f33b59d5816c16e0ab2"
+    },
+    {
       "path": "07-delivery/goals/goal-01-foundation.md",
       "bytes": 2436,
       "sha256": "d85556a84c4866b48297dae62e80993923dad2ff95d3341a952816447aba0966"
@@ -709,8 +714,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 2691,
-      "sha256": "0cc26550c76c991e2f5891336d6a98a760db3e4efcb2efad83c620357edea6ca"
+      "bytes": 3103,
+      "sha256": "8787813ecb03d69bd4b90da56615582ddaadf3bcd4450b9719f91734bdee1df3"
     },
     {
       "path": "START_HERE.md",

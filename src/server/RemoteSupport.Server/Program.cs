@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication;
@@ -10,6 +11,7 @@ using RemoteSupport.Server;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 ControlPlaneOptions controlPlane = builder.Configuration.GetSection(ControlPlaneOptions.SectionName).Get<ControlPlaneOptions>() ?? new();
+GovernanceOptions governance = builder.Configuration.GetSection(GovernanceOptions.SectionName).Get<GovernanceOptions>() ?? new();
 bool testing = builder.Environment.IsEnvironment("Testing");
 bool development = builder.Environment.IsDevelopment();
 bool releaseTestHarness = testing && string.Equals(
@@ -20,7 +22,9 @@ bool allowNonProductionAdapters = testing || development;
 bool allowNonProductionAdapters = releaseTestHarness;
 #endif
 controlPlane.Validate(allowNonProductionAdapters);
+governance.Validate();
 builder.Services.AddSingleton(controlPlane);
+builder.Services.AddSingleton(governance);
 builder.Services.AddSingleton<RemoteSupport.Server.ISystemClock, RemoteSupport.Server.SystemClock>();
 builder.Services.AddSingleton<ControlPlaneCrypto>();
 
@@ -29,12 +33,14 @@ if (controlPlane.UseInMemoryStore || testing || (development && string.IsNullOrW
 {
     if (!allowNonProductionAdapters) throw new InvalidOperationException("In-memory control-plane persistence is forbidden in Release and outside Development/Testing.");
     builder.Services.AddSingleton<IAttendedSessionStore, InMemoryAttendedSessionStore>();
+    builder.Services.AddSingleton<IGovernanceStore, InMemoryGovernanceStore>();
 }
 else
 {
     if (string.IsNullOrWhiteSpace(postgres)) throw new InvalidOperationException("ConnectionStrings:ControlPlane is required.");
     builder.Services.AddSingleton(NpgsqlDataSource.Create(postgres));
     builder.Services.AddSingleton<IAttendedSessionStore, PostgresAttendedSessionStore>();
+    builder.Services.AddSingleton<IGovernanceStore, PostgresGovernanceStore>();
     builder.Services.AddHostedService<PostgresMigrationRunner>();
 }
 builder.Services.AddSingleton<AttendedSessionService>();
@@ -44,6 +50,10 @@ builder.Services.AddSingleton<SignalingTicketService>();
 builder.Services.AddSingleton<TurnCredentialService>();
 builder.Services.AddSingleton<SignalingProtocolValidator>();
 builder.Services.AddSingleton<SignalingHub>();
+builder.Services.AddSingleton<GovernanceExportStore>();
+builder.Services.AddSingleton<GovernanceService>();
+builder.Services.AddSingleton<GovernanceMaintenanceService>();
+builder.Services.AddHostedService(provider => provider.GetRequiredService<GovernanceMaintenanceService>());
 
 if (testing && allowNonProductionAdapters)
 {
@@ -61,8 +71,12 @@ else
         options.MapInboundClaims = false;
     });
 }
-builder.Services.AddAuthorization(options => options.AddPolicy("Operator", policy => policy
-    .RequireAuthenticatedUser().RequireClaim("sub").RequireClaim("tenant_id").RequireClaim("name").RequireClaim("tenant_name")));
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("Authenticated", policy => policy.RequireAuthenticatedUser().RequireClaim("sub"));
+    options.AddPolicy("Operator", policy => policy.RequireAuthenticatedUser().RequireClaim("sub")
+        .RequireClaim("tenant_id").RequireClaim("name").RequireClaim("tenant_name"));
+});
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -119,7 +133,130 @@ app.Use(async (context, next) =>
 });
 app.UseRateLimiter();
 app.UseAuthentication();
+app.UseMiddleware<TenantContextMiddleware>();
 app.UseAuthorization();
+
+app.MapPost("/v1/tenants", (CreateTenantRequest request, HttpRequest http, ClaimsPrincipal principal,
+    GovernanceService service) => Results.Created("/v1/tenant", service.CreateTenant(request,
+        http.Headers["Idempotency-Key"].ToString(), TenantActor.FromPrincipal(principal))))
+    .RequireAuthorization("Authenticated");
+
+app.MapPost("/v1/invitations/{invitationId:guid}/accept", (Guid invitationId,
+    InvitationAcceptanceRequest request, ClaimsPrincipal principal, GovernanceService service) =>
+    Results.Ok(service.AcceptInvitation(invitationId, request, TenantActor.FromPrincipal(principal))))
+    .RequireAuthorization("Authenticated");
+
+app.MapPost("/v1/device-enrollment-tokens", (EnrollmentTokenRequest request, HttpContext context,
+    GovernanceService service) => Results.Created("/v1/device-enrollment-tokens", service.CreateEnrollmentToken(
+        TenantContextMiddleware.Get(context), request, context.Request.Headers["Idempotency-Key"].ToString())))
+    .RequireAuthorization("Authenticated");
+
+app.MapPost("/v1/devices/enrollments", (DeviceEnrollmentRequest request, HttpRequest http,
+    GovernanceService service) => Results.Created("/v1/devices", service.EnrollDevice(request,
+        http.Headers["Idempotency-Key"].ToString()))).AllowAnonymous();
+
+app.MapGet("/v1/tenant", (HttpContext context, GovernanceService service) =>
+    Results.Ok(service.GetTenant(TenantContextMiddleware.Get(context)))).RequireAuthorization("Authenticated");
+app.MapGet("/v1/tenant/settings", (HttpContext context, GovernanceService service) =>
+    Results.Ok(service.GetSettings(TenantContextMiddleware.Get(context)))).RequireAuthorization("Authenticated");
+app.MapPatch("/v1/tenant/settings", (TenantSettingsPatch patch, HttpContext context, GovernanceService service) =>
+    Results.Ok(service.UpdateSettings(TenantContextMiddleware.Get(context), patch, IfMatch(context.Request))))
+    .RequireAuthorization("Authenticated");
+app.MapGet("/v1/tenant/memberships", (HttpContext context, GovernanceService service) =>
+    Results.Ok(service.ListMemberships(TenantContextMiddleware.Get(context)))).RequireAuthorization("Authenticated");
+app.MapPatch("/v1/tenant/memberships/{userId:guid}", (Guid userId, MembershipPatch patch,
+    HttpContext context, GovernanceService service) => Results.Ok(service.UpdateMembership(
+        TenantContextMiddleware.Get(context), userId, patch, IfMatch(context.Request))))
+    .RequireAuthorization("Authenticated");
+app.MapDelete("/v1/tenant/memberships/{userId:guid}", (Guid userId, HttpContext context,
+    GovernanceService service) =>
+{
+    service.RemoveMembership(TenantContextMiddleware.Get(context), userId, IfMatch(context.Request));
+    return Results.NoContent();
+}).RequireAuthorization("Authenticated");
+app.MapGet("/v1/tenant/invitations", (HttpContext context, GovernanceService service) =>
+    Results.Ok(service.ListInvitations(TenantContextMiddleware.Get(context)))).RequireAuthorization("Authenticated");
+app.MapPost("/v1/tenant/invitations", (InvitationRequest request, HttpContext context,
+    GovernanceService service) => Results.Created("/v1/tenant/invitations", service.CreateInvitation(
+        TenantContextMiddleware.Get(context), request, context.Request.Headers["Idempotency-Key"].ToString())))
+    .RequireAuthorization("Authenticated");
+app.MapDelete("/v1/tenant/invitations/{invitationId:guid}", (Guid invitationId, HttpContext context,
+    GovernanceService service) =>
+{
+    service.RevokeInvitation(TenantContextMiddleware.Get(context), invitationId);
+    return Results.NoContent();
+}).RequireAuthorization("Authenticated");
+
+app.MapGet("/v1/devices", (HttpContext context, GovernanceService service) =>
+    Results.Ok(service.ListDevices(TenantContextMiddleware.Get(context)))).RequireAuthorization("Authenticated");
+app.MapGet("/v1/devices/{deviceId:guid}", (Guid deviceId, HttpContext context, GovernanceService service) =>
+    Results.Ok(service.GetDevice(TenantContextMiddleware.Get(context), deviceId))).RequireAuthorization("Authenticated");
+app.MapDelete("/v1/devices/{deviceId:guid}", (Guid deviceId, HttpContext context, GovernanceService service) =>
+{
+    service.RevokeDevice(TenantContextMiddleware.Get(context), deviceId, IfMatch(context.Request));
+    return Results.NoContent();
+}).RequireAuthorization("Authenticated");
+
+app.MapGet("/v1/tenant/policies", (HttpContext context, GovernanceService service) =>
+    Results.Ok(service.ListPolicies(TenantContextMiddleware.Get(context)))).RequireAuthorization("Authenticated");
+app.MapPost("/v1/tenant/policies", (PolicyDocumentRequest request, HttpContext context,
+    GovernanceService service) => Results.Created("/v1/tenant/policies", service.CreatePolicy(
+        TenantContextMiddleware.Get(context), request, context.Request.Headers["Idempotency-Key"].ToString())))
+    .RequireAuthorization("Authenticated");
+app.MapPost("/v1/tenant/policies/{policyId:guid}/versions", (Guid policyId, PolicyDocumentRequest request,
+    HttpContext context, GovernanceService service) => Results.Created($"/v1/tenant/policies/{policyId:D}",
+        service.CreatePolicyVersion(TenantContextMiddleware.Get(context), policyId, request,
+            IfMatch(context.Request)))).RequireAuthorization("Authenticated");
+app.MapPost("/v1/tenant/policies/{policyId:guid}/activate", (Guid policyId,
+    ActivatePolicyVersionRequest request, HttpContext context, GovernanceService service) => Results.Ok(
+        service.ActivatePolicy(TenantContextMiddleware.Get(context), policyId, request,
+            IfMatch(context.Request)))).RequireAuthorization("Authenticated");
+app.MapPost("/v1/tenant/policy-evaluations", (PolicyEvaluationRequest request, HttpContext context,
+    GovernanceService service) => Results.Ok(service.EvaluatePolicy(TenantContextMiddleware.Get(context), request)))
+    .RequireAuthorization("Authenticated");
+
+app.MapGet("/v1/tenant/audit-events", (HttpContext context, GovernanceService service,
+    DateTimeOffset? from, DateTimeOffset? to, string? category) => Results.Ok(service.ListAudit(
+        TenantContextMiddleware.Get(context), from, to, category))).RequireAuthorization("Authenticated");
+app.MapGet("/v1/tenant/audit-events/verification", (HttpContext context, GovernanceService service) =>
+    Results.Ok(service.VerifyAudit(TenantContextMiddleware.Get(context)))).RequireAuthorization("Authenticated");
+app.MapGet("/v1/tenant/audit-events/export", (HttpContext context, GovernanceService service) =>
+    Results.Text(service.ExportAudit(TenantContextMiddleware.Get(context)), "application/x-ndjson", Encoding.UTF8))
+    .RequireAuthorization("Authenticated");
+
+app.MapPost("/v1/tenant/data-exports", (DataExportRequest request, HttpContext context,
+    GovernanceService service) => Results.Accepted($"/v1/tenant/data-exports", service.RequestDataExport(
+        TenantContextMiddleware.Get(context), request, context.Request.Headers["Idempotency-Key"].ToString(),
+        $"{context.Request.Scheme}://{context.Request.Host}"))).RequireAuthorization("Authenticated");
+app.MapGet("/v1/tenant/data-exports/{requestId:guid}", (Guid requestId, HttpContext context,
+    GovernanceService service) => Results.Ok(service.GetDataExport(TenantContextMiddleware.Get(context), requestId,
+        $"{context.Request.Scheme}://{context.Request.Host}"))).RequireAuthorization("Authenticated");
+app.MapGet("/v1/tenant/data-exports/{requestId:guid}/download", (Guid requestId, string token,
+    HttpContext context, GovernanceService service) =>
+{
+    ExportDownload export = service.DownloadDataExport(TenantContextMiddleware.Get(context), requestId, token);
+    return Results.File(export.Content, export.ContentType, export.FileName);
+}).RequireAuthorization("Authenticated");
+
+app.MapPost("/v1/tenant/closure-requests", (TenantClosureRequest request, HttpContext context,
+    GovernanceService service) => Results.Accepted("/v1/tenant/closure-requests", service.RequestClosure(
+        TenantContextMiddleware.Get(context), request, context.Request.Headers["Idempotency-Key"].ToString())))
+    .RequireAuthorization("Authenticated");
+app.MapGet("/v1/tenant/closure-requests/{requestId:guid}", (Guid requestId, HttpContext context,
+    GovernanceService service) => Results.Ok(service.GetClosure(TenantContextMiddleware.Get(context), requestId)))
+    .RequireAuthorization("Authenticated");
+app.MapDelete("/v1/tenant/closure-requests/{requestId:guid}", (Guid requestId, HttpContext context,
+    GovernanceService service) =>
+{
+    service.CancelClosure(TenantContextMiddleware.Get(context), requestId, IfMatch(context.Request));
+    return Results.NoContent();
+}).RequireAuthorization("Authenticated");
+app.MapPost("/v1/tenant/support-grants", (SupportGrantRequest request, HttpContext context,
+    GovernanceService service) => Results.Created("/v1/tenant/support-grants", service.CreateSupportGrant(
+        TenantContextMiddleware.Get(context), request))).RequireAuthorization("Authenticated");
+app.MapGet("/internal/v1/support/tenants/{tenantId:guid}", (Guid tenantId, Guid grantId,
+    ClaimsPrincipal principal, GovernanceService service) => Results.Ok(service.ReadTenantAsSupport(
+        tenantId, grantId, TenantActor.FromPrincipal(principal)))).RequireAuthorization("Authenticated");
 
 app.MapPost("/v1/attended-sessions", (CreateAttendedSessionRequest request, HttpRequest http,
     AttendedSessionService service) => Results.Created($"/v1/attended-sessions", service.Create(request,
@@ -127,8 +264,9 @@ app.MapPost("/v1/attended-sessions", (CreateAttendedSessionRequest request, Http
         $"{http.Scheme}://{http.Host}"))).AllowAnonymous();
 
 app.MapPost("/v1/attended-sessions/resolve", (ResolveAttendedSessionRequest request, ClaimsPrincipal principal,
-    HttpContext context, AttendedSessionService service, ResolveAbuseGuard abuse) => abuse.TryAcquire(context, request.SupportCode)
-        ? Results.Ok(service.Resolve(request, OperatorFrom(principal)))
+    HttpContext context, AttendedSessionService service, GovernanceService governanceService,
+    ResolveAbuseGuard abuse) => abuse.TryAcquire(context, request.SupportCode)
+        ? Results.Ok(service.Resolve(request, OperatorFrom(principal, governanceService, testing)))
         : Results.Json(new ProblemContract("RATE_LIMITED", "Too many requests.", Guid.NewGuid(), true, 60), statusCode: 429))
     .RequireAuthorization("Operator").RequireRateLimiting("resolve");
 
@@ -195,8 +333,9 @@ app.MapPost("/internal/v1/turn-usage", async (HttpRequest request, TurnCredentia
         request.Headers["X-RSP-Turn-Signature"][0]!));
 }).AllowAnonymous();
 
-app.MapGet("/v1/sessions/{sessionId:guid}", (Guid sessionId, AttendedSessionService service) =>
-    Results.Ok(service.Get(sessionId))).RequireAuthorization("Operator");
+app.MapGet("/v1/sessions/{sessionId:guid}", (Guid sessionId, ClaimsPrincipal principal,
+    AttendedSessionService service, GovernanceService governanceService) =>
+    Results.Ok(service.Get(sessionId, OperatorFrom(principal, governanceService, testing)))).RequireAuthorization("Operator");
 app.MapGet("/health/live", () => Results.Ok(new { status = "ok" })).AllowAnonymous();
 
 app.Run();
@@ -216,7 +355,7 @@ static long IfMatch(HttpRequest request)
         throw new ControlPlaneException(400, "IF_MATCH_REQUIRED", "A valid If-Match state version is required.");
 }
 
-static OperatorIdentity OperatorFrom(ClaimsPrincipal principal)
+static OperatorIdentity OperatorFrom(ClaimsPrincipal principal, GovernanceService governance, bool testing)
 {
     string? subject = principal.FindFirstValue("sub");
     string? name = principal.FindFirstValue("name");
@@ -225,6 +364,7 @@ static OperatorIdentity OperatorFrom(ClaimsPrincipal principal)
         string.IsNullOrWhiteSpace(subject) || string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(tenantName) ||
         name.Length > 200 || tenantName.Length > 200)
         throw new ControlPlaneException(403, "TENANT_CONTEXT_INVALID", "Tenant context was invalid.");
+    if (!testing) return governance.ResolveOperatorIdentity(tenantId, TenantActor.FromPrincipal(principal));
     return new OperatorIdentity(tenantId, subject, name, tenantName,
         string.Equals(principal.FindFirstValue("tenant_verified"), "true", StringComparison.OrdinalIgnoreCase));
 }
@@ -238,14 +378,24 @@ internal sealed class TestOidcHandler(IOptionsMonitor<AuthenticationSchemeOption
     {
         if (!Request.Headers.TryGetValue("X-Test-Operator-Subject", out Microsoft.Extensions.Primitives.StringValues subject))
             return Task.FromResult(AuthenticateResult.NoResult());
-        Claim[] claims =
+        List<Claim> claims =
         [
             new("sub", subject.ToString()),
             new("name", Request.Headers["X-Test-Operator-Name"].ToString()),
+            new("email", Request.Headers["X-Test-Operator-Email"].ToString()),
+            new("iss", "https://testing.remote-support.invalid"),
             new("tenant_id", Request.Headers["X-Test-Tenant-Id"].ToString()),
             new("tenant_name", Request.Headers["X-Test-Tenant-Name"].ToString()),
             new("tenant_verified", Request.Headers["X-Test-Tenant-Verified"].ToString()),
         ];
+        if (string.Equals(Request.Headers["X-Test-Mfa"].ToString(), "true", StringComparison.OrdinalIgnoreCase))
+        {
+            claims.Add(new Claim("amr", "mfa"));
+            claims.Add(new Claim("auth_time", Request.Headers["X-Test-Auth-Time"].FirstOrDefault() ??
+                DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(System.Globalization.CultureInfo.InvariantCulture)));
+        }
+        if (Request.Headers.TryGetValue("X-Test-Platform-Role", out Microsoft.Extensions.Primitives.StringValues platformRole))
+            claims.Add(new Claim("platform_role", platformRole.ToString()));
         ClaimsPrincipal principal = new(new ClaimsIdentity(claims, Scheme.Name));
         return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(principal, Scheme.Name)));
     }

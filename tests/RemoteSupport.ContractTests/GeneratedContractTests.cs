@@ -8,8 +8,8 @@ public sealed class GeneratedContractTests
     [Trait("Requirement", "NFR-MNT-001")]
     public void OpenApiOperationsAreGeneratedOnce()
     {
-        Assert.Equal(49, OpenApiContract.Operations.Count);
-        Assert.Equal(49, OpenApiContract.Operations.Select(operation => operation.OperationId).Distinct(StringComparer.Ordinal).Count());
+        Assert.Equal(54, OpenApiContract.Operations.Count);
+        Assert.Equal(54, OpenApiContract.Operations.Select(operation => operation.OperationId).Distinct(StringComparer.Ordinal).Count());
     }
 
     [Fact]

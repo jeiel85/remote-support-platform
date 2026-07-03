@@ -1,0 +1,16 @@
+@page "/tenant/close"
+
+<PageTitle>테넌트 폐쇄 · Remote Support</PageTitle>
+<h1>테넌트 폐쇄</h1>
+<section class="panel danger narrow">
+    <h2>주의가 필요한 작업</h2>
+    <p>재인증 후 7일의 취소 기간이 시작됩니다. 완료되면 구성원 접근과 장치 자격 증명이 폐기됩니다.</p>
+    <form method="post" action="/actions/closure">
+        <AntiforgeryToken />
+        <label for="confirmation">확인을 위해 테넌트 슬러그 입력</label>
+        <input id="confirmation" name="confirmationPhrase" required autocomplete="off" />
+        <label for="reason">사유</label>
+        <textarea id="reason" name="reason" rows="4" required maxlength="2000"></textarea>
+        <button class="danger-button" type="submit">폐쇄 요청</button>
+    </form>
+</section>

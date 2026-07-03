@@ -23,6 +23,26 @@ This document is an engineering checklist, not legal advice. Counsel must review
 | Content data | screen, input, clipboard, files | not stored by control plane |
 | Support diagnostics | crash dumps, traces | explicit collection and short retention |
 
+### Goal 10 governance inventory
+
+| Persisted field group | Classification and purpose | Access owner | Retention / deletion / export behavior |
+|---|---|---|---|
+| Tenant profile and settings | Customer metadata required for tenancy, regional routing, feature limits and retention policy | Owner/Admin; limited read for authorized tenant roles | Tenant life; included in owner export; deleted after closure evidence and required legal hold |
+| Membership subject, display name, email and roles | Personal/account data required for authentication, authorization and invitations | Owner/Admin; Auditor read | Membership life plus tenant-configured audit evidence; removed access is immediate; included in owner export |
+| Invitation email, role and HMAC token lookup | Contact/account bootstrap data | Owner/Admin; Auditor read metadata | Until acceptance, revocation or expiry; raw token is never persisted |
+| Device ID, public key, versions and health metadata | Device/security metadata required for enrollment and revocation | Owner/Admin; authorized read roles | Enrollment life plus short revocation tombstone; private keys and reusable raw credentials are not stored |
+| Policy documents, immutable versions and decisions | Security configuration and authorization evidence | Owner/Admin; Auditor read | Tenant life and configured audit retention; decision inputs contain normalized server-derived metadata only |
+| Audit actor/target/action metadata and hashes | Restricted security evidence | Owner/Admin/Security Auditor | Tenant-configured retention with a hash checkpoint; no session content or secrets; JSONL export is audited |
+| Export workflow ID, artifact hash and expiry | Restricted privacy-workflow metadata | Owner only | Artifact expires after 24 hours or first download; workflow evidence follows audit retention |
+| Closure workflow state and timestamps | Restricted privacy-workflow metadata | Owner only | Cooling-off and completion evidence follows audit/legal retention; free-form reason is validated but not persisted |
+| Support JIT grant subject, case reason code and expiry | Highly restricted privileged-access evidence | Tenant Owner and governed platform security staff | Maximum one-hour grant; every metadata read is attributed and audited; session content remains unavailable |
+
+All Goal 10 records use the tenant data region as the processing boundary. A
+production deployment must map that logical region to its PostgreSQL, backup and
+export-storage locations. The file export sink is an operator-configured hook;
+object paths and raw invitation, enrollment and download secrets are never
+returned in audit details.
+
 ## 3. Korea launch considerations
 
 For a Korea-based commercial service, validate the current Personal Information Protection Act and subordinate rules at launch time. The design should support:

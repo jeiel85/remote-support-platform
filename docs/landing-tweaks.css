@@ -1,0 +1,7 @@
+.hero-copy { width: min(780px, 88vw); }
+h1 { font-size: clamp(3.3rem, 5.2vw, 5.6rem); }
+
+@media (max-width: 600px) {
+  .hero-copy { width: 88vw; }
+  h1 { font-size: 3.2rem; }
+}

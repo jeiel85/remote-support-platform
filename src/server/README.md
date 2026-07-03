@@ -12,6 +12,8 @@ The Goal 06 host is `RemoteSupport.Server`. Release startup requires:
   bytes as base64 text;
 - `ControlPlane__TurnRegion` and indexed `ControlPlane__TurnUrls` entries for
   TURN/UDP, TURN/TCP, and TURN/TLS.
+- `Governance__ExportDirectory`, an encrypted region-approved filesystem or
+  object-storage mount used for short-lived tenant export artifacts.
 
 The server applies immutable SQL files from `Migrations` before accepting
 traffic. The attended module writes its state, hash-chained audit record and
@@ -36,3 +38,14 @@ single-use and expire within 60 seconds; TURN credentials expire within ten
 minutes and are additionally bounded by peer/session expiry. `/internal/v1/turn-usage`
 is for the coturn collector only and must also be restricted to the management
 network; it requires a timestamped HMAC body signature.
+
+Goal 10 tenant endpoints require authenticated OIDC plus `X-Tenant-Id`. The
+middleware resolves an active stored membership and ignores client role claims.
+PostgreSQL governance transactions set `app.tenant_id` locally before accessing
+RLS-protected aggregate and audit rows. Production must run the API through a
+non-owner database role; the migration owner is separate.
+
+The governance worker completes privacy exports, expires one-time artifacts and
+invitations, advances closure cooling-off workflows, revokes tenant access on
+completion and creates audit retention checkpoints. Raw invitation, enrollment,
+device credential and export-download secrets are never persisted.

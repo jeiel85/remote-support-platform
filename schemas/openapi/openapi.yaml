@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Remote Support Control Plane API
-  version: 1.3.0
+  version: 1.4.0
   description: Implementation contract for attended and managed-host control-plane operations. Media, input, clipboard, chat,
     and file bytes remain peer-to-peer and are not accepted by this API.
 servers:
@@ -674,6 +674,85 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PagedAuditEvents'
+        '400': *id001
+        '401': *id004
+        '403': *id006
+        '500': *id003
+  /tenant/audit-events/verification:
+    get:
+      operationId: verifyTenantAuditChain
+      summary: Verify the current tenant audit hash chain
+      tags: [Audit]
+      parameters:
+      - $ref: '#/components/parameters/TenantContext'
+      responses:
+        '200':
+          description: Audit verification result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditVerification'
+        '401': *id004
+        '403': *id006
+        '500': *id003
+  /tenant/audit-events/export:
+    get:
+      operationId: exportTenantAuditEvents
+      summary: Export tenant audit metadata as JSON Lines
+      tags: [Audit]
+      parameters:
+      - $ref: '#/components/parameters/TenantContext'
+      responses:
+        '200':
+          description: Hash-chain-preserving audit export
+          content:
+            application/x-ndjson:
+              schema: { type: string }
+        '401': *id004
+        '403': *id006
+        '500': *id003
+  /tenant/policy-evaluations:
+    post:
+      operationId: evaluateTenantPolicy
+      summary: Evaluate active tenant policy using server-derived identity claims
+      tags: [Policies]
+      parameters:
+      - $ref: '#/components/parameters/TenantContext'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolicyEvaluationRequest'
+      responses:
+        '200':
+          description: Deterministic policy decision
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyDecision'
+        '400': *id001
+        '401': *id004
+        '403': *id006
+        '500': *id003
+  /tenant/support-grants:
+    post:
+      operationId: createSupportGrant
+      summary: Create an owner-approved time-bounded platform support grant
+      tags: [Tenant, Audit]
+      parameters:
+      - $ref: '#/components/parameters/TenantContext'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SupportGrantRequest' }
+      responses:
+        '201':
+          description: Support grant
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SupportGrant' }
         '400': *id001
         '401': *id004
         '403': *id006
@@ -1353,6 +1432,32 @@ paths:
           $ref: '#/components/responses/Conflict'
         '429':
           $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /tenant/data-exports/{requestId}/download:
+    get:
+      operationId: downloadTenantDataExport
+      summary: Consume a short-lived one-time tenant export URL
+      tags: [Tenant]
+      parameters:
+      - $ref: '#/components/parameters/TenantContext'
+      - $ref: '#/components/parameters/RequestId'
+      - name: token
+        in: query
+        required: true
+        schema: { type: string, minLength: 32 }
+      responses:
+        '200':
+          description: Tenant export artifact
+          content:
+            application/octet-stream:
+              schema: { type: string, format: binary }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalError'
   /tenant/closure-requests/{requestId}:
@@ -2359,6 +2464,7 @@ components:
       - osVersion
       - unattendedEnabled
       - enrolledAt
+      - authorizationVersion
       properties:
         id:
           type: string
@@ -2385,6 +2491,9 @@ components:
           - string
           - 'null'
           format: date-time
+        authorizationVersion:
+          type: integer
+          minimum: 1
     ManagedSessionRequest:
       type: object
       additionalProperties: false
@@ -2437,6 +2546,7 @@ components:
       - status
       - activeVersion
       - createdAt
+      - resourceVersion
       properties:
         id:
           type: string
@@ -2457,6 +2567,9 @@ components:
         createdAt:
           type: string
           format: date-time
+        resourceVersion:
+          type: integer
+          minimum: 1
     AuditEvent:
       type: object
       additionalProperties: false
@@ -2467,10 +2580,18 @@ components:
       - outcome
       - occurredAt
       - correlationId
+      - chainSequence
+      - actorType
+      - details
+      - previousHash
+      - eventHash
       properties:
         id:
           type: string
           format: uuid
+        chainSequence:
+          type: integer
+          minimum: 1
         category:
           type: string
         action:
@@ -2499,6 +2620,103 @@ components:
           format: uuid
         details:
           type: object
+        previousHash:
+          type:
+          - string
+          - 'null'
+          pattern: ^[a-f0-9]{64}$
+        eventHash:
+          type: string
+          pattern: ^[a-f0-9]{64}$
+    AuditVerification:
+      type: object
+      additionalProperties: false
+      required: [valid, verifiedEvents, verifiedAt]
+      properties:
+        valid: { type: boolean }
+        verifiedEvents: { type: integer, minimum: 0 }
+        firstInvalidSequence:
+          type: [integer, 'null']
+          minimum: 1
+        errorCode: { type: [string, 'null'] }
+        verifiedAt: { type: string, format: date-time }
+    PolicyEvaluationRequest:
+      type: object
+      additionalProperties: false
+      required: [sessionType, requestedScopes, localUserPresent]
+      properties:
+        deviceId: { type: [string, 'null'], format: uuid }
+        sessionType:
+          type: string
+          enum: [ATTENDED, MANAGED_ATTENDED, UNATTENDED]
+        requestedScopes:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items: { $ref: '#/components/schemas/Scope' }
+        requestedDurationSeconds:
+          type: [integer, 'null']
+          minimum: 60
+          maximum: 28800
+        localUserPresent: { type: boolean }
+    PolicyDecision:
+      type: object
+      additionalProperties: false
+      required: [decisionId, tenantId, policyVersionIds, allow, grantedScopes, deniedScopes,
+        requiresLocalConsent, requiresStepUpMfa, acceptedMfaMethods, maxSessionDurationSeconds,
+        maxFileBytes, explanationCodes, evaluatedAt, inputHash]
+      properties:
+        decisionId: { type: string, format: uuid }
+        tenantId: { type: string, format: uuid }
+        policyVersionIds:
+          type: array
+          items: { type: string }
+        allow: { type: boolean }
+        grantedScopes:
+          type: array
+          items: { $ref: '#/components/schemas/Scope' }
+        deniedScopes:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [scope, reasonCode]
+            properties:
+              scope: { $ref: '#/components/schemas/Scope' }
+              reasonCode: { type: string }
+        requiresLocalConsent: { type: boolean }
+        requiresStepUpMfa: { type: boolean }
+        acceptedMfaMethods:
+          type: array
+          items: { type: string }
+        maxSessionDurationSeconds: { type: integer, minimum: 0 }
+        maxFileBytes: { type: integer, minimum: 0 }
+        explanationCodes:
+          type: array
+          items: { type: string }
+        evaluatedAt: { type: string, format: date-time }
+        inputHash: { type: string, pattern: '^[a-f0-9]{64}$' }
+    SupportGrantRequest:
+      type: object
+      additionalProperties: false
+      required: [tenantId, supportSubject, reasonCode, durationMinutes, breakGlass]
+      properties:
+        tenantId: { type: string, format: uuid }
+        supportSubject: { type: string, minLength: 1, maxLength: 256 }
+        reasonCode: { type: string, minLength: 1, maxLength: 128 }
+        durationMinutes: { type: integer, minimum: 1, maximum: 60 }
+        breakGlass: { type: boolean }
+    SupportGrant:
+      type: object
+      additionalProperties: false
+      required: [id, tenantId, supportSubject, reasonCode, expiresAt, breakGlass]
+      properties:
+        id: { type: string, format: uuid }
+        tenantId: { type: string, format: uuid }
+        supportSubject: { type: string }
+        reasonCode: { type: string }
+        expiresAt: { type: string, format: date-time }
+        breakGlass: { type: boolean }
     UpdateManifestEnvelope:
       type: object
       description: Signed update metadata envelope. Exact JSON Schema is the source of truth.
@@ -2549,6 +2767,7 @@ components:
       additionalProperties: false
       required:
       - items
+      - chainValid
       properties:
         items:
           type: array
@@ -2558,6 +2777,8 @@ components:
           type:
           - string
           - 'null'
+        chainValid:
+          type: boolean
     Problem:
       type: object
       additionalProperties: false
@@ -3096,6 +3317,12 @@ components:
         createdAt:
           type: string
           format: date-time
+        acceptanceToken:
+          type:
+          - string
+          - 'null'
+          minLength: 32
+          description: Returned only on creation for out-of-band delivery; never persisted or returned by list operations.
     DataExportRequest:
       type: object
       additionalProperties: false

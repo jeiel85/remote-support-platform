@@ -4,6 +4,9 @@
 **Target:** Windows-first commercial remote-support platform  
 **Status:** Implementation-ready contracts; production release remains conditional on goal evidence and release gates.
 
+**Project site:** https://jeiel85.github.io/remote-support-platform/
+**Current build:** `v0.9.0-beta.1` unsigned Windows x64 attended beta
+
 ## What this bundle fixes
 
 The final audit separates attended GA, Managed Host, and unattended release trains; defines the missing managed-device command and credential lifecycle; makes consent/device decisions cryptographically sender-constrained; binds WebRTC DTLS fingerprints to peer authorization; defines update/audit canonicalization; adds Admin Portal and tenant-governance APIs; strengthens tenant-bound database relationships; and adds explicit codec/legal gates.
@@ -21,6 +24,11 @@ The final audit separates attended GA, Managed Host, and unattended release trai
 - Goals 01–12: attended GA.
 - Goal 13: separately released Managed Host foundation.
 - Goal 14: separately approved unattended access.
+
+Goals 01–10 now have runnable implementation evidence. Goal 10 adds tenant
+RBAC, versioned policies, tamper-evident audit, device governance, privacy
+workflows and a separately deployable Blazor Admin Portal. Signed updates and
+production observability remain Goal 11.
 
 The canonical machine-readable contracts are OpenAPI, Protobuf, JSON Schemas, native C ABI header, PostgreSQL schema, requirements traceability CSV and acceptance-test CSV. Markdown explains intent but does not override those contracts.
 

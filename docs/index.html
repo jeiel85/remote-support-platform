@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#07111c">
+  <meta name="description" content="동의 기반의 안전한 Windows 원격지원 플랫폼. 휴대용 Agent와 Operator Console로 빠르게 연결하세요.">
+  <meta property="og:title" content="Remote Support Platform">
+  <meta property="og:description" content="Consent-first, peer-to-peer Windows remote support.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://jeiel85.github.io/remote-support-platform/">
+  <meta property="og:image" content="https://jeiel85.github.io/remote-support-platform/assets/remote-support-hero.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <title>Remote Support Platform · 안전한 Windows 원격지원</title>
+  <link rel="stylesheet" href="landing.css">
+  <link rel="stylesheet" href="landing-tweaks.css">
+</head>
+<body>
+  <a class="skip" href="#main">본문으로 건너뛰기</a>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="Remote Support Platform 홈">
+      <span class="mark" aria-hidden="true">RS</span>
+      <span>Remote Support <small>Platform</small></span>
+    </a>
+    <nav aria-label="주요 메뉴">
+      <a href="#features">기능</a>
+      <a href="#security">보안</a>
+      <a href="#start">시작하기</a>
+      <a href="https://github.com/jeiel85/remote-support-platform">GitHub</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top">
+      <img class="hero-art" src="assets/remote-support-hero.png" width="1672" height="939"
+           alt="두 대의 Windows PC가 동의 확인과 보안 연결을 거쳐 원격지원 세션을 구성하는 모습">
+      <div class="hero-shade" aria-hidden="true"></div>
+      <div class="hero-copy">
+        <span class="kicker"><i></i> Open source · Windows-first</span>
+        <h1>보여줄 때만 연결되는<br><em>원격지원.</em></h1>
+        <p>Remote Support Platform은 명시적 사용자 동의, 세션별 권한,
+          암호화된 P2P 전송을 중심에 둔 Windows 원격지원 프로젝트입니다.</p>
+        <div class="actions">
+          <a class="button primary" href="https://github.com/jeiel85/remote-support-platform/releases/tag/v0.9.0-beta.1">베타 다운로드</a>
+          <a class="button secondary" href="https://github.com/jeiel85/remote-support-platform">소스 보기 <span aria-hidden="true">↗</span></a>
+        </div>
+        <p class="notice"><strong>v0.9.0-beta.1</strong> · Windows x64 · 현재 개발용 바이너리는 서명되지 않았습니다.</p>
+      </div>
+    </section>
+
+    <section class="trust-row" aria-label="핵심 원칙">
+      <span>명시적 호스트 동의</span><span>세션별 임시 키</span><span>직접 연결 + TURN</span><span>콘텐츠 비저장</span>
+    </section>
+
+    <section class="section" id="features">
+      <div class="section-head">
+        <span class="kicker">Built for real support</span>
+        <h2>필요한 기능은 가깝게.<br>위험한 권한은 멀리.</h2>
+        <p>휴대용 호스트와 설치형 운영자 콘솔이 화면 공유부터 입력, 클립보드, 파일과 채팅까지
+          승인된 범위 안에서만 동작합니다.</p>
+      </div>
+      <div class="feature-grid">
+        <article><span class="number">01</span><h3>빠른 연결</h3><p>호스트는 설치 없이 Agent를 실행하고 짧은 지원 코드를 전달합니다.</p></article>
+        <article><span class="number">02</span><h3>보이는 동의</h3><p>운영자와 조직, 요청 권한을 확인한 뒤 필요한 범위만 승인합니다.</p></article>
+        <article><span class="number">03</span><h3>안전한 제어</h3><p>화면 보기, 포인터, 키보드, 파일 전송 권한을 독립적으로 취소할 수 있습니다.</p></article>
+        <article><span class="number">04</span><h3>인터넷 연결</h3><p>직접 P2P를 우선하고, 불가능할 때 인증된 TURN 경로로 자동 전환합니다.</p></article>
+        <article><span class="number">05</span><h3>데이터 기능</h3><p>텍스트 클립보드, 채팅과 무결성 검증 파일 전송을 제공합니다.</p></article>
+        <article><span class="number">06</span><h3>운영 준비</h3><p>SBOM, provenance, 감사 체인과 재현 가능한 패키지 검증을 포함합니다.</p></article>
+      </div>
+    </section>
+
+    <section class="security" id="security">
+      <div>
+        <span class="kicker"><i></i> Consent-first security</span>
+        <h2>원격 접속이 아니라<br>검증된 세션을 만듭니다.</h2>
+      </div>
+      <ol>
+        <li><span>1</span><div><strong>운영자 인증</strong><p>OIDC 기반 로그인으로 운영자와 테넌트 신원을 확인합니다.</p></div></li>
+        <li><span>2</span><div><strong>호스트 서명 동의</strong><p>승인 내용은 호스트의 임시 키로 서명되어 세션에 묶입니다.</p></div></li>
+        <li><span>3</span><div><strong>전송 종단 결합</strong><p>DTLS 지문과 승인된 피어를 상호 검증한 뒤 콘텐츠 채널을 엽니다.</p></div></li>
+        <li><span>4</span><div><strong>즉시 범위 축소</strong><p>호스트 취소와 긴급 종료는 진행 중 입력과 전송에도 즉시 적용됩니다.</p></div></li>
+      </ol>
+    </section>
+
+    <section class="section start" id="start">
+      <div class="section-head">
+        <span class="kicker">Try the portable beta</span>
+        <h2>두 파일이면 확인할 수 있습니다.</h2>
+      </div>
+      <div class="steps">
+        <article><span>HOST</span><h3>Agent ZIP</h3><p>지원받을 PC에서 압축을 풀고 Agent를 실행합니다.</p>
+          <a href="https://github.com/jeiel85/remote-support-platform/releases/download/v0.9.0-beta.1/RemoteSupport-Agent-Portable-0.9.0-beta.1-x64.zip">Agent 받기</a></article>
+        <b aria-hidden="true">→</b>
+        <article><span>OPERATOR</span><h3>Operator Setup</h3><p>지원할 PC에 사용자 단위 콘솔을 설치하고 코드를 입력합니다.</p>
+          <a href="https://github.com/jeiel85/remote-support-platform/releases/download/v0.9.0-beta.1/RemoteSupport-Operator-Setup-0.9.0-beta.1-x64.exe">Operator 받기</a></article>
+        <b aria-hidden="true">→</b>
+        <article><span>CONSENT</span><h3>권한 승인</h3><p>호스트에서 운영자 정보와 요청 범위를 확인한 뒤 승인합니다.</p>
+          <a href="https://github.com/jeiel85/remote-support-platform/releases/download/v0.9.0-beta.1/RemoteSupport-0.9.0-beta.1-verification.zip">검증 파일 받기</a></article>
+      </div>
+      <aside><strong>Windows 경고가 보이나요?</strong> 현재 베타는 Authenticode 미서명 개발 빌드입니다.
+        공개 코드와 SHA-256 검증 자료를 확인하고 테스트 환경에서만 실행하세요.</aside>
+    </section>
+
+    <section class="cta">
+      <span class="kicker">Build in the open</span>
+      <h2>설계부터 릴리스 증거까지<br>모두 저장소에 있습니다.</h2>
+      <p>아키텍처, 프로토콜, 위협 모델과 Goal별 구현 증거를 함께 검토하세요.</p>
+      <a class="button primary" href="https://github.com/jeiel85/remote-support-platform">GitHub에서 살펴보기 <span aria-hidden="true">↗</span></a>
+    </section>
+  </main>
+
+  <footer>
+    <a class="brand" href="#top"><span class="mark" aria-hidden="true">RS</span><span>Remote Support Platform</span></a>
+    <p>Open-source attended remote support for Windows.</p>
+    <p><a href="https://github.com/jeiel85/remote-support-platform/releases">Releases</a> · <a href="https://github.com/jeiel85/remote-support-platform/issues">Issues</a></p>
+  </footer>
+</body>
+</html>
