@@ -1,0 +1,60 @@
+<Window x:Class="RemoteSupport.Agent.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="{DynamicResource AgentTitle}" Width="620" Height="580" MinWidth="520" MinHeight="500"
+        WindowStartupLocation="CenterScreen" AutomationProperties.Name="{DynamicResource AgentTitle}">
+  <Grid Background="#F6F8FC">
+    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+    <Border Background="#173B68" Padding="24">
+      <StackPanel>
+        <TextBlock Text="{DynamicResource AgentTitle}" Foreground="White" FontSize="26" FontWeight="SemiBold"/>
+        <TextBlock Text="{DynamicResource Publisher}" Foreground="#DDEBFA" Margin="0,6,0,0"/>
+        <TextBlock Text="{DynamicResource AttendedOnly}" Foreground="#FFF2B2" Margin="0,8,0,0" FontWeight="SemiBold"/>
+        <TextBlock Text="{DynamicResource EmergencyHint}" Foreground="White" Margin="0,5,0,0"/>
+      </StackPanel>
+    </Border>
+    <Grid Grid.Row="1" Margin="28">
+      <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+      <TextBlock Text="{DynamicResource ActiveDisclosure}" TextWrapping="Wrap" FontSize="15"/>
+      <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="22" Margin="0,24,0,0" BorderBrush="#CAD5E2" BorderThickness="1">
+        <StackPanel>
+          <TextBlock Text="{DynamicResource CodeLabel}" FontWeight="SemiBold"/>
+          <TextBlock x:Name="SupportCodeText" Text="—" FontSize="34" FontFamily="Consolas" FontWeight="Bold" Margin="0,10" AutomationProperties.LiveSetting="Assertive"/>
+          <StackPanel Orientation="Horizontal">
+            <Button x:Name="CopyButton" Content="{DynamicResource CopyCode}" Click="Copy_Click" Padding="14,7" IsEnabled="False" AutomationProperties.Name="{DynamicResource CopyCode}"/>
+            <TextBlock x:Name="ExpiryText" Margin="14,8,0,0"/>
+          </StackPanel>
+        </StackPanel>
+      </Border>
+      <StackPanel Grid.Row="2" Margin="0,22,0,0">
+        <TextBlock x:Name="StatusText" Text="{DynamicResource Waiting}" TextWrapping="Wrap" FontSize="15" AutomationProperties.LiveSetting="Polite"/>
+        <TextBlock x:Name="SessionIndicatorText" Margin="0,5,0,0" FontWeight="SemiBold" TextWrapping="Wrap"/>
+      </StackPanel>
+      <DockPanel Grid.Row="3" Margin="0,14,0,0">
+        <Button x:Name="RevokeScopesButton" DockPanel.Dock="Right" Content="{DynamicResource RevokeSelected}"
+                Click="RevokeScopes_Click" Padding="10,6" Margin="8,0,0,0" IsEnabled="False"
+                AutomationProperties.Name="{DynamicResource RevokeSelected}"/>
+        <ListBox x:Name="ActiveScopes" MaxHeight="80" SelectionMode="Extended"
+                 AutomationProperties.Name="{DynamicResource ActivePermissions}"/>
+      </DockPanel>
+      <Grid Grid.Row="4" Margin="0,12,0,0">
+        <Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+        <ListBox x:Name="ChatMessages" AutomationProperties.Name="{DynamicResource ChatMessagesName}"/>
+        <DockPanel Grid.Row="1" Margin="0,6,0,0">
+          <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+            <Button x:Name="SendClipboardButton" Content="{DynamicResource Clipboard}" Click="SendClipboard_Click" Padding="10,6" IsEnabled="False"/>
+            <Button x:Name="SendFileButton" Content="{DynamicResource File}" Click="SendFile_Click" Padding="10,6" Margin="6,0" IsEnabled="False"/>
+            <Button x:Name="CancelTransfersButton" Content="{DynamicResource CancelTransfers}" Click="CancelTransfers_Click" Padding="10,6" Margin="0,0,6,0" IsEnabled="False"/>
+            <Button x:Name="SendChatButton" Content="{DynamicResource Send}" Click="SendChat_Click" Padding="12,6" IsEnabled="False"/>
+          </StackPanel>
+          <TextBox x:Name="ChatInput" MaxLength="16384" Margin="0,0,6,0"/>
+        </DockPanel>
+      </Grid>
+    </Grid>
+    <Grid Grid.Row="2" Margin="28,10,28,24">
+      <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+      <Button x:Name="StartButton" Content="{DynamicResource StartSession}" Click="Start_Click" Padding="18,10" HorizontalAlignment="Left"/>
+      <Button x:Name="DisconnectButton" Grid.Column="1" Content="{DynamicResource Disconnect}" Click="Disconnect_Click" Padding="18,10" Background="#B42318" Foreground="White" FontWeight="Bold" IsEnabled="False" AutomationProperties.Name="{DynamicResource Disconnect}"/>
+    </Grid>
+  </Grid>
+</Window>

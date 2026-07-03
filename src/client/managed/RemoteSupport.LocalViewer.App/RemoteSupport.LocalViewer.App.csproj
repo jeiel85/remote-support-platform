@@ -5,10 +5,17 @@
     <UseWPF>true</UseWPF>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AssemblyName>RemoteSupport.Operator.Console</AssemblyName>
+    <Version>0.9.0-beta.1</Version>
+    <Product>Remote Support Operator Console</Product>
+    <Company>Remote Support</Company>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\RemoteSupport.Application\RemoteSupport.Application.csproj" />
     <ProjectReference Include="..\RemoteSupport.Infrastructure\RemoteSupport.Infrastructure.csproj" />
+    <ProjectReference Include="..\RemoteSupport.Observability\RemoteSupport.Observability.csproj" />
+    <ProjectReference Include="..\RemoteSupport.Media\RemoteSupport.Media.csproj" />
     <None Include="..\..\..\..\artifacts\native\$(Configuration)\remote_support_native.dll"
           Link="remote_support_native.dll" CopyToOutputDirectory="PreserveNewest"
           Condition="Exists('..\..\..\..\artifacts\native\$(Configuration)\remote_support_native.dll')" />

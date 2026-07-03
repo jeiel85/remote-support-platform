@@ -40,6 +40,11 @@
         "resolved": "3.1.4",
         "contentHash": "5mj99LvCqrq3CNi06xYdyIAXOEh+5b33F2nErCzI5zWiDdLHXiPXEWFSUAF8zlIv0ZWqjZNCwHTQeAPYbF3pCg=="
       },
+      "libsodium": {
+        "type": "Transitive",
+        "resolved": "1.0.22",
+        "contentHash": "KPD9SloJFclrsjnhABu7dzWrcyYkwPbvx5l1gRSPAX/0n+OBtSiVCKtGFv4n+ecWUHU0tCG9LSSwoZZx673zBQ=="
+      },
       "Microsoft.AspNetCore.TestHost": {
         "type": "Transitive",
         "resolved": "10.0.9",
@@ -453,12 +458,65 @@
           "xunit.extensibility.core": "[2.9.3]"
         }
       },
+      "remotesupport.application": {
+        "type": "Project",
+        "dependencies": {
+          "RemoteSupport.Domain": "[1.0.0, )"
+        }
+      },
+      "remotesupport.contracts": {
+        "type": "Project",
+        "dependencies": {
+          "Google.Protobuf": "[3.35.1, )"
+        }
+      },
+      "remotesupport.domain": {
+        "type": "Project"
+      },
+      "remotesupport.infrastructure": {
+        "type": "Project",
+        "dependencies": {
+          "RemoteSupport.Application": "[1.0.0, )",
+          "RemoteSupport.Ipc": "[1.0.0, )",
+          "RemoteSupport.Observability": "[1.0.0, )",
+          "RemoteSupport.Protocol": "[1.0.0, )",
+          "RemoteSupport.Security": "[1.0.0, )"
+        }
+      },
+      "remotesupport.ipc": {
+        "type": "Project",
+        "dependencies": {
+          "RemoteSupport.Contracts": "[1.0.0, )"
+        }
+      },
+      "remotesupport.observability": {
+        "type": "Project"
+      },
+      "remotesupport.protocol": {
+        "type": "Project",
+        "dependencies": {
+          "RemoteSupport.Contracts": "[1.0.0, )",
+          "RemoteSupport.Domain": "[1.0.0, )"
+        }
+      },
+      "remotesupport.security": {
+        "type": "Project",
+        "dependencies": {
+          "NSec.Cryptography": "[26.4.0, )"
+        }
+      },
       "remotesupport.server": {
         "type": "Project",
         "dependencies": {
           "Microsoft.AspNetCore.Authentication.JwtBearer": "[10.0.9, )",
           "Npgsql": "[10.0.3, )"
         }
+      },
+      "Google.Protobuf": {
+        "type": "CentralTransitive",
+        "requested": "[3.35.1, )",
+        "resolved": "3.35.1",
+        "contentHash": "pxtkuXhR8svkvDTQrYew9GZQt6eWhblz/V/WKUFrQgkHYlQPsumJTeF6ppHRJpe6j9ffukkd5lQULiiKaek4xA=="
       },
       "Microsoft.AspNetCore.Authentication.JwtBearer": {
         "type": "CentralTransitive",
@@ -476,6 +534,15 @@
         "contentHash": "7nb5YzXuvWWJxB0J8DiyL3we+X4FOctZrt0fIBnucOIaIevFEEwGQVZKtiu9olXdlNAK1eNgqSral6r/jlhI4w==",
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "10.0.0"
+        }
+      },
+      "NSec.Cryptography": {
+        "type": "CentralTransitive",
+        "requested": "[26.4.0, )",
+        "resolved": "26.4.0",
+        "contentHash": "0vsCtY5f+YgQROiWNqzgWp+l2pddfk9FkWoGV/bEo0MuEYPKlJWuoA8aOfO6qp3f+EnObKE3zSJhn1PspJeJVg==",
+        "dependencies": {
+          "libsodium": "[1.0.22, 1.0.23)"
         }
       }
     }

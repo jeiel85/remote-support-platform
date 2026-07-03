@@ -15,12 +15,15 @@ public sealed record VerifiedConsentRequest(
 public sealed class ConsentViewModel : INotifyPropertyChanged
 {
     private VerifiedConsentRequest? request;
+    private IReadOnlyList<ConsentScopeChoice> scopeChoices = [];
 
     public string OperatorDisplayName => request?.OperatorDisplayName ?? "Waiting for an authenticated operator";
     public string TenantDisplayName => request?.TenantDisplayName ?? "";
     public string VerificationText => request is null ? "No active request" :
         request.VerifiedTenant ? "Organization identity verified" : "Organization identity not verified";
     public IReadOnlyList<string> RequestedScopeLabels => request?.RequestedScopes.Select(ScopeLabel).ToArray() ?? [];
+    public IReadOnlyList<ConsentScopeChoice> ScopeChoices => scopeChoices;
+    public IReadOnlyList<string> SelectedScopes => scopeChoices.Where(choice => choice.IsSelected).Select(choice => choice.Scope).ToArray();
     public string ExpiryText => request is null ? "" : $"Expires {request.ExpiresAt.LocalDateTime:g}";
     public VerifiedConsentRequest? Request => request;
 
@@ -35,6 +38,7 @@ public sealed class ConsentViewModel : INotifyPropertyChanged
             throw new ArgumentException("Consent request scopes must be non-empty and unique.", nameof(value));
         _ = value.RequestedScopes.Select(ScopeLabel).ToArray();
         request = value;
+        scopeChoices = value.RequestedScopes.Select(scope => new ConsentScopeChoice(scope, scope == "VIEW_SCREEN")).ToArray();
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
     }
 
@@ -53,4 +57,21 @@ public sealed class ConsentViewModel : INotifyPropertyChanged
         "RECONNECT_AFTER_REBOOT" => "Reconnect after reboot",
         _ => throw new ArgumentOutOfRangeException(nameof(scope), scope, "Unknown consent scope."),
     };
+}
+
+public sealed class ConsentScopeChoice(string scope, bool selected) : INotifyPropertyChanged
+{
+    private bool isSelected = selected;
+    public string Scope { get; } = scope;
+    public bool IsSelected
+    {
+        get => isSelected;
+        set
+        {
+            if (isSelected == value) return;
+            isSelected = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSelected)));
+        }
+    }
+    public event PropertyChangedEventHandler? PropertyChanged;
 }

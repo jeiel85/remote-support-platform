@@ -1,0 +1,27 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+  <sys:String x:Key="ConsoleTitle">Remote Support Operator Console</sys:String>
+  <sys:String x:Key="SignIn">Sign in</sys:String><sys:String x:Key="SignedOut">Not signed in</sys:String>
+  <sys:String x:Key="SupportCode">Support code</sys:String><sys:String x:Key="RequestSupport">Request connection</sys:String>
+  <sys:String x:Key="Permissions">Request permissions</sys:String><sys:String x:Key="Disconnect">End session</sys:String>
+  <sys:String x:Key="RemoteScreen">Remote screen</sys:String><sys:String x:Key="DataFeatures">Chat and files</sys:String>
+  <sys:String x:Key="Diagnostics">Diagnostics</sys:String><sys:String x:Key="HardwarePreview">Local hardware preview</sys:String>
+  <sys:String x:Key="SendChat">Send chat</sys:String><sys:String x:Key="SendFile">Choose file to send</sys:String>
+  <sys:String x:Key="CancelTransfers">Cancel transfers</sys:String><sys:String x:Key="StatusScopesChanged">The host changed active permissions. Revoked actions stopped immediately.</sys:String>
+  <sys:String x:Key="WaitingConsent">Waiting for the host to review your identity and permissions.</sys:String>
+  <sys:String x:Key="ViewScreen">View screen</sys:String><sys:String x:Key="ControlPointer">Control pointer</sys:String><sys:String x:Key="UseKeyboard">Use keyboard</sys:String>
+  <sys:String x:Key="ClipboardText">Clipboard text</sys:String><sys:String x:Key="FileTransfer">File transfer</sys:String><sys:String x:Key="Chat">Chat</sys:String>
+  <sys:String x:Key="Clipboard">Clipboard</sys:String><sys:String x:Key="StartPreview">Start preview</sys:String><sys:String x:Key="Stop">Stop</sys:String>
+  <sys:String x:Key="NoRoute">No active peer route.</sys:String><sys:String x:Key="Initializing">Initializing native runtime…</sys:String>
+  <sys:String x:Key="StatusSignedIn">Signed in. Enter the one-time support code shown by the host.</sys:String>
+  <sys:String x:Key="StatusCodeInvalid">Support code format is invalid.</sys:String><sys:String x:Key="StatusDisconnected">Session ended locally. Remote input and content channels are closed.</sys:String>
+  <sys:String x:Key="StatusHostEnded">The host ended the session.</sys:String><sys:String x:Key="StatusClipboardLocked">Clipboard is locked by another application.</sys:String>
+  <sys:String x:Key="IncomingFile">Incoming file</sys:String><sys:String x:Key="ReceiveFileFormat">Receive {0} to:&#x0a;{1}</sys:String>
+  <sys:String x:Key="YouPrefix">You</sys:String><sys:String x:Key="HostPrefix">Host</sys:String>
+  <sys:String x:Key="SignedInExpiryFormat">Signed in · token expires {0:t}</sys:String><sys:String x:Key="StatusNegotiating">Host approved. Establishing the authenticated direct or relay route…</sys:String><sys:String x:Key="Stopped">Stopped</sys:String>
+  <sys:String x:Key="ChatMessagesName">Session chat messages</sys:String><sys:String x:Key="Synthetic">Synthetic</sys:String>
+  <sys:String x:Key="SessionSummaryFormat">Session {0}&#x0a;Host approval expires {1:g}</sys:String>
+  <sys:String x:Key="DiagnosticsFormat">Session: {0}&#x0a;Peer: {1}&#x0a;Transport epoch: {2}&#x0a;Permission revision: {3}&#x0a;Route: negotiating</sys:String>
+  <sys:String x:Key="ActiveScopesFormat">Active permissions: {0}</sys:String><sys:String x:Key="ErrorOidcRequired">Operator sign-in configuration is required.</sys:String>
+  <sys:String x:Key="SessionIndicatorFormat">Connected to host · {0} · active: {1}</sys:String>
+  <sys:String x:Key="ReadyDisplaysFormat">Ready — {0} display(s)</sys:String><sys:String x:Key="DiagnosticsUnavailableFormat">Native media diagnostics unavailable: {0}</sys:String><sys:String x:Key="CapturingFormat">Capturing with {0}</sys:String>
+</ResourceDictionary>

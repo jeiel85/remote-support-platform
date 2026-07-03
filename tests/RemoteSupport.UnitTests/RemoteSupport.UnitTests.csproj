@@ -9,7 +9,9 @@
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="Google.Protobuf" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="NSec.Cryptography" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
   </ItemGroup>
@@ -22,6 +24,16 @@
     <ProjectReference Include="..\..\src\client\managed\RemoteSupport.Domain\RemoteSupport.Domain.csproj" />
     <ProjectReference Include="..\..\src\client\managed\RemoteSupport.Application\RemoteSupport.Application.csproj" />
     <ProjectReference Include="..\..\src\client\managed\RemoteSupport.Media\RemoteSupport.Media.csproj" />
+    <ProjectReference Include="..\..\src\client\managed\RemoteSupport.Protocol\RemoteSupport.Protocol.csproj" />
+    <ProjectReference Include="..\..\src\client\managed\RemoteSupport.Infrastructure\RemoteSupport.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\client\managed\RemoteSupport.Observability\RemoteSupport.Observability.csproj" />
+    <ProjectReference Include="..\..\src\client\managed\RemoteSupport.Security\RemoteSupport.Security.csproj" />
+    <ProjectReference Include="..\..\src\shared-contracts\RemoteSupport.Contracts\RemoteSupport.Contracts.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\artifacts\native\$(Configuration)\remote_support_native.dll"
+          Link="remote_support_native.dll" CopyToOutputDirectory="PreserveNewest"
+          Condition="Exists('..\..\artifacts\native\$(Configuration)\remote_support_native.dll')" />
   </ItemGroup>
 
 </Project>

@@ -230,6 +230,26 @@ internal sealed class ControlPlaneCrypto
         return DomainSeparated("RSP-PEER-AUTH-V1", buffer.WrittenSpan);
     }
 
+    public static string AuthorizationContext(SessionAggregate session)
+    {
+        ArrayBufferWriter<byte> buffer = new();
+        using (Utf8JsonWriter writer = new(buffer))
+        {
+            writer.WriteStartObject();
+            writer.WritePropertyName("grantedScopes");
+            writer.WriteStartArray();
+            foreach (string scope in session.GrantedScopes.Order(StringComparer.Ordinal)) writer.WriteStringValue(scope);
+            writer.WriteEndArray();
+            writer.WriteString("hostPeerId", session.Host.PeerId.ToString("D"));
+            writer.WriteString("operatorPeerId", session.Operator!.PeerId.ToString("D"));
+            writer.WriteNumber("permissionRevision", session.PermissionRevision);
+            writer.WriteString("sessionId", session.Id.ToString("D"));
+            writer.WriteNumber("transportEpoch", session.TransportEpoch);
+            writer.WriteEndObject();
+        }
+        return Base64UrlEncode(SHA256.HashData(DomainSeparated("RSP-AUTHORIZATION-CONTEXT-V1", buffer.WrittenSpan)));
+    }
+
     public string IssuePeerToken(SessionAggregate session, PeerRecord peer, DateTimeOffset issuedAt, DateTimeOffset expiresAt)
     {
         ArrayBufferWriter<byte> payload = new();

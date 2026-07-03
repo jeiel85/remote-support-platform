@@ -74,3 +74,15 @@ required for Windows 10/11, KO/EN/JA IME, mixed-DPI hardware, elevated foregroun
 applications, UAC secure desktop, RDP transitions and vendor security software.
 Secure desktop is intentionally unsupported. Higher-integrity targets are
 supported only by the separately authorized installed-mode privileged agent.
+
+## Goal 09 implementation result
+
+The self-contained win-x64 Agent ZIP and per-user Operator Setup pass isolated
+install, packaged launch, downgrade rejection, repair and clean uninstall.
+Automated checks also reject architecture mismatch and undeclared payload files.
+No service, driver or scheduled task is created.
+
+Status: runnable unsigned development package. Signed beta support is not yet
+claimed for arm64, Windows-version/locale/accessibility matrices, SmartScreen,
+Smart App Control, Defender Controlled Folder Access or partner EDR products.
+Those rows require protected-worker and physical-lab evidence before promotion.

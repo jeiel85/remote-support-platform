@@ -310,6 +310,28 @@ int main(int argc, char** argv) {
     if (oper.context.received_payload != payload) return 13;
   }
 
+  const uint32_t before_permission = oper.context.received_messages.load();
+  const rs_string_view_v1 active_scopes[]{{"CONTROL_KEYBOARD", 16}, {"VIEW_SCREEN", 11}};
+  const rs_string_view_v1 revoked_scopes[]{{"CONTROL_POINTER", 15}};
+  rs_permission_update_v1 permission{};
+  permission.struct_size = sizeof(permission);
+  permission.permission_revision = 8;
+  permission.active_scopes_utf8 = active_scopes;
+  permission.active_scope_count = 2;
+  permission.revoked_scopes_utf8 = revoked_scopes;
+  permission.revoked_scope_count = 1;
+  permission.reason_code_utf8 = {"LOCAL_USER_REVOKED", 18};
+  if (rs_transport_update_permissions(host.transport, &permission) != RS_STATUS_OK ||
+      rs_transport_update_permissions(oper.transport, &permission) != RS_STATUS_INVALID_STATE) return 19;
+  const auto permission_deadline = std::chrono::steady_clock::now() + std::chrono::seconds(5);
+  while (oper.context.received_messages.load() == before_permission &&
+      std::chrono::steady_clock::now() < permission_deadline) std::this_thread::sleep_for(std::chrono::milliseconds(5));
+  {
+    std::scoped_lock lock(oper.context.mutex);
+    if (oper.context.received_payload.size() < 24 || oper.context.received_payload.compare(0, 4, "RSP1") != 0 ||
+        host.context.failed.load() || oper.context.failed.load()) return 20;
+  }
+
   rs_transport_stats_v1 stats{};
   stats.struct_size = sizeof(stats);
   if (rs_transport_get_stats(host.transport, &stats) != RS_STATUS_OK || stats.bytes_sent < payload.size() ||

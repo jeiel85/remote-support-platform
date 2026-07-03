@@ -1,0 +1,48 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+  <sys:String x:Key="AgentTitle">Remote Support Agent</sys:String>
+  <sys:String x:Key="Publisher">Publisher: Remote Support</sys:String>
+  <sys:String x:Key="AttendedOnly">Attended session only · Unattended access is unavailable</sys:String>
+  <sys:String x:Key="EmergencyHint">Emergency disconnect: Ctrl+Alt+Shift+F12 (F11 fallback)</sys:String>
+  <sys:String x:Key="StartSession">Start support session</sys:String>
+  <sys:String x:Key="Disconnect">Disconnect immediately</sys:String>
+  <sys:String x:Key="CopyCode">Copy code</sys:String>
+  <sys:String x:Key="Waiting">Ready to create a one-time support code.</sys:String>
+  <sys:String x:Key="CodeLabel">Support code</sys:String>
+  <sys:String x:Key="ActiveDisclosure">Your screen and only the permissions shown below may be shared while connected.</sys:String>
+  <sys:String x:Key="ConsentTitle">Remote support request</sys:String>
+  <sys:String x:Key="VerifiedOperator">Verified operator</sys:String>
+  <sys:String x:Key="RequestedPermissions">Requested permissions</sys:String>
+  <sys:String x:Key="Deny">Deny</sys:String>
+  <sys:String x:Key="Approve">Approve selected</sys:String>
+  <sys:String x:Key="Send">Send</sys:String><sys:String x:Key="Clipboard">Clipboard</sys:String><sys:String x:Key="File">File</sys:String>
+  <sys:String x:Key="CancelTransfers">Cancel transfers</sys:String>
+  <sys:String x:Key="ChatMessagesName">Session chat messages</sys:String><sys:String x:Key="ConsentRequestName">Remote support consent request</sys:String>
+  <sys:String x:Key="VerifiedOperatorName">Verified operator name</sys:String><sys:String x:Key="VerifiedOrganizationName">Verified organization name</sys:String>
+  <sys:String x:Key="VerificationStateName">Organization verification state</sys:String><sys:String x:Key="RequestedPermissionsName">Requested permissions</sys:String>
+  <sys:String x:Key="RequestExpiryName">Request expiry</sys:String><sys:String x:Key="DenyConsentName">Deny remote support</sys:String><sys:String x:Key="ApproveConsentName">Approve selected remote support permissions</sys:String>
+  <sys:String x:Key="VerifiedTenant">Organization identity verified</sys:String><sys:String x:Key="ExpiresFormat">Expires {0:g}</sys:String>
+  <sys:String x:Key="StatusCreating">Creating a protected one-time session…</sys:String>
+  <sys:String x:Key="StatusAwaitingOperator">Waiting for an authenticated operator. No screen is being shared yet.</sys:String>
+  <sys:String x:Key="StatusDenied">The request was denied. No content was shared.</sys:String>
+  <sys:String x:Key="StatusNegotiating">Secure peer route is negotiating. Sharing remains blocked until reciprocal binding completes.</sys:String>
+  <sys:String x:Key="StatusDisconnected">Disconnected locally. Remote input and sharing are stopped.</sys:String>
+  <sys:String x:Key="StatusEmergency">Emergency disconnect activated.</sys:String>
+  <sys:String x:Key="StatusPeerEnded">The operator ended the session.</sys:String>
+  <sys:String x:Key="StatusClipboardLocked">Clipboard is locked by another application.</sys:String>
+  <sys:String x:Key="IncomingFile">Incoming file</sys:String><sys:String x:Key="ReceiveFileFormat">Receive {0} to:&#x0a;{1}</sys:String>
+  <sys:String x:Key="YouPrefix">You</sys:String><sys:String x:Key="OperatorPrefix">Operator</sys:String>
+  <sys:String x:Key="ActivePermissions">Active permissions</sys:String><sys:String x:Key="RevokeSelected">Revoke selected</sys:String>
+  <sys:String x:Key="StatusScopesRevoked">Selected permissions were revoked immediately. Other permissions remain active.</sys:String>
+  <sys:String x:Key="SessionIndicatorFormat">Connected to {0} · {1} · active: {2}</sys:String>
+  <sys:String x:Key="Scope_VIEW_SCREEN">View your screen</sys:String>
+  <sys:String x:Key="Scope_CONTROL_POINTER">Control the pointer</sys:String>
+  <sys:String x:Key="Scope_CONTROL_KEYBOARD">Use the keyboard</sys:String>
+  <sys:String x:Key="Scope_SYNC_CLIPBOARD_TEXT_HOST_TO_OPERATOR">Read shared clipboard text</sys:String>
+  <sys:String x:Key="Scope_SYNC_CLIPBOARD_TEXT_OPERATOR_TO_HOST">Send clipboard text</sys:String>
+  <sys:String x:Key="Scope_TRANSFER_FILE_HOST_TO_OPERATOR">Receive files from this computer</sys:String>
+  <sys:String x:Key="Scope_TRANSFER_FILE_OPERATOR_TO_HOST">Send files to this computer</sys:String>
+  <sys:String x:Key="Scope_CHAT">Exchange chat messages</sys:String>
+  <sys:String x:Key="Scope_SWITCH_MONITOR">Switch shared monitors</sys:String>
+  <sys:String x:Key="Scope_REQUEST_REBOOT">Request a reboot</sys:String>
+  <sys:String x:Key="Scope_RECONNECT_AFTER_REBOOT">Reconnect after reboot</sys:String>
+</ResourceDictionary>

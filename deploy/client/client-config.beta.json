@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "apiBaseUrl": "https://api.remote-support.example/",
+  "signalingUrl": "wss://signal.remote-support.example/v1/signaling",
+  "environment": "staging",
+  "operatorOidc": {
+    "authority": "https://identity.remote-support.example/",
+    "clientId": "remote-support-operator-console",
+    "scopes": ["openid", "profile", "remote_support"]
+  },
+  "update": {
+    "manifestUrl": "https://updates.remote-support.example/v1/updates/manifest",
+    "channel": "internal",
+    "trustedRootVersion": 1,
+    "automaticCheck": true
+  },
+  "limits": {
+    "maxControlMessageBytes": 262144,
+    "maxFileChunkBytes": 1048576,
+    "maxClipboardUtf8Bytes": 262144,
+    "maxFileBytes": 2147483648
+  },
+  "diagnostics": {
+    "localLogLevel": "Information",
+    "allowUserSupportBundle": true
+  }
+}

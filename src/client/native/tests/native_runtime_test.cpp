@@ -22,7 +22,7 @@ void RS_CALL on_frame(void*, const rs_frame_info_v1* frame) {
 }
 
 int main() {
-  if (rs_native_get_abi_major() != 1u || rs_native_get_abi_minor() < 3u) return 1;
+  if (rs_native_get_abi_major() != 1u || rs_native_get_abi_minor() < 4u) return 1;
   rs_runtime_options_v1 runtime_options{};
   runtime_options.struct_size = sizeof(runtime_options);
   runtime_options.requested_abi_major = 1;

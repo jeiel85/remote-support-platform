@@ -26,8 +26,10 @@ Audit event names and required detail keys are stable contracts. Detail values a
 | `session.unattended.requested` | operator, device, MFA, policy decision |
 | `session.unattended.started` | operator, device, policy decision, notification result |
 | `clipboard.transfer.result` | direction, byte size, outcome, policy result |
+| `chat.delivery.result` | direction, message ID, byte size, outcome; never message text |
 | `file.transfer.started` | direction, size, redacted-name policy, policy result |
 | `file.transfer.completed` | direction, size, result, duration; optional justified hash |
+| `file.transfer.cancelled` | direction, transfer ID, size, initiator, reason, retained-partial policy |
 | `policy.version.created` | actor, policy, version, document hash |
 | `policy.version.activated` | actor, policy, before/after active version |
 | `audit.export.configured` | actor, endpoint, subscribed events, secret reference only |

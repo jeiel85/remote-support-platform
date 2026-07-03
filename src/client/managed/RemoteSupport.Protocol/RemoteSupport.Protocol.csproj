@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\shared-contracts\RemoteSupport.Contracts\RemoteSupport.Contracts.csproj" />
+    <ProjectReference Include="..\RemoteSupport.Domain\RemoteSupport.Domain.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

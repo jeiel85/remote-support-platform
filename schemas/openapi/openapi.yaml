@@ -325,6 +325,38 @@ paths:
         '403': *id006
         '409': *id005
         '500': *id003
+  /sessions/{sessionId}/termination:
+    post:
+      operationId: terminateSession
+      summary: Immediately terminate an authorized session as either peer
+      tags:
+      - Sessions
+      security:
+      - dpopProof: []
+        peerDpopAccessToken: []
+      parameters:
+      - $ref: '#/components/parameters/SessionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionTerminationRequest'
+      responses:
+        '200':
+          description: Terminated session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '400': *id001
+        '401': *id004
+        '403': *id006
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409': *id005
+        '429': *id002
+        '500': *id003
   /device-enrollment-tokens:
     post:
       operationId: createDeviceEnrollmentToken
@@ -2015,6 +2047,11 @@ components:
       - permissionRevision
       - transportEpoch
       - expiresAt
+      - remotePeerId
+      - remoteRole
+      - remoteEphemeralPublicKey
+      - remoteKeyThumbprint
+      - authorizationContextSha256
       properties:
         sessionId:
           type: string
@@ -2040,6 +2077,21 @@ components:
         expiresAt:
           type: string
           format: date-time
+        remotePeerId:
+          type: string
+          format: uuid
+        remoteRole:
+          $ref: '#/components/schemas/PeerRole'
+        remoteEphemeralPublicKey:
+          $ref: '#/components/schemas/PublicKeyJwk'
+        remoteKeyThumbprint:
+          type: string
+          minLength: 40
+          maxLength: 128
+        authorizationContextSha256:
+          type: string
+          minLength: 43
+          maxLength: 43
     SignalingTicket:
       type: object
       additionalProperties: false
@@ -2157,6 +2209,17 @@ components:
           type: string
           minLength: 1
           maxLength: 128
+    SessionTerminationRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - reasonCode
+      properties:
+        reasonCode:
+          type: string
+          minLength: 1
+          maxLength: 64
+          pattern: ^[A-Z0-9_]+$
     EnrollmentTokenRequest:
       type: object
       additionalProperties: false

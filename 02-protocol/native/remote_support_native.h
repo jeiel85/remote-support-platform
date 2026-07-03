@@ -21,7 +21,7 @@ extern "C" {
 #endif
 
 #define RS_NATIVE_ABI_MAJOR 1u
-#define RS_NATIVE_ABI_MINOR 3u
+#define RS_NATIVE_ABI_MINOR 4u
 #define RS_DATA_CHANNEL_ID_INVALID 0xffffffffu
 
 typedef struct rs_runtime_t* rs_runtime_handle;
@@ -453,6 +453,20 @@ typedef struct rs_data_message_v1 {
   rs_byte_view_v1 payload;
 } rs_data_message_v1;
 
+/* Host-originated monotonic permission reduction. Scope views are borrowed for
+   the duration of rs_transport_update_permissions. A revision increment may
+   remove scopes only; additions require a new authorization and transport. */
+typedef struct rs_permission_update_v1 {
+  uint32_t struct_size;
+  uint64_t permission_revision;
+  const rs_string_view_v1* active_scopes_utf8;
+  uint32_t active_scope_count;
+  const rs_string_view_v1* revoked_scopes_utf8;
+  uint32_t revoked_scope_count;
+  uint64_t effective_at_reliable_input_sequence; /* 0 means immediate. */
+  rs_string_view_v1 reason_code_utf8;
+} rs_permission_update_v1;
+
 typedef struct rs_transport_stats_v1 {
   uint32_t struct_size;
   uint32_t rtt_ms;
@@ -597,6 +611,7 @@ RS_API rs_status_v1 RS_CALL rs_transport_submit_d3d11_video(rs_transport_handle 
 RS_API rs_status_v1 RS_CALL rs_transport_set_video_rate(rs_transport_handle transport, uint32_t target_bitrate_bps, uint32_t target_fps);
 RS_API rs_status_v1 RS_CALL rs_transport_open_data_channel(rs_transport_handle transport, const rs_data_channel_options_v1* options, uint32_t* out_channel_id);
 RS_API rs_status_v1 RS_CALL rs_transport_send_data(rs_transport_handle transport, const rs_data_message_v1* message);
+RS_API rs_status_v1 RS_CALL rs_transport_update_permissions(rs_transport_handle transport, const rs_permission_update_v1* update);
 RS_API rs_status_v1 RS_CALL rs_transport_close_data_channel(rs_transport_handle transport, uint32_t channel_id);
 RS_API rs_status_v1 RS_CALL rs_transport_get_stats(rs_transport_handle transport, rs_transport_stats_v1* out_stats);
 RS_API rs_status_v1 RS_CALL rs_transport_close(rs_transport_handle transport);

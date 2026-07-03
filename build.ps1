@@ -70,6 +70,7 @@ switch ($Target) {
     'IntegrationTest' {
         & $python (Join-Path $root 'tools\database\verify_schema.py') $root
         & $python (Join-Path $root 'tools\network\verify_goal07.py') $root
+        & $dotnet run --project (Join-Path $root 'tools\fuzz\RemoteSupport.ProtocolFuzz\RemoteSupport.ProtocolFuzz.csproj') -c $Configuration --no-restore -- --iterations 10000
     }
     'Package' {
         Invoke-Restore
@@ -77,6 +78,7 @@ switch ($Target) {
         Invoke-NativeBuild
         & $dotnet build (Join-Path $root 'RemoteSupport.sln') -c $Configuration --no-restore
         & $python (Join-Path $root 'tools\supply-chain\create_sbom.py') $root
+        & (Join-Path $root 'eng\package-attended.ps1') -Configuration $Configuration -Architectures x64
     }
     'VerifyRelease' {
         & $python (Join-Path $root 'tools\supply-chain\verify_release.py') (Resolve-Path $Artifacts)

@@ -10,6 +10,22 @@
     "apiBaseUrl": { "type": "string", "format": "uri", "pattern": "^https://" },
     "signalingUrl": { "type": "string", "format": "uri", "pattern": "^wss://" },
     "environment": { "enum": ["development", "staging", "production"] },
+    "operatorOidc": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["authority", "clientId", "scopes"],
+      "properties": {
+        "authority": { "type": "string", "format": "uri", "pattern": "^https://" },
+        "clientId": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "scopes": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 32,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1, "maxLength": 128 }
+        }
+      }
+    },
     "update": {
       "type": "object",
       "additionalProperties": false,

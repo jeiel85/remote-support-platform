@@ -33,12 +33,23 @@ struct parsed_control_frame {
   std::vector<uint8_t> body;
 };
 
+struct parsed_permission_state {
+  uint64_t revision{};
+  std::vector<std::string> active_scopes;
+  std::vector<std::string> revoked_scopes;
+  uint64_t effective_at_reliable_input_sequence{};
+  std::string reason_code;
+};
+
 std::vector<uint8_t> make_transport_binding_frame(rs_transport_t* transport);
 std::vector<uint8_t> make_transport_binding_ack_frame(rs_transport_t* transport,
     const std::string& binding_id, bool verified, const char* reason, const std::array<uint8_t, 32>& binding_hash);
 std::vector<uint8_t> make_protocol_hello_frame(rs_transport_t* transport);
 std::vector<uint8_t> make_protocol_hello_ack_frame(rs_transport_t* transport, bool accepted, const char* rejection_code);
 std::vector<uint8_t> make_heartbeat_frame(rs_transport_t* transport, uint64_t nonce);
+std::vector<uint8_t> make_permission_state_frame(rs_transport_t* transport,
+    const std::vector<std::string>& active_scopes, const std::vector<std::string>& revoked_scopes,
+    uint64_t effective_at_reliable_input_sequence, const std::string& reason_code);
 bool parse_control_frame(const uint8_t* data, size_t length, uint32_t maximum_bytes,
     parsed_control_frame& output, std::string& error);
 bool parse_transport_binding(const std::vector<uint8_t>& body, parsed_transport_binding& output, std::string& error);
@@ -48,3 +59,4 @@ bool parse_binding_ack(const std::vector<uint8_t>& body, std::string& binding_id
     std::string& reason, std::array<uint8_t, 32>& binding_hash, std::string& error);
 bool parse_protocol_hello(const std::vector<uint8_t>& body, uint32_t& maximum_message_bytes, std::string& error);
 bool parse_protocol_hello_ack(const std::vector<uint8_t>& body, bool& accepted, std::string& rejection_code, std::string& error);
+bool parse_permission_state(const std::vector<uint8_t>& body, parsed_permission_state& output, std::string& error);

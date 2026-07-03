@@ -249,12 +249,61 @@ internal sealed class AttendedSessionService(
             string token = crypto.IssuePeerToken(session, peer, issuedAt, expiresAt);
             AppendLifecycle(session, "PEER_AUTHORIZED", peer.Role, peer.Subject ?? peer.PeerId.ToString("D"),
                 clock.UtcNow, new { peer.PeerId, peer.Role, expiresAt });
+            PeerRecord remote = peer.Role == "HOST" ? session.Operator! : session.Host;
+            using JsonDocument remoteJwk = JsonDocument.Parse(remote.PublicJwk);
             return new PeerAuthorization(session.Id, peer.PeerId, peer.Role, token, session.GrantedScopes,
-                session.PermissionRevision, session.TransportEpoch, expiresAt);
+                session.PermissionRevision, session.TransportEpoch, expiresAt, remote.PeerId, remote.Role,
+                remoteJwk.RootElement.Clone(), remote.KeyThumbprint, ControlPlaneCrypto.AuthorizationContext(session));
         });
     }
 
     public SessionResponse Get(Guid sessionId) => store.Execute(collection => ToResponse(RequireSession(collection, sessionId)));
+
+    public SessionResponse Terminate(Guid sessionId, PeerAccessContext access, SessionTerminationRequest request)
+    {
+        if (request is null || string.IsNullOrWhiteSpace(request.ReasonCode) || request.ReasonCode.Length > 64 ||
+            request.ReasonCode.Any(character => !char.IsAsciiLetterOrDigit(character) && character != '_'))
+            throw BadRequest("SESSION_TERMINATION_REASON_INVALID");
+        return store.Execute(collection =>
+        {
+            SessionAggregate session = RequireSession(collection, sessionId);
+            if (access.SessionId != sessionId || access.PeerId != session.Host.PeerId && access.PeerId != session.Operator?.PeerId)
+                throw new ControlPlaneException(403, "AUTHZ_SCOPE_DENIED", "Peer cannot terminate this session.");
+            if (session.State == "TERMINATED") return ToResponse(session);
+            if (session.State != "AUTHORIZED") throw Conflict("SESSION_STATE_CONFLICT");
+            session.State = "TERMINATED";
+            session.StateVersion++;
+            session.PermissionRevision++;
+            session.GrantedScopes = [];
+            AppendLifecycle(session, "SESSION_TERMINATED", access.Role, access.PeerId.ToString("D"), clock.UtcNow,
+                new { request.ReasonCode, session.StateVersion, session.PermissionRevision });
+            return ToResponse(session);
+        });
+    }
+
+    public SessionResponse RevokeScopes(Guid sessionId, PeerAccessContext access, long expectedVersion,
+        ScopeRevocationRequest request)
+    {
+        string[] revoked = NormalizeScopes(request?.RevokedScopes ?? [], allowEmpty: false);
+        if (request is null || string.IsNullOrWhiteSpace(request.ReasonCode) || request.ReasonCode.Length > 64 ||
+            request.ReasonCode.Any(character => !char.IsAsciiLetterOrDigit(character) && character != '_'))
+            throw BadRequest("SCOPE_REVOCATION_INVALID");
+        return store.Execute(collection =>
+        {
+            SessionAggregate session = RequireSession(collection, sessionId);
+            if (access.Role != "HOST" || access.PeerId != session.Host.PeerId)
+                throw new ControlPlaneException(403, "AUTHZ_SCOPE_DENIED", "Only the attended host can revoke scopes.");
+            if (session.State != "AUTHORIZED" || session.StateVersion != expectedVersion) throw Conflict("SESSION_STATE_CONFLICT");
+            if (revoked.Except(session.GrantedScopes, StringComparer.Ordinal).Any()) throw BadRequest("SCOPE_NOT_GRANTED");
+            session.GrantedScopes = session.GrantedScopes.Except(revoked, StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
+            session.PermissionRevision++;
+            session.StateVersion++;
+            if (session.GrantedScopes.Length == 0) session.State = "TERMINATED";
+            AppendLifecycle(session, "SCOPES_REVOKED", access.Role, access.PeerId.ToString("D"), clock.UtcNow,
+                new { revokedScopes = revoked, request.ReasonCode, session.StateVersion, session.PermissionRevision });
+            return ToResponse(session);
+        });
+    }
     public IReadOnlyCollection<SessionAggregate> Snapshot() => store.Snapshot();
 
     private BootstrapRecord RequireBootstrap(SessionAggregate session, string token, string? role, bool consume)

@@ -8,6 +8,12 @@
         "resolved": "6.0.4",
         "contentHash": "lkhqpF8Pu2Y7IiN7OntbsTtdbpR1syMsm2F3IgX6ootA4ffRqWL5jF7XipHuZQTdVuWG/gVAAcf8mjk8Tz0xPg=="
       },
+      "Google.Protobuf": {
+        "type": "Direct",
+        "requested": "[3.35.1, )",
+        "resolved": "3.35.1",
+        "contentHash": "pxtkuXhR8svkvDTQrYew9GZQt6eWhblz/V/WKUFrQgkHYlQPsumJTeF6ppHRJpe6j9ffukkd5lQULiiKaek4xA=="
+      },
       "Microsoft.NET.Test.Sdk": {
         "type": "Direct",
         "requested": "[17.14.1, )",
@@ -16,6 +22,15 @@
         "dependencies": {
           "Microsoft.CodeCoverage": "17.14.1",
           "Microsoft.TestPlatform.TestHost": "17.14.1"
+        }
+      },
+      "NSec.Cryptography": {
+        "type": "Direct",
+        "requested": "[26.4.0, )",
+        "resolved": "26.4.0",
+        "contentHash": "0vsCtY5f+YgQROiWNqzgWp+l2pddfk9FkWoGV/bEo0MuEYPKlJWuoA8aOfO6qp3f+EnObKE3zSJhn1PspJeJVg==",
+        "dependencies": {
+          "libsodium": "[1.0.22, 1.0.23)"
         }
       },
       "xunit": {
@@ -34,6 +49,11 @@
         "requested": "[3.1.4, )",
         "resolved": "3.1.4",
         "contentHash": "5mj99LvCqrq3CNi06xYdyIAXOEh+5b33F2nErCzI5zWiDdLHXiPXEWFSUAF8zlIv0ZWqjZNCwHTQeAPYbF3pCg=="
+      },
+      "libsodium": {
+        "type": "Transitive",
+        "resolved": "1.0.22",
+        "contentHash": "KPD9SloJFclrsjnhABu7dzWrcyYkwPbvx5l1gRSPAX/0n+OBtSiVCKtGFv4n+ecWUHU0tCG9LSSwoZZx673zBQ=="
       },
       "Microsoft.CodeCoverage": {
         "type": "Transitive",
@@ -105,11 +125,49 @@
           "RemoteSupport.Domain": "[1.0.0, )"
         }
       },
+      "remotesupport.contracts": {
+        "type": "Project",
+        "dependencies": {
+          "Google.Protobuf": "[3.35.1, )"
+        }
+      },
       "remotesupport.domain": {
         "type": "Project"
       },
+      "remotesupport.infrastructure": {
+        "type": "Project",
+        "dependencies": {
+          "RemoteSupport.Application": "[1.0.0, )",
+          "RemoteSupport.Ipc": "[1.0.0, )",
+          "RemoteSupport.Observability": "[1.0.0, )",
+          "RemoteSupport.Protocol": "[1.0.0, )",
+          "RemoteSupport.Security": "[1.0.0, )"
+        }
+      },
+      "remotesupport.ipc": {
+        "type": "Project",
+        "dependencies": {
+          "RemoteSupport.Contracts": "[1.0.0, )"
+        }
+      },
       "remotesupport.media": {
         "type": "Project"
+      },
+      "remotesupport.observability": {
+        "type": "Project"
+      },
+      "remotesupport.protocol": {
+        "type": "Project",
+        "dependencies": {
+          "RemoteSupport.Contracts": "[1.0.0, )",
+          "RemoteSupport.Domain": "[1.0.0, )"
+        }
+      },
+      "remotesupport.security": {
+        "type": "Project",
+        "dependencies": {
+          "NSec.Cryptography": "[26.4.0, )"
+        }
       }
     }
   }

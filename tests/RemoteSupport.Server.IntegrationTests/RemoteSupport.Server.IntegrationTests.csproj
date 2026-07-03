@@ -10,6 +10,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\server\RemoteSupport.Server\RemoteSupport.Server.csproj" />
+    <ProjectReference Include="..\..\src\client\managed\RemoteSupport.Infrastructure\RemoteSupport.Infrastructure.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Using Include="Xunit" />

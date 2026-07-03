@@ -19,6 +19,7 @@ Stable codes are protocol/API contracts. User-facing text is localized separatel
 | `SESSION_BOOTSTRAP_EXPIRED` | No | host/operator bootstrap credential expired |
 | `SESSION_STATE_CONFLICT` | Yes | stale state version or concurrent transition |
 | `SESSION_PERMISSION_REVISION_STALE` | Yes | peer used an older permission revision |
+| `PERMISSION_STATE_INVALID` | No | permission update was not the next host-originated scope reduction |
 | `SESSION_EPOCH_STALE` | Yes | signaling/control message belongs to prior epoch |
 | `SESSION_EXPIRED` | No | authorization expired |
 | `SESSION_REVOKED` | No | policy/account/device/session revoked |
@@ -47,6 +48,7 @@ Stable codes are protocol/API contracts. User-facing text is localized separatel
 | `FILE_DISK_SPACE_INSUFFICIENT` | Yes | destination lacks required free space |
 | `FILE_HASH_MISMATCH` | Yes | corrupted or incomplete transfer |
 | `FILE_TRANSFER_CANCELLED` | No | sender, receiver, or policy cancelled transfer |
+| `FILE_PERMISSION_REVOKED` | No | active transfer stopped because its directional scope was revoked |
 | `DEVICE_ENROLLMENT_INVALID_OR_EXPIRED` | No | generic enrollment-token failure |
 | `DEVICE_KEY_ROTATION_REQUIRED` | Yes | device must rotate or refresh key material |
 | `DEVICE_MINIMUM_VERSION_REQUIRED` | Yes | managed client is below enforced version |

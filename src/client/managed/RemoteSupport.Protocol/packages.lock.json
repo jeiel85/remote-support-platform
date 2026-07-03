@@ -8,12 +8,16 @@
           "Google.Protobuf": "[3.35.1, )"
         }
       },
+      "remotesupport.domain": {
+        "type": "Project"
+      },
       "Google.Protobuf": {
         "type": "CentralTransitive",
         "requested": "[3.35.1, )",
         "resolved": "3.35.1",
         "contentHash": "pxtkuXhR8svkvDTQrYew9GZQt6eWhblz/V/WKUFrQgkHYlQPsumJTeF6ppHRJpe6j9ffukkd5lQULiiKaek4xA=="
       }
-    }
+    },
+    "net10.0/win-x64": {}
   }
 }

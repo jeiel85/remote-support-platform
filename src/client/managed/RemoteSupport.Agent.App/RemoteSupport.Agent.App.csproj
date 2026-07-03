@@ -7,5 +7,20 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\RemoteSupport.Application\RemoteSupport.Application.csproj" />
+    <ProjectReference Include="..\RemoteSupport.Infrastructure\RemoteSupport.Infrastructure.csproj" />
+    <ProjectReference Include="..\RemoteSupport.Observability\RemoteSupport.Observability.csproj" />
+  </ItemGroup>
+  <PropertyGroup>
+    <AssemblyName>RemoteSupport.Agent</AssemblyName>
+    <Version>0.9.0-beta.1</Version>
+    <Product>Remote Support Portable Agent</Product>
+    <Company>Remote Support</Company>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\..\..\..\artifacts\native\$(Configuration)\remote_support_native.dll"
+          Link="remote_support_native.dll" CopyToOutputDirectory="PreserveNewest"
+          Condition="Exists('..\..\..\..\artifacts\native\$(Configuration)\remote_support_native.dll')" />
   </ItemGroup>
 </Project>

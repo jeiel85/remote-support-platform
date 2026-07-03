@@ -14,6 +14,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using RemoteSupport.Server;
+using RemoteSupport.Infrastructure;
 
 namespace RemoteSupport.Server.IntegrationTests;
 
@@ -21,6 +22,56 @@ public sealed class AttendedSessionApiTests
 {
     private static readonly string[] HelloCapabilities = ["h264"];
     private static readonly JsonSerializerOptions WebJsonOptions = new(JsonSerializerDefaults.Web);
+
+    [Fact]
+    [Trait("Requirement", "FR-SES-004")]
+    public async Task ProductClientCompletesSignedAttendedAuthorizationFlow()
+    {
+        await using ControlPlaneFactory factory = new(new ManualClock(DateTimeOffset.UtcNow));
+        using HttpClient http = factory.CreateClient();
+        http.DefaultRequestHeaders.Add("X-Test-Operator-Subject", "operator-product-client");
+        http.DefaultRequestHeaders.Add("X-Test-Operator-Name", "Product Operator");
+        http.DefaultRequestHeaders.Add("X-Test-Tenant-Id", Guid.NewGuid().ToString("D"));
+        http.DefaultRequestHeaders.Add("X-Test-Tenant-Name", "Product Tenant");
+        http.DefaultRequestHeaders.Add("X-Test-Tenant-Verified", "true");
+        AttendedControlPlaneClient client = new(http);
+        using EphemeralPeerIdentity hostIdentity = new();
+        using EphemeralPeerIdentity operatorIdentity = new();
+
+        HostSessionCreated host = await client.CreateHostSessionAsync(hostIdentity, "ko-KR");
+        string[] scopes = ["VIEW_SCREEN", "CONTROL_POINTER", "CHAT"];
+        OperatorResolvedSession resolved = await client.ResolveAsync(host.SupportCode, scopes, operatorIdentity, "test-oidc-token");
+        PendingConsentResponse pending = (await client.GetPendingConsentAsync(host))!;
+        Assert.Equal("Product Operator", pending.Operator.DisplayName);
+
+        ConsentSessionResponse consent = await client.DecideConsentAsync(host, pending, hostIdentity, true, scopes);
+        Assert.Equal("AUTHORIZED", consent.State);
+        PeerAuthorizationResponse hostPeer = await client.AuthorizePeerAsync(host.SessionId, host.HostBootstrapToken, hostIdentity);
+        PeerAuthorizationResponse operatorPeer = await client.AuthorizePeerAsync(host.SessionId, resolved.OperatorBootstrapToken, operatorIdentity);
+
+        Assert.Equal("HOST", hostPeer.Role);
+        Assert.Equal("OPERATOR", operatorPeer.Role);
+        Assert.Equal(scopes.Order(StringComparer.Ordinal), hostPeer.GrantedScopes.Order(StringComparer.Ordinal));
+        Assert.NotEqual(hostPeer.PeerToken, operatorPeer.PeerToken);
+        Assert.Equal(hostPeer.AuthorizationContextSha256, operatorPeer.AuthorizationContextSha256);
+        Assert.Equal(operatorPeer.PeerId, hostPeer.RemotePeerId);
+        Assert.Equal(hostPeer.PeerId, operatorPeer.RemotePeerId);
+        SignalingTicketResponse ticket = await client.GetSignalingTicketAsync(hostPeer, hostIdentity);
+        TurnCredentialsResponse turn = await client.GetTurnCredentialsAsync(hostPeer, hostIdentity);
+        Assert.NotEmpty(ticket.Ticket);
+        Assert.NotEmpty(turn.IceServers);
+        ConsentSessionResponse reduced = await client.RevokeScopesAsync(hostPeer, hostIdentity, consent.StateVersion,
+            ["CONTROL_POINTER"]);
+        Assert.Equal(consent.PermissionRevision + 1, reduced.PermissionRevision);
+        Assert.DoesNotContain("CONTROL_POINTER", reduced.GrantedScopes);
+        await Assert.ThrowsAsync<ControlPlaneClientException>(() => client.GetTurnCredentialsAsync(operatorPeer, operatorIdentity));
+        hostPeer = await client.AuthorizePeerAsync(host.SessionId, host.HostBootstrapToken, hostIdentity);
+        operatorPeer = await client.AuthorizePeerAsync(host.SessionId, resolved.OperatorBootstrapToken, operatorIdentity);
+        Assert.Equal(reduced.PermissionRevision, hostPeer.PermissionRevision);
+        ConsentSessionResponse terminated = await client.TerminateAsync(hostPeer, hostIdentity, "LOCAL_USER_DISCONNECT");
+        Assert.Equal("TERMINATED", terminated.State);
+        await Assert.ThrowsAsync<ControlPlaneClientException>(() => client.GetTurnCredentialsAsync(operatorPeer, operatorIdentity));
+    }
 
     [Fact]
     [Trait("Requirement", "FR-SES-001")]

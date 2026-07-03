@@ -61,3 +61,12 @@ Membership suspension/removal, device/key revocation, tenant suspension, session
 ## Sender-constrained access tokens
 
 Peer and device access tokens contain an RFC 9449 `cnf.jkt` confirmation thumbprint and are presented with `Authorization: DPoP <access-token>` plus a `DPoP` proof JWT. The API validates method, normalized target URI, issue time, unique `jti`, access-token hash (`ath`), server nonce when required, and proof-key thumbprint. Replayed proofs, bearer-only presentation, proxy-rewritten URI ambiguity and key mismatch are rejected. Operator OIDC tokens remain normal bearer tokens at the BFF/API boundary unless the identity deployment separately enables sender-constrained tokens.
+
+The successful peer-authorization response also returns the authorized remote
+peer ID, role, ephemeral public JWK and thumbprint plus a shared
+`authorizationContextSha256`. The context is SHA-256 over the
+`RSP-AUTHORIZATION-CONTEXT-V1` domain-separated canonical object containing
+session ID, host/operator peer IDs, sorted granted scopes, permission revision
+and transport epoch. Both peers must receive the same context before native
+transport binding starts; none of these public binding values is a bearer
+credential.

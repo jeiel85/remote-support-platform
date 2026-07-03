@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "fileCount": 138,
+  "fileCount": 143,
   "files": [
     {
       "path": "00-product/commercialization-and-compliance.md",
@@ -73,6 +73,11 @@
       "sha256": "5fa49529a55840811505aed4eb385064d4bd725efd62b1fc2a80dd08a7455963"
     },
     {
+      "path": "01-architecture/adr/0009-peer-data-and-attended-packaging.md",
+      "bytes": 3471,
+      "sha256": "9f860644b99dab56c702b0f19c42424e44dfdfadec177ffcd5809017c065180d"
+    },
+    {
       "path": "01-architecture/data-architecture.md",
       "bytes": 3251,
       "sha256": "57a1bd8632c9e4d29bbd14436572ca100e7e24bde1891bce1d1977dbd6dddf4e"
@@ -104,8 +109,8 @@
     },
     {
       "path": "02-protocol/api-flow-contract.md",
-      "bytes": 6481,
-      "sha256": "df7d96ce0b68bb065cb7be27bd470795e82911dbff95d3051e20e7ccda1cc95b"
+      "bytes": 7004,
+      "sha256": "be9d40bdcbde5765cc3ee807795589340fc8b76f82b662dac38bd4cc79f8ea40"
     },
     {
       "path": "02-protocol/canonicalization-and-signatures.md",
@@ -114,8 +119,8 @@
     },
     {
       "path": "02-protocol/control-channel.md",
-      "bytes": 4239,
-      "sha256": "ac9315ce38e54b60314378b1741f4c4bcc43accab3c78e3b0a0593a686126a67"
+      "bytes": 4386,
+      "sha256": "1299c080304dbab826b9998ed20f521ef96cf4b4685d992d91f2ad058f8a3826"
     },
     {
       "path": "02-protocol/error-model.md",
@@ -139,13 +144,13 @@
     },
     {
       "path": "02-protocol/native/remote_support_native.h",
-      "bytes": 24529,
-      "sha256": "8a506b0f10b4efd167a1e8348ed57c78dbdc0ebe547db87bd81b4734dc81483a"
+      "bytes": 25291,
+      "sha256": "0fc3fd1b7417c9bbea9b0212c73816083bcd1e0bd6f382fbe9db5205adc3850e"
     },
     {
       "path": "02-protocol/openapi/openapi.yaml",
-      "bytes": 84943,
-      "sha256": "949560d39a6d88da0eddeece26fbca43855b1f7311b6d37a8fd5a6417ba876da"
+      "bytes": 86663,
+      "sha256": "a09308d2245ff3feb99a6b053366a152ba997461a282a1efec11417715b61376"
     },
     {
       "path": "02-protocol/protobuf/remote_support.proto",
@@ -164,8 +169,8 @@
     },
     {
       "path": "02-protocol/schemas/client-config.schema.json",
-      "bytes": 1912,
-      "sha256": "f8118ff711ae338e8dcc42989ede7371bddd5b21a5f21a05d55b699bc0f4eea8"
+      "bytes": 2460,
+      "sha256": "d2ffc0d6040db4a9c9924e3a6975a4c9185fc245dfa52ba003cc663498609cd5"
     },
     {
       "path": "02-protocol/schemas/policy-document.schema.json",
@@ -234,8 +239,8 @@
     },
     {
       "path": "03-client/media-kernel-contract.md",
-      "bytes": 8749,
-      "sha256": "8bbbbd31bd875021b7397f7a4508c642461ce3096954e1799e3334004c2cba8a"
+      "bytes": 9202,
+      "sha256": "62bca6a6deb07cc2363f1d446ff48df444956f377b457d138ea1fbc06cbcf401"
     },
     {
       "path": "03-client/native-bridge-contract.md",
@@ -359,8 +364,18 @@
     },
     {
       "path": "06-quality/compatibility-matrix.md",
-      "bytes": 2571,
-      "sha256": "9b4d2af9556c287c2c8c407a2205aa3274ee927e3e7f14a4f1365af22312afdb"
+      "bytes": 3206,
+      "sha256": "da19dca95e4894d9798640ec3b566867cabccdedd9731d665c42ec857bd63208"
+    },
+    {
+      "path": "06-quality/goal-08-file-safety-report.md",
+      "bytes": 1802,
+      "sha256": "7cad7aafb8c1ee96f2a1f20f5515176f9585204689fc5ea55100382918cee433"
+    },
+    {
+      "path": "06-quality/goal-09-accessibility-localization-report.md",
+      "bytes": 1315,
+      "sha256": "2a8474fecc75f294077c6ccf43b192ae57c9a33d9823a2468b2c7583d4ed2f41"
     },
     {
       "path": "06-quality/observability.md",
@@ -426,6 +441,16 @@
       "path": "07-delivery/evidence/goal-07.md",
       "bytes": 2254,
       "sha256": "e4be46ea09700c313ee0fe9d4caffd45be105d6fea231ace2a3fbc4da6f09e36"
+    },
+    {
+      "path": "07-delivery/evidence/goal-08.md",
+      "bytes": 2473,
+      "sha256": "fbe6c9370cf9540ff9b46af364c359c8f3a82bb8a8eb19d2e6a3fb3d843aa307"
+    },
+    {
+      "path": "07-delivery/evidence/goal-09.md",
+      "bytes": 2674,
+      "sha256": "ab25c662c75e8992252e9ba185636fc70b407f0d56df81ebdd57ab1041f72b0b"
     },
     {
       "path": "07-delivery/goals/goal-01-foundation.md",
@@ -574,8 +599,8 @@
     },
     {
       "path": "09-templates/audit-event-catalog.md",
-      "bytes": 4985,
-      "sha256": "b36f56c3c0e2efaf255826ac4798557d4f8e90c2d23aa1d9b979e03f49e089be"
+      "bytes": 5181,
+      "sha256": "affad83e83acd101c012c137f75a045db7621bee74139f2c7fa2ce1960f86a44"
     },
     {
       "path": "09-templates/audit-event.example.json",
@@ -604,8 +629,8 @@
     },
     {
       "path": "09-templates/error-codes.md",
-      "bytes": 7009,
-      "sha256": "f7f1117d688eb6d5a62f803d5af14bed43be2348e84da531f5665fddc024f517"
+      "bytes": 7217,
+      "sha256": "b246c237d2fe9977ab4007e30291d71da6217033df0dcc8e492af0420dfa37e8"
     },
     {
       "path": "09-templates/policy-document.example.json",
@@ -684,8 +709,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 1989,
-      "sha256": "cd1a24001f8b9789f33271b4947edef304be8896982c66d51689e08c8a3dd6cc"
+      "bytes": 2691,
+      "sha256": "0cc26550c76c991e2f5891336d6a98a760db3e4efcb2efad83c620357edea6ca"
     },
     {
       "path": "START_HERE.md",

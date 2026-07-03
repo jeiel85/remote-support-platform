@@ -38,3 +38,17 @@ The design bundle and implementation now coexist in this repository. On Windows 
 ```
 
 The bootstrap downloads the pinned .NET SDK and hash-locked Python/CMake tools into ignored `.tools/` storage. Generated contracts are committed; CI regenerates and rejects drift. See `docs/implementation/module-ownership.md` and the goal evidence under `docs/implementation/goals/`.
+
+## Runnable attended artifacts
+
+`./build.ps1 -Target Package -Configuration Release` emits the portable Agent
+ZIP, per-user Operator Setup executable, manifests and provenance under
+`artifacts/packages/attended`. Run `./eng/test-attended-package.ps1 -Architecture
+x64` to exercise both packaged applications plus install/repair/downgrade/
+uninstall behavior in an isolated temporary root. Configure real endpoints as
+described in `deploy/client/README.md`.
+
+Local packages are unsigned development artifacts unless release signing is
+explicitly required and `RS_SIGN_CERT_THUMBPRINT` is available. Arm64 packaging
+also requires a matching arm64 native runtime; neither condition is silently
+bypassed.

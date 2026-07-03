@@ -94,4 +94,11 @@ releases tracked state before disabling further input. Capability queries report
 unsupported secure desktop and foreground UIPI elevation instead of claiming
 success.
 
+ABI 1.4 adds `rs_transport_update_permissions`. Only the attended host may
+advance the revision, and the active/revoked sets must be an exact partition
+of the prior scopes. The native transport generates the reserved control
+channel sequence, applies the reduction locally before sending, and accepts
+only the next host revision at the peer. An effective input sequence of zero
+means immediate application and requires release of tracked remote input.
+
 `rs_runtime_generate_peer_key_pair` produces a P-256 private scalar and SEC1 uncompressed public point for the authorization flow. A transport parses the local and remote SHA-256 DTLS fingerprints from the descriptions active in the WebRTC peer connection, signs `RSP-TRANSPORT-BINDING-V1` with ECDSA P-256/SHA-256 in P1363 form, and verifies the reciprocal binding. A transport remains pre-content until both the binding and its acknowledgement verify. Any identity, role, epoch, permission revision, scope, authorization hash, fingerprint, key ID, signature, or replay mismatch is fatal.

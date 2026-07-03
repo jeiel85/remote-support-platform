@@ -9,6 +9,7 @@ namespace {
 constexpr char control_label[] = "rsp.control.v1";
 constexpr uint16_t type_protocol_hello = 20;
 constexpr uint16_t type_protocol_hello_ack = 21;
+constexpr uint16_t type_permission_state = 25;
 constexpr uint16_t type_heartbeat = 42;
 constexpr uint16_t type_transport_binding = 46;
 constexpr uint16_t type_transport_binding_ack = 47;
@@ -164,6 +165,17 @@ bool send_control_frame(rs_transport_t* transport, int rtc_id, const std::vector
   return true;
 }
 
+void emit_control_message(rs_transport_t* transport, uint32_t channel_id, const uint8_t* data, size_t length) {
+  if (transport->runtime->callbacks.on_data_message == nullptr || data == nullptr || length == 0 ||
+      length > (std::numeric_limits<uint32_t>::max)()) return;
+  rs_data_message_v1 message{};
+  message.struct_size = sizeof(message);
+  message.channel_id = channel_id;
+  message.binary = 1;
+  message.payload = {data, static_cast<uint32_t>(length)};
+  transport->runtime->callbacks.on_data_message(transport->runtime->callbacks.user_context, &message);
+}
+
 void maybe_start_protocol(rs_transport_t* transport);
 
 void maybe_send_binding(rs_transport_t* transport) {
@@ -305,10 +317,13 @@ void process_control_message(rs_transport_t* transport, const uint8_t* data, siz
   }
   {
     std::scoped_lock lock(transport->mutex);
+    const bool permission_transition = frame.message_type == type_permission_state &&
+        transport->binding.remote_role == RS_PEER_ROLE_HOST &&
+        frame.permission_revision == transport->binding.permission_revision + 1;
     if (frame.channel_sequence != transport->control_incoming_sequence + 1 ||
         frame.session_id != transport->session_id || frame.sender_peer_id != transport->binding.remote_peer_id ||
         frame.sender_role != transport->binding.remote_role || frame.transport_epoch != transport->transport_epoch ||
-        frame.permission_revision != transport->binding.permission_revision) {
+        (frame.permission_revision != transport->binding.permission_revision && !permission_transition)) {
       error = "TRANSPORT_CONTROL_CONTEXT_MISMATCH";
     } else {
       transport->control_incoming_sequence = frame.channel_sequence;
@@ -433,6 +448,39 @@ void process_control_message(rs_transport_t* transport, const uint8_t* data, siz
       ready = transport->content_ready;
     }
     if (!ready) fail_transport(transport, "TRANSPORT_PRECONTENT_VIOLATION", "Heartbeat arrived before capability exchange completed.");
+    return;
+  }
+  if (frame.message_type == type_permission_state) {
+    parsed_permission_state state;
+    if (!parse_permission_state(frame.body, state, error) || state.revision != frame.permission_revision) {
+      fail_transport(transport, error.empty() ? "PERMISSION_STATE_INVALID" : error.c_str(),
+          "Malformed permission state was received.");
+      return;
+    }
+    uint32_t channel_id = RS_DATA_CHANNEL_ID_INVALID;
+    {
+      std::scoped_lock lock(transport->mutex);
+      const std::set<std::string> previous(transport->binding.scopes.begin(), transport->binding.scopes.end());
+      const std::set<std::string> active(state.active_scopes.begin(), state.active_scopes.end());
+      const std::set<std::string> revoked(state.revoked_scopes.begin(), state.revoked_scopes.end());
+      std::set<std::string> union_scopes = active;
+      union_scopes.insert(revoked.begin(), revoked.end());
+      std::vector<std::string> overlap;
+      std::set_intersection(active.begin(), active.end(), revoked.begin(), revoked.end(), std::back_inserter(overlap));
+      if (!transport->content_ready || transport->binding.remote_role != RS_PEER_ROLE_HOST ||
+          state.revision != transport->binding.permission_revision + 1 || union_scopes != previous || !overlap.empty()) {
+        error = "PERMISSION_STATE_INVALID";
+      } else {
+        transport->binding.permission_revision = state.revision;
+        transport->binding.scopes = state.active_scopes;
+        channel_id = transport->control_channel_id;
+      }
+    }
+    if (!error.empty()) {
+      fail_transport(transport, error.c_str(), "Permission update was not a monotonic host scope reduction.");
+      return;
+    }
+    emit_control_message(transport, channel_id, data, length);
     return;
   }
   fail_transport(transport, "SIGNAL_PROTOCOL_INVALID", "Unsupported message type on the reserved control channel.");
@@ -1146,6 +1194,59 @@ rs_status_v1 RS_CALL rs_transport_send_data(rs_transport_handle transport, const
   if (size < 0) { text.assign(data, message->payload.length); data = text.c_str(); }
   if (rtcSendMessage(rtc_id, data, size) < 0) return RS_STATUS_WOULD_BLOCK;
   transport->bytes_sent.fetch_add(message->payload.length);
+  return RS_STATUS_OK;
+}
+
+rs_status_v1 RS_CALL rs_transport_update_permissions(rs_transport_handle transport, const rs_permission_update_v1* update) {
+  if (transport == nullptr || update == nullptr || update->struct_size < sizeof(rs_permission_update_v1) ||
+      update->permission_revision == 0 || update->revoked_scope_count == 0 ||
+      update->active_scope_count > 12 || update->revoked_scope_count > 12 ||
+      (update->active_scope_count != 0 && update->active_scopes_utf8 == nullptr) ||
+      update->revoked_scopes_utf8 == nullptr) return RS_STATUS_INVALID_ARGUMENT;
+  const std::string reason = copy_string(update->reason_code_utf8, 64);
+  if (reason.empty() || std::any_of(reason.begin(), reason.end(), [](unsigned char c) {
+        return !std::isalnum(c) && c != '_';
+      })) return RS_STATUS_INVALID_ARGUMENT;
+  const auto copy_scopes = [](const rs_string_view_v1* views, uint32_t count, std::vector<std::string>& output) {
+    std::set<std::string> unique;
+    for (uint32_t index = 0; index < count; ++index) {
+      const std::string scope = copy_string(views[index], 64);
+      if (scope.empty() || !unique.insert(scope).second) return false;
+    }
+    output.assign(unique.begin(), unique.end());
+    return true;
+  };
+  std::vector<std::string> active;
+  std::vector<std::string> revoked;
+  if (!copy_scopes(update->active_scopes_utf8, update->active_scope_count, active) ||
+      !copy_scopes(update->revoked_scopes_utf8, update->revoked_scope_count, revoked)) return RS_STATUS_INVALID_ARGUMENT;
+
+  std::vector<uint8_t> frame;
+  int rtc_id = -1;
+  {
+    std::scoped_lock lock(transport->mutex);
+    const std::set<std::string> previous(transport->binding.scopes.begin(), transport->binding.scopes.end());
+    const std::set<std::string> active_set(active.begin(), active.end());
+    const std::set<std::string> revoked_set(revoked.begin(), revoked.end());
+    std::set<std::string> union_scopes = active_set;
+    union_scopes.insert(revoked_set.begin(), revoked_set.end());
+    std::vector<std::string> overlap;
+    std::set_intersection(active_set.begin(), active_set.end(), revoked_set.begin(), revoked_set.end(), std::back_inserter(overlap));
+    const auto channel = transport->channels.find(transport->control_channel_id);
+    if (!transport->content_ready || transport->binding.local_role != RS_PEER_ROLE_HOST ||
+        update->permission_revision != transport->binding.permission_revision + 1 ||
+        union_scopes != previous || !overlap.empty() || channel == transport->channels.end() || !channel->second.open)
+      return RS_STATUS_INVALID_STATE;
+    transport->binding.permission_revision = update->permission_revision;
+    transport->binding.scopes = active;
+    frame = make_permission_state_frame(transport, active, revoked,
+        update->effective_at_reliable_input_sequence, reason);
+    rtc_id = channel->second.rtc_id;
+  }
+  if (!send_control_frame(transport, rtc_id, frame)) {
+    fail_transport(transport, "TRANSPORT_CONTROL_SEND_FAILED", "Permission state could not be delivered.");
+    return RS_STATUS_PROTOCOL_ERROR;
+  }
   return RS_STATUS_OK;
 }
 

@@ -65,6 +65,9 @@ The negotiated limit is the lower of both peers and the product hard maximum. Al
 - reliable input sequence at which the change becomes effective;
 - stable reason code.
 
+`effective_at_reliable_input_sequence = 0` means immediate application. The
+host releases tracked remote input before publishing that transition.
+
 A peer may locally revoke immediately before server propagation. Scope additions require a new server authorization and, for attended access, local consent.
 
 ## 7. Backpressure

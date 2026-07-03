@@ -59,6 +59,7 @@ public static class OpenApiContract
         new("revokeInvitation", "DELETE", "/tenant/invitations/{invitationId}"),
         new("revokeSessionScopes", "POST", "/sessions/{sessionId}/scope-revocations"),
         new("rotateDeviceKey", "POST", "/devices/{deviceId}/keys/rotate"),
+        new("terminateSession", "POST", "/sessions/{sessionId}/termination"),
     ];
 }
 
@@ -112,6 +113,7 @@ public interface IRemoteSupportApiClient
     ValueTask<ApiContractResponse> RevokeInvitationAsync(ApiContractRequest request, CancellationToken cancellationToken);
     ValueTask<ApiContractResponse> RevokeSessionScopesAsync(ApiContractRequest request, CancellationToken cancellationToken);
     ValueTask<ApiContractResponse> RotateDeviceKeyAsync(ApiContractRequest request, CancellationToken cancellationToken);
+    ValueTask<ApiContractResponse> TerminateSessionAsync(ApiContractRequest request, CancellationToken cancellationToken);
 }
 
 public interface IRemoteSupportApiHandler
@@ -164,4 +166,5 @@ public interface IRemoteSupportApiHandler
     ValueTask<ApiContractResponse> RevokeInvitationAsync(ApiContractRequest request, CancellationToken cancellationToken);
     ValueTask<ApiContractResponse> RevokeSessionScopesAsync(ApiContractRequest request, CancellationToken cancellationToken);
     ValueTask<ApiContractResponse> RotateDeviceKeyAsync(ApiContractRequest request, CancellationToken cancellationToken);
+    ValueTask<ApiContractResponse> TerminateSessionAsync(ApiContractRequest request, CancellationToken cancellationToken);
 }

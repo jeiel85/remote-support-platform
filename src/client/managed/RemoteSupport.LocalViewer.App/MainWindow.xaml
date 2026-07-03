@@ -2,29 +2,73 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:RemoteSupport.LocalViewer.App"
-        Title="Remote Support Local Viewer" Width="1100" Height="720">
-  <Grid>
-    <Grid.RowDefinitions>
-      <RowDefinition Height="Auto" />
-      <RowDefinition Height="*" />
-      <RowDefinition Height="Auto" />
-    </Grid.RowDefinitions>
-    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="8">
-      <TextBlock Text="Source" VerticalAlignment="Center" Margin="0,0,6,0" />
-      <ComboBox x:Name="SourceSelector" Width="120" SelectedIndex="0">
-        <ComboBoxItem Content="DXGI" />
-        <ComboBoxItem Content="WGC" />
-        <ComboBoxItem Content="Synthetic" />
-      </ComboBox>
-      <TextBlock Text="Display" VerticalAlignment="Center" Margin="12,0,6,0" />
-      <ComboBox x:Name="DisplaySelector" Width="420" DisplayMemberPath="Name" />
-      <Button Content="Start" Click="Start_Click" Margin="12,0,4,0" Padding="16,4" />
-      <Button Content="Stop" Click="Stop_Click" Padding="16,4" />
-    </StackPanel>
-    <Border Grid.Row="1" Background="Black" Margin="8">
-      <local:NativeRenderHost x:Name="RenderHost" />
+        Title="{DynamicResource ConsoleTitle}" Width="1320" Height="820" MinWidth="1080" MinHeight="680"
+        WindowStartupLocation="CenterScreen" AutomationProperties.Name="{DynamicResource ConsoleTitle}"
+        PreviewKeyDown="Window_KeyDown" PreviewKeyUp="Window_KeyUp" Deactivated="Window_Deactivated">
+  <Grid Background="#EEF2F7">
+    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+    <Border Background="#173B68" Padding="18,13">
+      <DockPanel>
+        <TextBlock Text="{DynamicResource ConsoleTitle}" Foreground="White" FontSize="22" FontWeight="SemiBold"/>
+        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
+          <TextBlock x:Name="IdentityText" Text="{DynamicResource SignedOut}" Foreground="#DDEBFA" Margin="0,7,14,0"/>
+          <Button x:Name="SignInButton" Content="{DynamicResource SignIn}" Click="SignIn_Click" Padding="16,7"/>
+        </StackPanel>
+      </DockPanel>
     </Border>
-    <TextBlock x:Name="StatusText" Grid.Row="2" Margin="8" Text="Initializing native runtime…" />
+    <Grid Grid.Row="1" Margin="14">
+      <Grid.ColumnDefinitions><ColumnDefinition Width="260"/><ColumnDefinition Width="*"/><ColumnDefinition Width="310"/></Grid.ColumnDefinitions>
+      <Border Background="White" CornerRadius="7" Padding="16" BorderBrush="#CED8E4" BorderThickness="1">
+        <StackPanel>
+          <TextBlock Text="{DynamicResource SupportCode}" FontWeight="SemiBold"/>
+          <TextBox x:Name="SupportCodeInput" FontFamily="Consolas" FontSize="20" MaxLength="11" Margin="0,8,0,14" AutomationProperties.Name="{DynamicResource SupportCode}"/>
+          <TextBlock Text="{DynamicResource Permissions}" FontWeight="SemiBold" Margin="0,0,0,7"/>
+          <CheckBox x:Name="ViewScope" Content="{DynamicResource ViewScreen}" IsChecked="True" IsEnabled="False" Margin="0,3"/>
+          <CheckBox x:Name="PointerScope" Content="{DynamicResource ControlPointer}" Margin="0,3"/>
+          <CheckBox x:Name="KeyboardScope" Content="{DynamicResource UseKeyboard}" Margin="0,3"/>
+          <CheckBox x:Name="ClipboardScope" Content="{DynamicResource ClipboardText}" Margin="0,3"/>
+          <CheckBox x:Name="FileScope" Content="{DynamicResource FileTransfer}" Margin="0,3"/>
+          <CheckBox x:Name="ChatScope" Content="{DynamicResource Chat}" IsChecked="True" Margin="0,3"/>
+          <Button x:Name="ConnectButton" Content="{DynamicResource RequestSupport}" Click="Connect_Click" Padding="12,9" Margin="0,18,0,0" IsEnabled="False"/>
+          <Separator Margin="0,18"/>
+          <TextBlock x:Name="SessionDetails" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite"/>
+        </StackPanel>
+      </Border>
+      <Border Grid.Column="1" Background="Black" CornerRadius="4" Margin="12,0" ClipToBounds="True">
+        <local:NativeRenderHost x:Name="RenderHost" Focusable="True" MouseMove="Viewport_MouseMove"
+                                MouseDown="Viewport_MouseDown" MouseUp="Viewport_MouseUp" MouseWheel="Viewport_MouseWheel" />
+      </Border>
+      <TabControl Grid.Column="2">
+        <TabItem Header="{DynamicResource DataFeatures}">
+          <Grid Margin="10"><Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+            <ListBox x:Name="ChatMessages" AutomationProperties.Name="{DynamicResource ChatMessagesName}"/>
+            <TextBox x:Name="ChatInput" Grid.Row="1" MinHeight="60" MaxLength="16384" Margin="0,8" TextWrapping="Wrap" AcceptsReturn="True"/>
+            <StackPanel Grid.Row="2" Orientation="Horizontal">
+              <Button x:Name="SendChatButton" Content="{DynamicResource SendChat}" Padding="10,6" IsEnabled="False" Click="SendChat_Click"/>
+              <Button x:Name="SendClipboardButton" Content="{DynamicResource Clipboard}" Padding="10,6" Margin="8,0,0,0" IsEnabled="False" Click="SendClipboard_Click"/>
+              <Button x:Name="SendFileButton" Content="{DynamicResource SendFile}" Padding="10,6" Margin="8,0,0,0" IsEnabled="False" Click="SendFile_Click"/>
+              <Button x:Name="CancelTransfersButton" Content="{DynamicResource CancelTransfers}" Padding="10,6" Margin="8,0,0,0" IsEnabled="False" Click="CancelTransfers_Click"/>
+            </StackPanel>
+          </Grid>
+        </TabItem>
+        <TabItem Header="{DynamicResource Diagnostics}"><TextBlock x:Name="DiagnosticsText" Margin="12" TextWrapping="Wrap" Text="{DynamicResource NoRoute}"/></TabItem>
+        <TabItem Header="{DynamicResource HardwarePreview}">
+          <StackPanel Margin="10">
+            <ComboBox x:Name="SourceSelector" SelectedIndex="0"><ComboBoxItem Content="DXGI"/><ComboBoxItem Content="WGC"/><ComboBoxItem Content="{DynamicResource Synthetic}"/></ComboBox>
+            <ComboBox x:Name="DisplaySelector" DisplayMemberPath="Name" Margin="0,8"/>
+            <StackPanel Orientation="Horizontal"><Button Content="{DynamicResource StartPreview}" Click="Start_Click" Padding="10,5"/><Button Content="{DynamicResource Stop}" Click="Stop_Click" Padding="10,5" Margin="8,0"/></StackPanel>
+          </StackPanel>
+        </TabItem>
+      </TabControl>
+    </Grid>
+    <Border Grid.Row="2" Background="White" BorderBrush="#CED8E4" BorderThickness="0,1,0,0" Padding="14">
+      <DockPanel>
+        <StackPanel VerticalAlignment="Center">
+          <TextBlock x:Name="StatusText" Text="{DynamicResource Initializing}" AutomationProperties.LiveSetting="Polite"/>
+          <TextBlock x:Name="SessionIndicatorText" FontWeight="SemiBold" Margin="0,3,0,0"/>
+        </StackPanel>
+        <Button x:Name="DisconnectButton" DockPanel.Dock="Right" Content="{DynamicResource Disconnect}" Click="Disconnect_Click" Padding="18,9" Background="#B42318" Foreground="White" FontWeight="Bold" IsEnabled="False"/>
+      </DockPanel>
+    </Border>
   </Grid>
 </Window>
-

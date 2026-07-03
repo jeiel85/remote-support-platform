@@ -8,6 +8,7 @@ constexpr uint32_t protocol_major = 1;
 constexpr uint32_t protocol_minor = 0;
 constexpr uint16_t type_protocol_hello = 20;
 constexpr uint16_t type_protocol_hello_ack = 21;
+constexpr uint16_t type_permission_state = 25;
 constexpr uint16_t type_heartbeat = 42;
 constexpr uint16_t type_transport_binding = 46;
 constexpr uint16_t type_transport_binding_ack = 47;
@@ -326,6 +327,79 @@ std::vector<uint8_t> make_heartbeat_frame(rs_transport_t* transport, uint64_t no
   append_varint_field(body, 4, nonce);
   append_varint_field(body, 5, transport->heartbeat_rtt_ms.load());
   return frame_envelope(transport, type_heartbeat, body);
+}
+
+std::vector<uint8_t> make_permission_state_frame(rs_transport_t* transport,
+    const std::vector<std::string>& active_scopes, const std::vector<std::string>& revoked_scopes,
+    uint64_t effective_at_reliable_input_sequence, const std::string& reason_code) {
+  std::vector<uint8_t> body;
+  append_varint_field(body, 1, transport->binding.permission_revision);
+  for (const auto& scope : active_scopes) {
+    const auto number = scope_number(scope);
+    if (number.has_value()) append_varint_field(body, 2, *number);
+  }
+  for (const auto& scope : revoked_scopes) {
+    const auto number = scope_number(scope);
+    if (number.has_value()) append_varint_field(body, 3, *number);
+  }
+  append_varint_field(body, 4, effective_at_reliable_input_sequence);
+  append_string_field(body, 5, reason_code);
+  return frame_envelope(transport, type_permission_state, body);
+}
+
+bool parse_permission_state(const std::vector<uint8_t>& body, parsed_permission_state& output, std::string& error) {
+  const uint8_t* current = body.data();
+  const uint8_t* end = current + body.size();
+  std::set<std::string> active;
+  std::set<std::string> revoked;
+  while (current < end) {
+    uint64_t key = 0;
+    if (!read_varint(current, end, key)) { error = "PERMISSION_STATE_INVALID"; return false; }
+    const uint32_t field = static_cast<uint32_t>(key >> 3);
+    const uint32_t wire = static_cast<uint32_t>(key & 7);
+    uint64_t value = 0;
+    const uint8_t* bytes = nullptr;
+    size_t length = 0;
+    if ((field == 1 || field == 4) && wire == 0) {
+      if (!read_varint(current, end, value)) { error = "PERMISSION_STATE_INVALID"; return false; }
+      if (field == 1) output.revision = value;
+      else output.effective_at_reliable_input_sequence = value;
+    } else if ((field == 2 || field == 3) && wire == 0) {
+      if (!read_varint(current, end, value)) { error = "PERMISSION_STATE_INVALID"; return false; }
+      const auto name = scope_name(value);
+      if (!name.has_value() || !(field == 2 ? active : revoked).insert(*name).second) {
+        error = "PERMISSION_STATE_INVALID"; return false;
+      }
+    } else if ((field == 2 || field == 3) && wire == 2) {
+      if (!read_length_delimited(current, end, bytes, length)) { error = "PERMISSION_STATE_INVALID"; return false; }
+      const uint8_t* packed = bytes;
+      const uint8_t* packed_end = bytes + length;
+      while (packed < packed_end) {
+        if (!read_varint(packed, packed_end, value)) { error = "PERMISSION_STATE_INVALID"; return false; }
+        const auto name = scope_name(value);
+        if (!name.has_value() || !(field == 2 ? active : revoked).insert(*name).second) {
+          error = "PERMISSION_STATE_INVALID"; return false;
+        }
+      }
+    } else if (field == 5 && wire == 2) {
+      if (!read_length_delimited(current, end, bytes, length) ||
+          !assign_string(bytes, length, 64, output.reason_code)) {
+        error = "PERMISSION_STATE_INVALID"; return false;
+      }
+    } else if (!skip_value(current, end, wire)) {
+      error = "PERMISSION_STATE_INVALID"; return false;
+    }
+  }
+  output.active_scopes.assign(active.begin(), active.end());
+  output.revoked_scopes.assign(revoked.begin(), revoked.end());
+  if (output.revision == 0 || output.revoked_scopes.empty() || output.reason_code.empty() ||
+      std::any_of(output.reason_code.begin(), output.reason_code.end(), [](unsigned char c) {
+        return !std::isalnum(c) && c != '_';
+      })) {
+    error = "PERMISSION_STATE_INVALID";
+    return false;
+  }
+  return true;
 }
 
 bool parse_control_frame(const uint8_t* data, size_t length, uint32_t maximum_bytes,

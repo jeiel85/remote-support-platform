@@ -1,0 +1,27 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+  <sys:String x:Key="ConsoleTitle">원격 지원 상담원 콘솔</sys:String>
+  <sys:String x:Key="SignIn">로그인</sys:String><sys:String x:Key="SignedOut">로그인되지 않음</sys:String>
+  <sys:String x:Key="SupportCode">지원 코드</sys:String><sys:String x:Key="RequestSupport">연결 요청</sys:String>
+  <sys:String x:Key="Permissions">요청 권한</sys:String><sys:String x:Key="Disconnect">세션 종료</sys:String>
+  <sys:String x:Key="RemoteScreen">원격 화면</sys:String><sys:String x:Key="DataFeatures">채팅 및 파일</sys:String>
+  <sys:String x:Key="Diagnostics">진단</sys:String><sys:String x:Key="HardwarePreview">로컬 하드웨어 미리보기</sys:String>
+  <sys:String x:Key="SendChat">채팅 보내기</sys:String><sys:String x:Key="SendFile">보낼 파일 선택</sys:String>
+  <sys:String x:Key="CancelTransfers">전송 취소</sys:String><sys:String x:Key="StatusScopesChanged">상대방이 활성 권한을 변경했습니다. 철회된 동작은 즉시 중지되었습니다.</sys:String>
+  <sys:String x:Key="WaitingConsent">상대방이 상담원 신원과 요청 권한을 확인하고 있습니다.</sys:String>
+  <sys:String x:Key="ViewScreen">화면 보기</sys:String><sys:String x:Key="ControlPointer">포인터 제어</sys:String><sys:String x:Key="UseKeyboard">키보드 사용</sys:String>
+  <sys:String x:Key="ClipboardText">클립보드 텍스트</sys:String><sys:String x:Key="FileTransfer">파일 전송</sys:String><sys:String x:Key="Chat">채팅</sys:String>
+  <sys:String x:Key="Clipboard">클립보드</sys:String><sys:String x:Key="StartPreview">미리보기 시작</sys:String><sys:String x:Key="Stop">중지</sys:String>
+  <sys:String x:Key="NoRoute">활성 피어 경로가 없습니다.</sys:String><sys:String x:Key="Initializing">네이티브 런타임을 초기화하는 중…</sys:String>
+  <sys:String x:Key="StatusSignedIn">로그인했습니다. 상대방 화면의 일회용 지원 코드를 입력하세요.</sys:String>
+  <sys:String x:Key="StatusCodeInvalid">지원 코드 형식이 올바르지 않습니다.</sys:String><sys:String x:Key="StatusDisconnected">로컬에서 세션을 종료했습니다. 원격 입력과 콘텐츠 채널이 닫혔습니다.</sys:String>
+  <sys:String x:Key="StatusHostEnded">상대방이 세션을 종료했습니다.</sys:String><sys:String x:Key="StatusClipboardLocked">다른 앱이 클립보드를 사용 중입니다.</sys:String>
+  <sys:String x:Key="IncomingFile">수신 파일</sys:String><sys:String x:Key="ReceiveFileFormat">{0} 파일을 다음 위치에 받으시겠습니까?&#x0a;{1}</sys:String>
+  <sys:String x:Key="YouPrefix">나</sys:String><sys:String x:Key="HostPrefix">상대방</sys:String>
+  <sys:String x:Key="SignedInExpiryFormat">로그인됨 · 토큰 만료 {0:t}</sys:String><sys:String x:Key="StatusNegotiating">상대방이 승인했습니다. 인증된 직접 또는 릴레이 경로를 연결하는 중…</sys:String><sys:String x:Key="Stopped">중지됨</sys:String>
+  <sys:String x:Key="ChatMessagesName">세션 채팅 메시지</sys:String><sys:String x:Key="Synthetic">합성 화면</sys:String>
+  <sys:String x:Key="SessionSummaryFormat">세션 {0}&#x0a;상대방 승인 만료 {1:g}</sys:String>
+  <sys:String x:Key="DiagnosticsFormat">세션: {0}&#x0a;피어: {1}&#x0a;전송 에포크: {2}&#x0a;권한 리비전: {3}&#x0a;경로: 연결 중</sys:String>
+  <sys:String x:Key="ActiveScopesFormat">활성 권한: {0}</sys:String><sys:String x:Key="ErrorOidcRequired">상담원 로그인 설정이 필요합니다.</sys:String>
+  <sys:String x:Key="SessionIndicatorFormat">상대방 연결 중 · {0} · 활성: {1}</sys:String>
+  <sys:String x:Key="ReadyDisplaysFormat">준비됨 — 디스플레이 {0}개</sys:String><sys:String x:Key="DiagnosticsUnavailableFormat">네이티브 미디어 진단을 사용할 수 없습니다: {0}</sys:String><sys:String x:Key="CapturingFormat">{0}(으)로 캡처 중</sys:String>
+</ResourceDictionary>

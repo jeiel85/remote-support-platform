@@ -27,12 +27,16 @@ public sealed record PeerAuthorizationChallenge(Guid ChallengeId, Guid SessionId
 public sealed record ProofOfPossession(string Nonce, string Signature, JsonElement PublicKey, string Algorithm);
 public sealed record PeerAuthorizationRequest(Guid ChallengeId, string Role, ProofOfPossession Proof);
 public sealed record PeerAuthorization(Guid SessionId, Guid PeerId, string Role, string PeerToken,
-    IReadOnlyList<string> GrantedScopes, long PermissionRevision, long TransportEpoch, DateTimeOffset ExpiresAt);
+    IReadOnlyList<string> GrantedScopes, long PermissionRevision, long TransportEpoch, DateTimeOffset ExpiresAt,
+    Guid RemotePeerId, string RemoteRole, JsonElement RemoteEphemeralPublicKey, string RemoteKeyThumbprint,
+    string AuthorizationContextSha256);
 public sealed record SignalingTicket(string Ticket, string SignalingUrl, DateTimeOffset ExpiresAt,
     long TransportEpoch);
 public sealed record IceServer(IReadOnlyList<string> Urls, string Username, string Credential);
 public sealed record TurnCredentials(string Region, IReadOnlyList<IceServer> IceServers,
     DateTimeOffset ExpiresAt);
+public sealed record SessionTerminationRequest(string ReasonCode);
+public sealed record ScopeRevocationRequest(IReadOnlyList<string> RevokedScopes, string ReasonCode);
 public sealed record TurnUsageReport(Guid EventId, string Username, string Region, string Transport,
     string NodeId, ulong BytesFromClient, ulong BytesToClient, DateTimeOffset StartedAt,
     DateTimeOffset EndedAt);
@@ -53,6 +57,8 @@ public sealed record ProblemContract(string Code, string Message, Guid Correlati
 [JsonSerializable(typeof(PeerAuthorization))]
 [JsonSerializable(typeof(SignalingTicket))]
 [JsonSerializable(typeof(TurnCredentials))]
+[JsonSerializable(typeof(SessionTerminationRequest))]
+[JsonSerializable(typeof(ScopeRevocationRequest))]
 [JsonSerializable(typeof(TurnUsageReport))]
 [JsonSerializable(typeof(TurnUsageAccepted))]
 internal sealed partial class ControlPlaneJsonContext : JsonSerializerContext;
