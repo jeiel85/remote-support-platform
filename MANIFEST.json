@@ -434,8 +434,8 @@
     },
     {
       "path": "07-delivery/acceptance-test-cases.csv",
-      "bytes": 60726,
-      "sha256": "21b810dd3234ac8d3fe8b98085e0e56d8dce5b1ffaa0940a54d3429c534d1374"
+      "bytes": 60628,
+      "sha256": "e29717118b1601b64fb1f924350d63e4757564ce40e9aa66bd1acd878682e97a"
     },
     {
       "path": "07-delivery/acceptance-test-catalog.md",
@@ -614,8 +614,8 @@
     },
     {
       "path": "07-delivery/traceability/requirements-traceability.csv",
-      "bytes": 44052,
-      "sha256": "967ba9745e2789752f906d268bf4100c02c84500899359998932e90f6d031aec"
+      "bytes": 43954,
+      "sha256": "98b0b0c94632eba4f3433fe4aab5987918844352ed0c5727a1137560bd6e1ebd"
     },
     {
       "path": "07-delivery/traceability/requirements-traceability.md",
