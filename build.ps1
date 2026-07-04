@@ -36,6 +36,9 @@ function Invoke-NativeBuild {
     $nativeBuild = Join-Path $root "artifacts\native\$Configuration"
     & $cmake -S (Join-Path $root 'src\client\native') -B $nativeBuild -G 'MinGW Makefiles' "-DCMAKE_BUILD_TYPE=$Configuration" "-DCMAKE_CXX_USE_RESPONSE_FILE_FOR_OBJECTS=ON" "-DRS_CONTRACT_ROOT=$root" "-DRS_CPPWINRT_ROOT=$cppwinrt" "-DRS_LIBDATACHANNEL_ROOT=$($webrtc.LibDataChannelRoot)" "-DRS_MBEDTLS_ROOT=$($webrtc.MbedTlsRoot)" "-DRS_ICE_BACKEND=$iceBackend"
     & $cmake --build $nativeBuild --config $Configuration
+    # Surface failing native test stdout/stderr in CI logs (CTest honors this env var
+    # for the makefile 'test' target); otherwise failures show only pass/fail with no detail.
+    $env:CTEST_OUTPUT_ON_FAILURE = '1'
     & $cmake --build $nativeBuild --target test
 }
 
