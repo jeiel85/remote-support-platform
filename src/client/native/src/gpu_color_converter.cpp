@@ -57,7 +57,7 @@ HRESULT ensure_converter(rs_encoder_t* encoder, const D3D11_TEXTURE2D_DESC& sour
   output.SampleDesc.Count = 1;
   output.Usage = D3D11_USAGE_DEFAULT;
   output.BindFlags = D3D11_BIND_RENDER_TARGET |
-      (needs_video_encoder_binding ? D3D11_BIND_VIDEO_ENCODER : 0u);
+      (needs_video_encoder_binding ? static_cast<UINT>(D3D11_BIND_VIDEO_ENCODER) : 0u);
   if (SUCCEEDED(result)) result = encoder->runtime->device->CreateTexture2D(&output, nullptr, &encoder->nv12_surface);
   if (FAILED(result)) return result;
 
