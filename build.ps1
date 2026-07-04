@@ -107,7 +107,10 @@ switch ($Target) {
         & $python (Join-Path $root 'tools\operations\verify_goal12.py') $root
         & $python (Join-Path $root 'tools\operations\verify_goal13.py') $root
         & $python (Join-Path $root 'tools\operations\verify_goal14.py') $root
-        & $dotnet list (Join-Path $root 'RemoteSupport.sln') package --vulnerable --include-transitive
+        # --no-restore: reuse the win-x64 assets from Invoke-Restore. Without it, the
+        # scan triggers an implicit RID-less restore that conflicts with the win-x64
+        # lock files under CI locked mode (NU1004). The vulnerability DB query is unaffected.
+        & $dotnet list (Join-Path $root 'RemoteSupport.sln') package --vulnerable --include-transitive --no-restore
         & $python (Join-Path $root 'tools\supply-chain\create_sbom.py') $root
     }
 }
