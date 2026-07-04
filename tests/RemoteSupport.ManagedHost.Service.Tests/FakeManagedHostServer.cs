@@ -21,6 +21,7 @@ internal sealed class FakeManagedHostServer : HttpMessageHandler
     public int DecisionCallCount;
     public bool LastDecisionApproved;
     public string[] LastDecisionGrantedScopes = [];
+    public string SessionType = "MANAGED_ATTENDED";
 
     private readonly JsonElement deviceKeyJwk;
 
@@ -58,7 +59,7 @@ internal sealed class FakeManagedHostServer : HttpMessageHandler
             PendingManagedSessionRequest[] items = PollCallCount == 1
                 ?
                 [
-                    new PendingManagedSessionRequest(SessionId, "MANAGED_ATTENDED",
+                    new PendingManagedSessionRequest(SessionId, SessionType,
                         new PendingOperatorDisplay(Guid.NewGuid(), "Test Operator", "Test Tenant"),
                         ["VIEW_SCREEN", "CONTROL_POINTER"], "deadbeef", "consent-nonce-0000000000000000", true, true,
                         DateTimeOffset.UtcNow.AddMinutes(10), 1),

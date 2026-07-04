@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "fileCount": 160,
+  "fileCount": 163,
   "files": [
     {
       "path": "00-product/commercialization-and-compliance.md",
@@ -378,6 +378,11 @@
       "sha256": "9e13467a143d3f83426501033448f541e06958dac26c051b7a32eae1b11da37d"
     },
     {
+      "path": "05-security/unattended-threat-model.md",
+      "bytes": 6366,
+      "sha256": "4dc4f64c12f196a2f812020b3698716f95a5855a4d301e5810a382d9543e93b4"
+    },
+    {
       "path": "06-quality/av-edr-false-positive-process.md",
       "bytes": 3107,
       "sha256": "d46b8fc43ff3db3abc505a205e413e6c35cb7fe33c83a00509d144f6a3d0c3a6"
@@ -506,6 +511,16 @@
       "path": "07-delivery/evidence/goal-12.md",
       "bytes": 3443,
       "sha256": "19be8374a0c0b05a0cbcda60d39e59b0f9f7c9d4e1084f45184f5332171071e8"
+    },
+    {
+      "path": "07-delivery/evidence/goal-13.md",
+      "bytes": 5664,
+      "sha256": "fd63b9775522218638194db337d0a7f9d2fc7473dda0298136fbd04a949ab720"
+    },
+    {
+      "path": "07-delivery/evidence/goal-14.md",
+      "bytes": 4826,
+      "sha256": "09d7c73b08c0e3b8bbd1224d319ca3dff3a79013690ff093fbdefa81947d33af"
     },
     {
       "path": "07-delivery/goals/goal-01-foundation.md",
@@ -779,8 +794,8 @@
     },
     {
       "path": "DOCUMENT_INDEX.md",
-      "bytes": 6317,
-      "sha256": "15eab677dd431e6916319bbe8dfca64ee41e25702b001af3ff17bf5ee1b27fe1"
+      "bytes": 6360,
+      "sha256": "9e7859007f9f45610c454c50e42faee8d6e9b52e10d2ed6b0dd6e2d05c13043e"
     },
     {
       "path": "FINAL_AUDIT_REPORT.md",

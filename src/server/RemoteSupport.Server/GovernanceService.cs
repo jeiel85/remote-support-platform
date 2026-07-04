@@ -32,7 +32,7 @@ internal sealed class GovernanceService(IGovernanceStore store, ControlPlaneCryp
     };
     private static readonly HashSet<string> AllowedFeatures = new(StringComparer.Ordinal)
     {
-        "VIEW_SCREEN", "REMOTE_INPUT", "CLIPBOARD_TEXT", "FILE_TRANSFER", "CHAT", "MULTI_MONITOR",
+        "VIEW_SCREEN", "REMOTE_INPUT", "CLIPBOARD_TEXT", "FILE_TRANSFER", "CHAT", "MULTI_MONITOR", "UNATTENDED_ACCESS",
     };
 
     public TenantContract CreateTenant(CreateTenantRequest request, string idempotencyKey, TenantActor actor)
@@ -558,6 +558,62 @@ internal sealed class GovernanceService(IGovernanceStore store, ControlPlaneCryp
             return new DeviceKeyRotationResult(newVersion, true);
         });
 
+    public UnattendedEnrollmentRequestResult RequestUnattendedEnrollment(TenantRequestContext context, Guid deviceId) =>
+        store.Execute(context.TenantId, tenant =>
+        {
+            context.RequireRole("OWNER", "ADMIN");
+            context.RequireFreshMfa(clock.UtcNow);
+            if (!tenant.Devices.TryGetValue(deviceId, out DeviceRecord? device) || device.Status != "ACTIVE")
+                throw NotFound();
+            DateTimeOffset now = clock.UtcNow;
+            foreach (Guid expired in device.UnattendedEnrollmentRequests
+                .Where(item => item.Value.ExpiresAt <= now).Select(item => item.Key).ToArray())
+                device.UnattendedEnrollmentRequests.Remove(expired);
+            if (device.UnattendedEnrollmentRequests.Count >= 8)
+                throw new ControlPlaneException(429, "UNATTENDED_ENROLLMENT_WINDOW_FULL", "Pending enrollment-request capacity was exceeded.");
+            string code = ControlPlaneCrypto.GenerateSecret(16);
+            Guid requestId = Guid.NewGuid();
+            DateTimeOffset expiresAt = now.AddMinutes(10);
+            device.UnattendedEnrollmentRequests.Add(requestId, new UnattendedEnrollmentRequestRecord(requestId,
+                crypto.LookupHash(code), context.UserId, expiresAt, null, null));
+            GovernanceAudit.Append(tenant, context.Actor, "DEVICE", "UNATTENDED_ENROLLMENT_REQUESTED", "SUCCEEDED",
+                "DEVICE", deviceId.ToString("D"), new { requestId, expiresAt }, now);
+            return new UnattendedEnrollmentRequestResult(requestId, code, expiresAt);
+        });
+
+    public void ConfirmUnattendedEnrollment(DeviceAccessContext access, UnattendedEnrollmentConfirmRequest request) =>
+        store.Execute(access.TenantId, tenant =>
+        {
+            DateTimeOffset now = clock.UtcNow;
+            if (!tenant.Devices.TryGetValue(access.DeviceId, out DeviceRecord? device) || device.Status != "ACTIVE")
+                throw NotFound();
+            if (!device.UnattendedEnrollmentRequests.TryGetValue(request.RequestId, out UnattendedEnrollmentRequestRecord? pending) ||
+                pending.ConfirmedAt is not null || pending.RevokedAt is not null || pending.ExpiresAt <= now ||
+                !FixedSecret(pending.ConfirmationCodeHash, crypto.LookupHash(request.ConfirmationCode)))
+                throw new ControlPlaneException(409, "UNATTENDED_ENROLLMENT_REQUEST_INVALID", "The enrollment request was invalid.");
+            device.UnattendedEnrollmentRequests[request.RequestId] = pending with { ConfirmedAt = now };
+            tenant.Devices[access.DeviceId] = device with { UnattendedEnabled = true, UpdatedAt = now };
+            GovernanceAudit.Append(tenant, new TenantActor(access.DeviceId, access.DeviceId.ToString("D"), device.DisplayName,
+                null, "DEVICE", null, [], null), "DEVICE", "UNATTENDED_ENROLLMENT_CONFIRMED", "SUCCEEDED", "DEVICE",
+                access.DeviceId.ToString("D"), new { request.RequestId }, now);
+            return true;
+        });
+
+    public void RevokeUnattendedEnrollment(TenantRequestContext context, Guid deviceId, long version) =>
+        store.Execute(context.TenantId, tenant =>
+        {
+            context.RequireRole("OWNER", "ADMIN");
+            context.RequireFreshMfa(clock.UtcNow);
+            if (!tenant.Devices.TryGetValue(deviceId, out DeviceRecord? device)) throw NotFound();
+            if (version != device.AuthorizationVersion) throw Conflict("RESOURCE_VERSION_CONFLICT");
+            if (!device.UnattendedEnabled) return true;
+            DateTimeOffset now = clock.UtcNow;
+            tenant.Devices[deviceId] = device with { UnattendedEnabled = false, UpdatedAt = now };
+            GovernanceAudit.Append(tenant, context.Actor, "DEVICE", "UNATTENDED_ENROLLMENT_REVOKED", "SUCCEEDED",
+                "DEVICE", deviceId.ToString("D"), new { }, now);
+            return true;
+        });
+
     public IReadOnlyList<PolicyContract> ListPolicies(TenantRequestContext context) => store.Execute(context.TenantId, tenant =>
     {
         context.RequireRole("OWNER", "ADMIN", "SECURITY_AUDITOR");
@@ -969,7 +1025,7 @@ internal sealed class GovernanceService(IGovernanceStore store, ControlPlaneCryp
         new(value.Id, value.Email, value.Roles, value.Status == "PENDING" && value.ExpiresAt <= now ? "EXPIRED" : value.Status,
             value.ExpiresAt, value.CreatedAt, token);
     private static DeviceContract ToContract(DeviceRecord value) => new(value.Id, value.DisplayName, value.Status,
-        value.AppVersion, value.OsVersion, false, value.EnrolledAt, value.LastSeenAt, value.AuthorizationVersion);
+        value.AppVersion, value.OsVersion, value.UnattendedEnabled, value.EnrolledAt, value.LastSeenAt, value.AuthorizationVersion);
     private static PolicyContract ToContract(PolicyRecord value) => new(value.Id, value.Name, value.Status,
         value.ActiveVersion, value.CreatedAt, value.ResourceVersion);
     private DataExportResult ToDataExportContract(DataExportRecord value, string baseUrl)

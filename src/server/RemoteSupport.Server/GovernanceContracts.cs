@@ -52,6 +52,8 @@ public sealed record PagedManagedSessionRequests(IReadOnlyList<PendingManagedSes
 public sealed record ManagedHostDecisionRequest(bool Approved, IReadOnlyList<string> GrantedScopes,
     string ConsentNonce, JsonElement HostEphemeralPublicKey, DetachedProof DecisionProof);
 public sealed record ManagedHostDecisionResult(SessionResponse Session, Guid HostPeerId, string? HostBootstrapToken);
+public sealed record UnattendedEnrollmentRequestResult(Guid RequestId, string ConfirmationCode, DateTimeOffset ExpiresAt);
+public sealed record UnattendedEnrollmentConfirmRequest(Guid RequestId, string ConfirmationCode);
 public sealed record PolicyDocumentRequest(string Name, JsonElement Document, string? Description);
 public sealed record PolicyContract(Guid Id, string Name, string Status, int? ActiveVersion,
     DateTimeOffset CreatedAt, long ResourceVersion);

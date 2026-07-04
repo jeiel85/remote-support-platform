@@ -96,6 +96,7 @@ Generated for the final re-audited bundle. Machine-readable contracts are marked
 - `05-security/secure-sdlc.md`
 - `05-security/security-architecture.md`
 - `05-security/threat-model.md`
+- `05-security/unattended-threat-model.md`
 
 ## 06-quality
 

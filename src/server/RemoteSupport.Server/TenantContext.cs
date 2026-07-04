@@ -83,6 +83,7 @@ internal sealed class TenantContextMiddleware(RequestDelegate next)
     private static readonly HashSet<string> DeviceSelfServiceSegments = new(StringComparer.OrdinalIgnoreCase)
     {
         "heartbeat", "credential-challenges", "credentials", "keys", "pending-session-requests",
+        "unattended-enrollment-confirmations",
     };
 
     private static bool RequiresTenantContext(PathString path)

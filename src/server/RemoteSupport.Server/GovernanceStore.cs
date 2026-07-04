@@ -41,14 +41,18 @@ internal sealed record DeviceRecord(Guid Id, Guid InstallationId, string Display
 {
     public string? ServiceState { get; init; }
     public int InteractiveSessions { get; init; }
+    public bool UnattendedEnabled { get; init; }
     public Dictionary<Guid, DeviceCredentialChallengeRecord> CredentialChallenges { get; init; } = [];
     public Dictionary<string, DpopReplayRecord> DpopReplays { get; init; } = new(StringComparer.Ordinal);
+    public Dictionary<Guid, UnattendedEnrollmentRequestRecord> UnattendedEnrollmentRequests { get; init; } = [];
     public DeviceKeyRecord ActiveKey => Keys[ActiveKeyVersion];
 }
 internal sealed record DeviceKeyRecord(int Version, string PublicJwk, string KeyThumbprint, string Status,
     DateTimeOffset ValidFrom, DateTimeOffset? ValidUntil, DateTimeOffset? RevokedAt);
 internal sealed record DeviceCredentialChallengeRecord(Guid Id, int KeyVersion, string Purpose, string NonceHash,
     DateTimeOffset ExpiresAt, DateTimeOffset? ConsumedAt);
+internal sealed record UnattendedEnrollmentRequestRecord(Guid Id, string ConfirmationCodeHash, Guid RequestedByUserId,
+    DateTimeOffset ExpiresAt, DateTimeOffset? ConfirmedAt, DateTimeOffset? RevokedAt);
 internal sealed record EnrollmentTokenRecord(Guid Id, string TokenHash, Guid CreatedByUserId, int MaximumUses,
     int UseCount, DateTimeOffset ExpiresAt, DateTimeOffset? RevokedAt, DateTimeOffset CreatedAt);
 internal sealed record PolicyRecord(Guid Id, string Name, string? Description, string Status, int? ActiveVersion,

@@ -97,14 +97,24 @@ internal static class GovernancePolicyEngine
         if (!SessionTypes.Contains(request.SessionType) || request.RequestedScopes.Count is < 1 or > 32 ||
             request.RequestedScopes.Any(scope => !Scopes.Contains(scope)) || request.RequestedScopes.Count != request.RequestedScopes.Distinct(StringComparer.Ordinal).Count())
             throw new ControlPlaneException(400, "POLICY_INPUT_INVALID", "Policy evaluation input was invalid.");
-        if (request.SessionType == "UNATTENDED")
-            return HardDenied(tenant.Tenant.Id, request, now, "UNATTENDED_NOT_RELEASED");
         DeviceRecord? device = null;
         if (request.DeviceId is { } deviceId)
         {
             device = tenant.Devices.GetValueOrDefault(deviceId);
             if (device is null || device.Status != "ACTIVE")
                 return HardDenied(tenant.Tenant.Id, request, now, "DEVICE_INACTIVE");
+        }
+        if (request.SessionType == "UNATTENDED")
+        {
+            // Unattended has no present local human to refuse or witness access, so these
+            // three gates are unconditional and cannot be satisfied by policy configuration
+            // alone (05-security/unattended-threat-model.md §3 "Policy misconfiguration").
+            if (device is null) return HardDenied(tenant.Tenant.Id, request, now, "UNATTENDED_REQUIRES_DEVICE");
+            if (!device.UnattendedEnabled) return HardDenied(tenant.Tenant.Id, request, now, "UNATTENDED_NOT_ENABLED_FOR_DEVICE");
+            if (!request.RequestedScopes.Contains("UNATTENDED_SESSION", StringComparer.Ordinal))
+                return HardDenied(tenant.Tenant.Id, request, now, "UNATTENDED_SESSION_SCOPE_REQUIRED");
+            if (!context.Actor.HasFreshMfa(now, TimeSpan.FromMinutes(10)))
+                return HardDenied(tenant.Tenant.Id, request, now, "STEP_UP_MFA_REQUIRED");
         }
 
         HashSet<string> allowed = new(StringComparer.Ordinal);
@@ -217,6 +227,7 @@ internal static class GovernancePolicyEngine
             "TRANSFER_FILE_HOST_TO_OPERATOR" or "TRANSFER_FILE_OPERATOR_TO_HOST" => "FILE_TRANSFER",
             "CHAT" => "CHAT",
             "SWITCH_MONITOR" => "MULTI_MONITOR",
+            "UNATTENDED_SESSION" => "UNATTENDED_ACCESS",
             _ => null,
         };
         return feature is not null && settings.AllowedFeatures.Contains(feature, StringComparer.Ordinal);

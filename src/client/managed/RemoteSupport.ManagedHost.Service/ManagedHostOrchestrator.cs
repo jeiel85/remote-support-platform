@@ -61,23 +61,51 @@ public sealed class ManagedHostOrchestrator(
 
     private async Task ProcessPendingSessionAsync(PendingManagedSessionRequest item, CancellationToken cancellationToken)
     {
+        bool isUnattended = item.SessionType == "UNATTENDED";
         ManagedSessionConsentRequest consentRequest = new()
         {
             SessionId = item.SessionId.ToString("D"),
             OperatorDisplayName = item.Operator.DisplayName,
             OperatorTenantDisplayName = item.Operator.TenantDisplayName,
-            PolicyRequiresConsent = item.LocalConsentRequired,
+            // Unattended is already policy-bound, MFA-stepped-up and device-opted-in
+            // server-side (05-security/unattended-threat-model.md §3); the local prompt is
+            // a mandatory *notification* here, never a gate the server waits on, since no
+            // local human may be present to answer it.
+            PolicyRequiresConsent = item.LocalConsentRequired && !isUnattended,
             ExpiresUtcUnixMs = item.ExpiresAt.ToUnixTimeMilliseconds(),
         };
         consentRequest.RequestedScopes.AddRange(item.RequestedScopes.Select(ParseScope).Where(scope => scope is not null)
             .Select(scope => scope!.Value));
 
-        ManagedSessionConsentResult? consent = await agentLauncher
-            .RequestConsentAsync(consentRequest, consentTimeout, cancellationToken).ConfigureAwait(false);
-        bool approved = consent?.Approved ?? false;
-        string[] grantedScopes = approved
-            ? consent!.GrantedScopes.Select(FormatScope).Where(scope => scope is not null).Select(scope => scope!).ToArray()
-            : [];
+        bool approved;
+        string[] grantedScopes;
+        if (isUnattended)
+        {
+            approved = true;
+            grantedScopes = item.RequestedScopes.ToArray();
+            // Best-effort local notification only; a missing/unreachable Agent must not
+            // block or fail an already server-authorized unattended session, but is logged
+            // because "no hidden indicator" still requires attempting to show one.
+            try
+            {
+                ManagedSessionConsentResult? notified = await agentLauncher
+                    .RequestConsentAsync(consentRequest, consentTimeout, cancellationToken).ConfigureAwait(false);
+                if (notified is null) Log.UnattendedNotificationUndelivered(logger, item.SessionId);
+            }
+            catch (Exception exception) when (exception is not OperationCanceledException)
+            {
+                Log.UnattendedNotificationFailed(logger, item.SessionId, exception);
+            }
+        }
+        else
+        {
+            ManagedSessionConsentResult? consent = await agentLauncher
+                .RequestConsentAsync(consentRequest, consentTimeout, cancellationToken).ConfigureAwait(false);
+            approved = consent?.Approved ?? false;
+            grantedScopes = approved
+                ? consent!.GrantedScopes.Select(FormatScope).Where(scope => scope is not null).Select(scope => scope!).ToArray()
+                : [];
+        }
 
         using CngDeviceIdentityKey hostEphemeralKey = CngDeviceIdentityKey.CreateEphemeral();
         try
@@ -129,4 +157,12 @@ internal static partial class Log
     [LoggerMessage(EventId = 11, Level = LogLevel.Warning,
         Message = "Processing pending managed session {SessionId} failed.")]
     public static partial void PendingSessionFailed(ILogger logger, Guid sessionId, Exception exception);
+
+    [LoggerMessage(EventId = 12, Level = LogLevel.Warning,
+        Message = "Unattended session {SessionId} local notification was not delivered to any Agent.")]
+    public static partial void UnattendedNotificationUndelivered(ILogger logger, Guid sessionId);
+
+    [LoggerMessage(EventId = 13, Level = LogLevel.Warning,
+        Message = "Unattended session {SessionId} local notification attempt failed.")]
+    public static partial void UnattendedNotificationFailed(ILogger logger, Guid sessionId, Exception exception);
 }

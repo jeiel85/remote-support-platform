@@ -309,15 +309,43 @@ internal sealed class AttendedSessionService(
             return ToResponse(session);
         });
     }
+    /// <summary>Proactively ends every non-terminal session bound to a device, so device
+    /// revocation cannot leave an already-AUTHORIZED managed/unattended session usable
+    /// (05-security/unattended-threat-model.md "compromised device account" control).
+    /// This is server-authoritative and effective immediately for any further
+    /// server-mediated call (new signaling ticket, TURN credential, scope check); an
+    /// already-connected peer-to-peer transport disconnects on its own next
+    /// server-mediated check rather than via an instantaneous push.</summary>
+    public int TerminateSessionsForDevice(Guid deviceId) => store.Execute(collection =>
+    {
+        DateTimeOffset now = clock.UtcNow;
+        int terminated = 0;
+        foreach (SessionAggregate session in collection.ById.Values.Where(session =>
+            session.DeviceId == deviceId && session.State is not ("ENDED" or "EXPIRED" or "REJECTED" or "FAILED" or "CANCELLED")))
+        {
+            session.State = "CANCELLED";
+            session.StateVersion++;
+            session.PermissionRevision++;
+            session.GrantedScopes = [];
+            AppendLifecycle(session, "SESSION_CANCELLED_DEVICE_REVOKED", "SYSTEM", deviceId.ToString("D"), now,
+                new { session.StateVersion });
+            terminated++;
+        }
+        return terminated;
+    });
+
     public ManagedSessionCreated CreateManagedSession(Guid deviceId, OperatorIdentity identity,
         ManagedSessionRequest request, PolicyDecisionContract decision, string idempotencyKey)
     {
-        if (request.SessionType != "MANAGED_ATTENDED") throw BadRequest("SESSION_TYPE_UNSUPPORTED");
+        if (request.SessionType is not ("MANAGED_ATTENDED" or "UNATTENDED")) throw BadRequest("SESSION_TYPE_UNSUPPORTED");
         if (string.IsNullOrWhiteSpace(idempotencyKey) || idempotencyKey.Length is < 16 or > 128)
             throw BadRequest("IDEMPOTENCY_KEY_INVALID");
         string[] scopes = NormalizeScopes(request.RequestedScopes);
-        if (scopes.Contains("UNATTENDED_SESSION", StringComparer.Ordinal))
+        bool unattendedScopeRequested = scopes.Contains("UNATTENDED_SESSION", StringComparer.Ordinal);
+        if (request.SessionType == "MANAGED_ATTENDED" && unattendedScopeRequested)
             throw BadRequest("SCOPE_NOT_SUPPORTED_FOR_MANAGED_ATTENDED");
+        if (request.SessionType == "UNATTENDED" && !unattendedScopeRequested)
+            throw BadRequest("UNATTENDED_SESSION_SCOPE_REQUIRED");
         if (!decision.Allow) throw new ControlPlaneException(403, "POLICY_DENIED", "Policy denied the managed session.");
         if (scopes.Except(decision.GrantedScopes, StringComparer.Ordinal).Any())
             throw new ControlPlaneException(403, "POLICY_SCOPE_DENIED", "Policy does not permit a requested scope.");
@@ -348,7 +376,7 @@ internal sealed class AttendedSessionService(
                 Id = sessionId,
                 CreatedAt = now,
                 ExpiresAt = expiresAt,
-                SessionType = "MANAGED_ATTENDED",
+                SessionType = request.SessionType,
                 DeviceId = deviceId,
                 TenantId = identity.TenantId,
                 RequestedScopes = scopes,
@@ -424,7 +452,7 @@ internal sealed class AttendedSessionService(
         ManagedHostDecisionResult? result = store.Execute(collection =>
         {
             SessionAggregate session = RequireSession(collection, sessionId);
-            if (session.SessionType != "MANAGED_ATTENDED" || session.DeviceId != access.DeviceId)
+            if (session.SessionType is not ("MANAGED_ATTENDED" or "UNATTENDED") || session.DeviceId != access.DeviceId)
                 throw new ControlPlaneException(403, "AUTHZ_SCOPE_DENIED", "Device cannot decide this session.");
             DateTimeOffset now = clock.UtcNow;
             if (now >= session.ExpiresAt)

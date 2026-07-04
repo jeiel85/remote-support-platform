@@ -219,9 +219,11 @@ app.MapGet("/v1/devices", (HttpContext context, GovernanceService service) =>
     Results.Ok(service.ListDevices(TenantContextMiddleware.Get(context)))).RequireAuthorization("Authenticated");
 app.MapGet("/v1/devices/{deviceId:guid}", (Guid deviceId, HttpContext context, GovernanceService service) =>
     Results.Ok(service.GetDevice(TenantContextMiddleware.Get(context), deviceId))).RequireAuthorization("Authenticated");
-app.MapDelete("/v1/devices/{deviceId:guid}", (Guid deviceId, HttpContext context, GovernanceService service) =>
+app.MapDelete("/v1/devices/{deviceId:guid}", (Guid deviceId, HttpContext context, GovernanceService service,
+    AttendedSessionService sessions) =>
 {
     service.RevokeDevice(TenantContextMiddleware.Get(context), deviceId, IfMatch(context.Request));
+    sessions.TerminateSessionsForDevice(deviceId);
     return Results.NoContent();
 }).RequireAuthorization("Authenticated");
 
@@ -281,6 +283,27 @@ app.MapPost("/v1/sessions/{sessionId:guid}/managed-host-decision", (Guid session
         throw new ControlPlaneException(403, "DEVICE_PROOF_INVALID", "Managed host decision proof was invalid.");
     return Results.Ok(sessions.DecideManagedHostSession(access, sessionId, IfMatch(http), request));
 }).AllowAnonymous();
+
+app.MapPost("/v1/devices/{deviceId:guid}/unattended-enrollment-requests", (Guid deviceId, HttpContext context,
+    GovernanceService service) => Results.Created($"/v1/devices/{deviceId:D}/unattended-enrollment-requests",
+        service.RequestUnattendedEnrollment(TenantContextMiddleware.Get(context), deviceId)))
+    .RequireAuthorization("Authenticated");
+
+app.MapPost("/v1/devices/{deviceId:guid}/unattended-enrollment-confirmations", (Guid deviceId,
+    UnattendedEnrollmentConfirmRequest request, HttpRequest http, DeviceAccessService deviceAccess,
+    GovernanceService service) =>
+{
+    service.ConfirmUnattendedEnrollment(deviceAccess.Authenticate(http, deviceId), request);
+    return Results.NoContent();
+}).AllowAnonymous();
+
+app.MapDelete("/v1/devices/{deviceId:guid}/unattended-enrollment", (Guid deviceId, HttpContext context,
+    GovernanceService service, AttendedSessionService sessions) =>
+{
+    service.RevokeUnattendedEnrollment(TenantContextMiddleware.Get(context), deviceId, IfMatch(context.Request));
+    sessions.TerminateSessionsForDevice(deviceId);
+    return Results.NoContent();
+}).RequireAuthorization("Authenticated");
 
 app.MapGet("/v1/tenant/policies", (HttpContext context, GovernanceService service) =>
     Results.Ok(service.ListPolicies(TenantContextMiddleware.Get(context)))).RequireAuthorization("Authenticated");

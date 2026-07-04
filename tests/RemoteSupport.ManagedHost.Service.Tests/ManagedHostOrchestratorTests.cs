@@ -46,6 +46,26 @@ public sealed class ManagedHostOrchestratorTests
     }
 
     [Fact]
+    public async Task UnattendedSessionAutoApprovesEvenWhenLocalNotificationIsDeniedOrUnreachable()
+    {
+        using CngDeviceIdentityKey deviceKey = CngDeviceIdentityKey.CreateEphemeral();
+        FakeManagedHostServer server = new(deviceKey.PublicJwk) { SessionType = "UNATTENDED" };
+        using HttpClient httpClient = new(server) { BaseAddress = new Uri("https://managed-host.test") };
+        DeviceCredentialClient credentialClient = new(httpClient, server.DeviceId);
+        // The fake launcher denies/never responds; an unattended session must not depend on it.
+        FakeAgentLauncher launcher = new(approve: null, grantedScopes: []);
+        ManagedHostDeviceState state = new(server.DeviceId, deviceKey, 1, "0.13.0", "Windows 11 24H2");
+        ManagedHostOrchestrator orchestrator = new(credentialClient, launcher, state,
+            NullLogger<ManagedHostOrchestrator>.Instance, TimeSpan.FromSeconds(5));
+
+        await orchestrator.RunOnceAsync(CancellationToken.None);
+
+        Assert.Equal(1, server.DecisionCallCount);
+        Assert.True(server.LastDecisionApproved);
+        Assert.Equal(["VIEW_SCREEN", "CONTROL_POINTER"], server.LastDecisionGrantedScopes);
+    }
+
+    [Fact]
     public async Task ConsentTimeoutIsTreatedAsDenied()
     {
         using CngDeviceIdentityKey deviceKey = CngDeviceIdentityKey.CreateEphemeral();
