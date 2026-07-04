@@ -1,4 +1,5 @@
 using System.Buffers;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -9,6 +10,47 @@ namespace RemoteSupport.UnitTests;
 
 public sealed class UpdateMetadataVerifierTests
 {
+    private static readonly string[] RootKeyIds = ["root-1"];
+    private static readonly string[] TargetKeyIds = ["targets-1"];
+
+    [Fact]
+    [Trait("Requirement", "AT-NFR-SEC-009")]
+    public void ProtectedPipelineSignerProducesVerifierCompatibleRoot()
+    {
+        UpdateSigningKeyPair root = UpdateMetadataSigner.GenerateKeyPair();
+        UpdateSigningKeyPair targets = UpdateMetadataSigner.GenerateKeyPair();
+        try
+        {
+            DateTimeOffset now = new(2026, 7, 4, 0, 0, 0, TimeSpan.Zero);
+            JsonElement signed = JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = 1,
+                rootVersion = 1,
+                issuedAt = now.AddMinutes(-1),
+                expiresAt = now.AddDays(30),
+                consistentSnapshot = true,
+                keys = new Dictionary<string, object>
+                {
+                    ["root-1"] = new { algorithm = "ed25519", publicKey = UpdateMetadataSigner.Base64Url(root.PublicKey) },
+                    ["targets-1"] = new { algorithm = "ed25519", publicKey = UpdateMetadataSigner.Base64Url(targets.PublicKey) },
+                },
+                roles = new
+                {
+                    root = new { keyIds = RootKeyIds, threshold = 1 },
+                    targets = new { keyIds = TargetKeyIds, threshold = 1 },
+                },
+            });
+            byte[] document = UpdateMetadataSigner.Sign(JsonSerializer.SerializeToUtf8Bytes(signed), "root-1",
+                root.PrivateKey, "root");
+            Assert.Equal(1, UpdateTrustStore.LoadBootstrap(document, now).RootVersion);
+        }
+        finally
+        {
+            CryptographicOperations.ZeroMemory(root.PrivateKey);
+            CryptographicOperations.ZeroMemory(targets.PrivateKey);
+        }
+    }
+
     [Fact]
     public void SignedRootAndManifestAreBoundToProductArchitectureAndSequence()
     {

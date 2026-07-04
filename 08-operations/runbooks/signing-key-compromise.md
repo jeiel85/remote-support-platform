@@ -31,3 +31,12 @@
 - immutable release evidence;
 - two-person approval;
 - periodic key inventory and drill.
+
+## Exercise record
+
+Simulate an unexpected metadata signature without using production key
+material. Verify `SigningAnomaly` pages security, publication is frozen, the
+online role can be disabled, an uncompromised sequential root/targets path is
+available, and a known-good higher-sequence manifest is accepted while stale
+metadata remains rejected. Record alert/containment/recovery timestamps and
+two-person approval; never export an offline private key as drill evidence.

@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <AssemblyName>RemoteSupport.Updater</AssemblyName>
+    <Product>Remote Support Secure Updater</Product>
+    <Company>Remote Support</Company>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RemoteSupport.Security\RemoteSupport.Security.csproj" />
+    <ProjectReference Include="..\RemoteSupport.Observability\RemoteSupport.Observability.csproj" />
+  </ItemGroup>
+</Project>

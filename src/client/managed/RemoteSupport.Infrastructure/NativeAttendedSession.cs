@@ -1,8 +1,11 @@
+using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Security.Cryptography;
 using RemoteSupport.Application;
+using RemoteSupport.Observability;
 
 namespace RemoteSupport.Infrastructure;
 
@@ -17,9 +20,10 @@ public sealed class NativeAttendedSession : IDisposable
 {
     private readonly bool host;
     private readonly GCHandle self;
-    private readonly Dictionary<uint, string> channelLabels = [];
-    private readonly Dictionary<string, uint> channelIds = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<uint, string> channelLabels = [];
+    private readonly ConcurrentDictionary<string, uint> channelIds = new(StringComparer.Ordinal);
     private readonly List<NativeDisplay> displays = [];
+    private readonly object displayGate = new();
     private readonly NativeMethods.FrameCallback captureCallback;
     private readonly NativeMethods.FrameCallback remoteVideoCallback;
     private readonly NativeMethods.ErrorCallback errorCallback;
@@ -35,7 +39,8 @@ public sealed class NativeAttendedSession : IDisposable
     private nint capture;
     private nint renderer;
     private nint inputInjector;
-    private bool disposed;
+    private int disposeState;
+    private readonly long startedTimestamp = Stopwatch.GetTimestamp();
 
     public NativeAttendedSession(PeerAuthorizationResponse authorization, EphemeralPeerIdentity identity,
         TurnCredentialsResponse turn, nuint rendererWindow = 0)
@@ -81,6 +86,7 @@ public sealed class NativeAttendedSession : IDisposable
         };
         try
         {
+            using Activity? activity = RemoteSupportTelemetry.Start(host ? "agent" : "operator", "native-session-create");
             Require(NativeMethods.rs_runtime_create(in runtimeOptions, in callbacks, out runtime), "create runtime");
             if (rendererWindow != 0)
             {
@@ -107,11 +113,14 @@ public sealed class NativeAttendedSession : IDisposable
     public event Action<NativeDataPacket>? DataReceived;
     public event Action<string>? ErrorOccurred;
     public event Action<NativeRemoteFrame>? RemoteFrameChanged;
-    public IReadOnlyList<NativeDisplay> Displays => displays;
+    public IReadOnlyList<NativeDisplay> Displays
+    {
+        get { lock (displayGate) return displays.ToArray(); }
+    }
 
     public void EnumerateDisplays()
     {
-        displays.Clear();
+        lock (displayGate) displays.Clear();
         Require(NativeMethods.rs_runtime_enumerate_displays(runtime, Marshal.GetFunctionPointerForDelegate(displayCallback),
             GCHandle.ToIntPtr(self)), "enumerate displays");
     }
@@ -291,7 +300,7 @@ public sealed class NativeAttendedSession : IDisposable
 
     public void Dispose()
     {
-        if (disposed) return;
+        if (Interlocked.Exchange(ref disposeState, 1) != 0) return;
         if (capture != 0)
         {
             NativeMethods.rs_capture_stop(capture);
@@ -308,7 +317,8 @@ public sealed class NativeAttendedSession : IDisposable
         if (renderer != 0) NativeMethods.rs_renderer_destroy(renderer);
         if (runtime != 0) NativeMethods.rs_runtime_destroy(runtime);
         if (self.IsAllocated) self.Free();
-        disposed = true;
+        RemoteSupportTelemetry.Record(host ? "agent" : "operator", "native-session-lifetime", "stopped",
+            Stopwatch.GetElapsedTime(startedTimestamp));
         GC.SuppressFinalize(this);
     }
 
@@ -434,8 +444,8 @@ public sealed class NativeAttendedSession : IDisposable
         }
         else if (state == 3)
         {
-            channelLabels.Remove(channel);
-            channelIds.Remove(name);
+            channelLabels.TryRemove(channel, out _);
+            channelIds.TryRemove(name, out _);
         }
     }
     private void Data(nint context, nint value)
@@ -449,8 +459,9 @@ public sealed class NativeAttendedSession : IDisposable
     private void Display(nint context, nint value)
     {
         NativeMethods.DisplayInfo display = Marshal.PtrToStructure<NativeMethods.DisplayInfo>(value);
-        displays.Add(new NativeDisplay(NativeMethods.Text(display.Id) ?? string.Empty,
-            NativeMethods.Text(display.Name) ?? string.Empty, display.X, display.Y, display.Width, display.Height, display.Generation));
+        lock (displayGate)
+            displays.Add(new NativeDisplay(NativeMethods.Text(display.Id) ?? string.Empty,
+                NativeMethods.Text(display.Name) ?? string.Empty, display.X, display.Y, display.Width, display.Height, display.Generation));
     }
 
     private static byte[] PublicKey(PeerPublicJwk jwk)

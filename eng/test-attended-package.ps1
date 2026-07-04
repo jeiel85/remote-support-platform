@@ -25,6 +25,9 @@ try {
     $operatorProcess = Start-Process -FilePath $operator -ArgumentList '--smoke-test' -WindowStyle Hidden -PassThru
     if (-not $operatorProcess.WaitForExit(15000)) { $operatorProcess.Kill(); throw 'Installed Operator Console smoke test timed out.' }
     if ($operatorProcess.ExitCode -ne 0) { throw "Installed Operator Console smoke test failed: $($operatorProcess.ExitCode)" }
+    if (-not (Test-Path -LiteralPath (Join-Path (Split-Path -Parent $operator) 'RemoteSupport.Updater.exe'))) {
+        throw 'Installed secure updater is missing.'
+    }
     $statePath = Join-Path $testRoot 'RemoteSupport/operator-install.json'
     $state = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json
     $originalSequence = $state.releaseSequence
@@ -34,6 +37,16 @@ try {
     if ($LASTEXITCODE -eq 0) { throw 'Operator setup allowed a downgrade.' }
     $state.releaseSequence = $originalSequence
     $state | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $statePath -Encoding utf8NoBOM
+    & $setup.FullName stage
+    if ($LASTEXITCODE -ne 0) { throw 'Transactional update staging failed.' }
+    $pending = Join-Path $testRoot 'RemoteSupport/operator-update-pending.json'
+    if (-not (Test-Path -LiteralPath $pending)) { throw 'Transactional update did not persist pending health state.' }
+    & $setup.FullName rollback
+    if ($LASTEXITCODE -ne 0 -or (Test-Path -LiteralPath $pending)) { throw 'Transactional rollback failed.' }
+    & $setup.FullName stage
+    if ($LASTEXITCODE -ne 0) { throw 'Second transactional update staging failed.' }
+    & $setup.FullName commit
+    if ($LASTEXITCODE -ne 0 -or (Test-Path -LiteralPath $pending)) { throw 'Transactional update commit failed.' }
     & $setup.FullName repair
     if ($LASTEXITCODE -ne 0) { throw 'Operator setup repair failed.' }
     & $setup.FullName uninstall

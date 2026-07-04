@@ -8,6 +8,8 @@
 - Security incident commander rotation.
 - Privacy/legal escalation contact.
 - Abuse operations queue.
+- Client release owner for update publication, cohort promotion and rollback.
+- Observability owner for collector, dashboards, alert delivery and label review.
 
 ## Severity
 
@@ -23,3 +25,7 @@
 - Do not collect customer screen/content as default troubleshooting.
 - Every emergency production access is time-bound and audited.
 - Customer status communication distinguishes confirmed facts from investigation.
+- Update promotion stops automatically on signature/boot-loop signals or when
+  success, crash-free, observation-window or absolute-cohort gates are missed.
+- Metrics and dashboard variables use bounded operational dimensions; tenant,
+  session, email and device identity remain restricted drill-down data.

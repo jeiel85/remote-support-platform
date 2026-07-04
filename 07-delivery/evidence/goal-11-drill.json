@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-07-04T00:47:00+09:00",
+  "environment": "Windows x64 deterministic local control drill",
+  "restore": {
+    "fixtureRecords": 5000,
+    "baseBackupRecords": 4500,
+    "walRecords": 500,
+    "measuredRpoRecords": 0,
+    "measuredRtoMilliseconds": 40.594,
+    "integrity": "PASS"
+  },
+  "turnReplacement": {
+    "regionalNodes": 2,
+    "independentlyDrainable": true,
+    "remainingCredentialTargetsDuringReplacement": ["turn-b"],
+    "measuredControlPlaneReplacementMilliseconds": 0.010,
+    "perNodePortSessionCapacity": 1000,
+    "perNodeQuotaSessionCapacity": 800,
+    "perNodeSchedulingTarget": 600,
+    "quotaHeadroomPercent": 25,
+    "portHeadroomPercent": 40,
+    "result": "PASS"
+  },
+  "alerts": {
+    "fixtures": {
+      "AuditPipelineStalled": true,
+      "SigningAnomaly": true,
+      "TurnAllocationFailure": true
+    },
+    "result": "PASS"
+  },
+  "privacy": {
+    "injectedCanaries": 4,
+    "leakedCanaries": 0,
+    "result": "PASS"
+  }
+}

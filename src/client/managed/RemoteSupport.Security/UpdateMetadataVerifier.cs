@@ -53,21 +53,41 @@ public sealed class UpdateTrustStore
         JsonElement value = parsed.Signed;
         Exact(value, ["schemaVersion", "product", "channel", "version", "releaseSequence", "minimumAllowedSequence",
             "issuedAt", "expiresAt", "artifacts", "rootVersion"], ["rollout", "releaseNotesUrl"]);
-        if (value.GetProperty("schemaVersion").GetInt32() != 1 || value.GetProperty("rootVersion").GetInt32() != root.Version ||
-            value.GetProperty("product").GetString() != product || value.GetProperty("channel").GetString() != channel)
+        string expectedPackageType = product switch
+        {
+            "PORTABLE_AGENT" => "PORTABLE_AGENT",
+            "OPERATOR_CONSOLE" => "OPERATOR_INSTALLER",
+            "MANAGED_HOST" => "MANAGED_HOST_INSTALLER",
+            _ => throw Invalid("UPDATE_SIGNATURE_INVALID", "Update product binding is invalid."),
+        };
+        if (architecture is not ("x64" or "arm64") || channel is not ("internal" or "canary" or "stable") ||
+            value.GetProperty("schemaVersion").GetInt32() != 1 || value.GetProperty("rootVersion").GetInt32() != root.Version ||
+            value.GetProperty("product").GetString() != product || value.GetProperty("channel").GetString() != channel ||
+            value.GetProperty("version").GetString() is not { Length: >= 1 and <= 64 })
             throw Invalid("UPDATE_SIGNATURE_INVALID", "Update manifest binding does not match this product.");
         long sequence = value.GetProperty("releaseSequence").GetInt64();
         long minimum = value.GetProperty("minimumAllowedSequence").GetInt64();
         DateTimeOffset issued = value.GetProperty("issuedAt").GetDateTimeOffset();
         DateTimeOffset expires = value.GetProperty("expiresAt").GetDateTimeOffset();
-        if (sequence <= installedSequence || sequence < minimum || issued > now + TimeSpan.FromMinutes(5) || expires <= now ||
+        if (sequence < 1 || minimum < 0 || minimum > sequence || sequence <= installedSequence || issued > now + TimeSpan.FromMinutes(5) ||
+            expires <= now || expires <= issued ||
             expires - issued > TimeSpan.FromDays(31))
             throw Invalid(sequence <= installedSequence ? "UPDATE_ROLLBACK_BLOCKED" : "UPDATE_METADATA_EXPIRED",
                 "Update sequence or validity window is invalid.");
         if (value.TryGetProperty("rollout", out JsonElement rollout) && !Eligible(rollout, rolloutIdentity))
             throw Invalid("UPDATE_ROLLOUT_INELIGIBLE", "This installation is not in the staged rollout cohort.");
-        UpdateArtifact[] matches = value.GetProperty("artifacts").EnumerateArray().Select(UpdateArtifactFrom)
-            .Where(artifact => artifact.Architecture == architecture).ToArray();
+        if (value.TryGetProperty("releaseNotesUrl", out JsonElement releaseNotes) && releaseNotes.ValueKind != JsonValueKind.Null &&
+            (!Uri.TryCreate(releaseNotes.GetString(), UriKind.Absolute, out Uri? notes) || notes.Scheme != Uri.UriSchemeHttps ||
+             !string.IsNullOrEmpty(notes.UserInfo) || !string.IsNullOrEmpty(notes.Fragment)))
+            throw Invalid("UPDATE_SIGNATURE_INVALID", "Release notes URL is invalid.");
+        JsonElement artifacts = value.GetProperty("artifacts");
+        if (artifacts.GetArrayLength() is < 1 or > 16)
+            throw Invalid("UPDATE_SIGNATURE_INVALID", "Update artifact count is invalid.");
+        UpdateArtifact[] allArtifacts = artifacts.EnumerateArray().Select(UpdateArtifactFrom).ToArray();
+        if (allArtifacts.Any(artifact => artifact.PackageType != expectedPackageType) ||
+            allArtifacts.Select(artifact => artifact.Architecture).Distinct(StringComparer.Ordinal).Count() != allArtifacts.Length)
+            throw Invalid("UPDATE_SIGNATURE_INVALID", "Manifest artifacts are not uniquely bound to this product.");
+        UpdateArtifact[] matches = allArtifacts.Where(artifact => artifact.Architecture == architecture).ToArray();
         if (matches.Length != 1) throw Invalid("UPDATE_SIGNATURE_INVALID", "Manifest does not contain one artifact for this architecture.");
         return new VerifiedUpdateManifest(product, channel, value.GetProperty("version").GetString()!, sequence, minimum,
             root.Version, expires, matches[0]);
@@ -92,12 +112,17 @@ public sealed class UpdateTrustStore
         string hash = value.GetProperty("sha256").GetString()!;
         string signer = value.GetProperty("authenticodeSignerThumbprint").GetString()!;
         long size = value.GetProperty("size").GetInt64();
-        if (url.Scheme != Uri.UriSchemeHttps || size <= 0 || hash.Length != 64 || !hash.All(Uri.IsHexDigit) ||
-            signer.Length is < 40 or > 128 || !signer.All(Uri.IsHexDigit))
+        string architecture = value.GetProperty("architecture").GetString()!;
+        string packageType = value.GetProperty("packageType").GetString()!;
+        string? minimumOs = value.TryGetProperty("minimumOsBuild", out JsonElement os) && os.ValueKind != JsonValueKind.Null ? os.GetString() : null;
+        if (url.Scheme != Uri.UriSchemeHttps || !string.IsNullOrEmpty(url.UserInfo) || !string.IsNullOrEmpty(url.Fragment) ||
+            size <= 0 || architecture is not ("x64" or "arm64") ||
+            packageType is not ("PORTABLE_AGENT" or "OPERATOR_INSTALLER" or "MANAGED_HOST_INSTALLER") ||
+            hash.Length != 64 || !hash.All(character => character is >= '0' and <= '9' or >= 'a' and <= 'f') ||
+            signer.Length is < 40 or > 128 || signer.Length % 2 != 0 || !signer.All(Uri.IsHexDigit) ||
+            minimumOs is { Length: > 64 })
             throw Invalid("UPDATE_SIGNATURE_INVALID", "Update artifact metadata is invalid.");
-        return new UpdateArtifact(value.GetProperty("architecture").GetString()!, value.GetProperty("packageType").GetString()!,
-            url, size, hash.ToLowerInvariant(), signer.ToUpperInvariant(),
-            value.TryGetProperty("minimumOsBuild", out JsonElement os) && os.ValueKind != JsonValueKind.Null ? os.GetString() : null);
+        return new UpdateArtifact(architecture, packageType, url, size, hash, signer.ToUpperInvariant(), minimumOs);
     }
 
     private static ParsedSignedDocument Parse(ReadOnlySpan<byte> utf8, string domain)
@@ -117,9 +142,14 @@ public sealed class UpdateTrustStore
             List<UpdateSignature> signatures = document.RootElement.GetProperty("signatures").EnumerateArray().Select(signature =>
             {
                 Exact(signature, ["keyId", "algorithm", "signature"], []);
-                return new UpdateSignature(signature.GetProperty("keyId").GetString()!,
-                    signature.GetProperty("algorithm").GetString()!, Decode(signature.GetProperty("signature").GetString()!));
+                string keyId = signature.GetProperty("keyId").GetString()!;
+                string algorithm = signature.GetProperty("algorithm").GetString()!;
+                byte[] bytes = Decode(signature.GetProperty("signature").GetString()!);
+                if (keyId.Length is < 1 or > 128 || algorithm != "ed25519" || bytes.Length != 64)
+                    throw new FormatException("Update signature shape is invalid.");
+                return new UpdateSignature(keyId, algorithm, bytes);
             }).ToList();
+            if (signatures.Count is < 1 or > 16) throw new FormatException("Update signature count is invalid.");
             return new ParsedSignedDocument(signed, message, signatures);
         }
         catch (UpdateSecurityException) { throw; }
@@ -142,7 +172,7 @@ public sealed class UpdateTrustStore
         if (valid.Count < role.Threshold) throw Invalid(errorCode, "Update metadata signature threshold was not met.");
     }
 
-    private static byte[] Canonicalize(JsonElement value)
+    internal static byte[] Canonicalize(JsonElement value)
     {
         ArrayBufferWriter<byte> output = new();
         using Utf8JsonWriter writer = new(output, new JsonWriterOptions { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
@@ -220,9 +250,12 @@ internal sealed record UpdateRoot(int Version, DateTimeOffset IssuedAt, DateTime
         foreach (JsonProperty property in value.GetProperty("keys").EnumerateObject())
         {
             UpdateTrustStore.Exact(property.Value, ["algorithm", "publicKey"], []);
-            if (property.Value.GetProperty("algorithm").GetString() != "ed25519") throw new FormatException("Update key algorithm is invalid.");
-            keys.Add(property.Name, UpdateTrustStore.Decode(property.Value.GetProperty("publicKey").GetString()!));
+            byte[] publicKey = UpdateTrustStore.Decode(property.Value.GetProperty("publicKey").GetString()!);
+            if (property.Name.Length is < 1 or > 128 || property.Value.GetProperty("algorithm").GetString() != "ed25519" ||
+                publicKey.Length != 32) throw new FormatException("Update key is invalid.");
+            keys.Add(property.Name, publicKey);
         }
+        if (keys.Count is < 2 or > 32) throw new FormatException("Update key count is invalid.");
         JsonElement roles = value.GetProperty("roles");
         UpdateTrustStore.Exact(roles, ["root", "targets"], []);
         return new UpdateRoot(value.GetProperty("rootVersion").GetInt32(), value.GetProperty("issuedAt").GetDateTimeOffset(),
@@ -231,7 +264,7 @@ internal sealed record UpdateRoot(int Version, DateTimeOffset IssuedAt, DateTime
 
     public void Validate(DateTimeOffset now)
     {
-        if (Version < 1 || IssuedAt > now + TimeSpan.FromMinutes(5) || ExpiresAt <= now || Keys.Count < 2 ||
+        if (Version < 1 || IssuedAt > now + TimeSpan.FromMinutes(5) || ExpiresAt <= now || ExpiresAt <= IssuedAt ||
             RootRole.Threshold < 1 || TargetsRole.Threshold < 1 || RootRole.Threshold > RootRole.KeyIds.Count ||
             TargetsRole.Threshold > TargetsRole.KeyIds.Count || RootRole.KeyIds.Any(id => !Keys.ContainsKey(id)) ||
             TargetsRole.KeyIds.Any(id => !Keys.ContainsKey(id))) throw new UpdateSecurityException("UPDATE_ROOT_INVALID", "Update root is invalid or expired.");
@@ -240,7 +273,10 @@ internal sealed record UpdateRoot(int Version, DateTimeOffset IssuedAt, DateTime
     private static UpdateRole Role(JsonElement value)
     {
         UpdateTrustStore.Exact(value, ["keyIds", "threshold"], []);
-        HashSet<string> ids = value.GetProperty("keyIds").EnumerateArray().Select(item => item.GetString()!).ToHashSet(StringComparer.Ordinal);
+        string[] values = value.GetProperty("keyIds").EnumerateArray().Select(item => item.GetString()!).ToArray();
+        HashSet<string> ids = values.ToHashSet(StringComparer.Ordinal);
+        if (values.Length is < 1 or > 32 || values.Length != ids.Count || values.Any(id => id.Length is < 1 or > 128))
+            throw new FormatException("Update role key IDs are invalid.");
         return new UpdateRole(ids, value.GetProperty("threshold").GetInt32());
     }
 }

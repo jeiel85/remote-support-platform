@@ -24,6 +24,8 @@ public sealed class CrashRecoveryGuard : IDisposable
         Directory.CreateDirectory(directory);
         string marker = Path.Combine(directory, product + ".json");
         bool recovered = File.Exists(marker);
+        string component = product.Contains("AGENT", StringComparison.OrdinalIgnoreCase) ? "agent" : "operator";
+        RemoteSupportTelemetry.RecordClientStart(component, recovered);
         string staging = marker + ".new";
         File.WriteAllText(staging, JsonSerializer.Serialize(new
         {

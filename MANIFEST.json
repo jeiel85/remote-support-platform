@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "fileCount": 144,
+  "fileCount": 149,
   "files": [
     {
       "path": "00-product/commercialization-and-compliance.md",
@@ -458,6 +458,16 @@
       "sha256": "3d4a5cde247511701dbf1809f477a4860ea9fee3a2885f33b59d5816c16e0ab2"
     },
     {
+      "path": "07-delivery/evidence/goal-11-drill.json",
+      "bytes": 999,
+      "sha256": "520d3f2f5eabd6cf42903d9625b80849a016114872b406d86e944a7609cb769e"
+    },
+    {
+      "path": "07-delivery/evidence/goal-11.md",
+      "bytes": 4000,
+      "sha256": "432cf0f8becac1cfe21ed125ce88c18bc5d776e6eccf52cc49ffe9bec394e96b"
+    },
+    {
       "path": "07-delivery/goals/goal-01-foundation.md",
       "bytes": 2436,
       "sha256": "d85556a84c4866b48297dae62e80993923dad2ff95d3341a952816447aba0966"
@@ -558,9 +568,14 @@
       "sha256": "3e4bc235bed11ee660cd6ceb00b29344462fb850af8c38e7661ec816bb2a9032"
     },
     {
+      "path": "08-operations/failure-drill-plan.md",
+      "bytes": 1172,
+      "sha256": "94160e0d51c7c7b519a41d8eda4a82345c7ad89c4f86105b00508066fe2fc3f5"
+    },
+    {
       "path": "08-operations/operations-overview.md",
-      "bytes": 916,
-      "sha256": "9893afc50f0f73cdfbab9503184d994a8fd6023df6f80c90df114f151c1d6ae7"
+      "bytes": 1383,
+      "sha256": "d648991e13154d95caaa59d6c8f66c2d41459e5c5420435c6bb583ce19ecc6c8"
     },
     {
       "path": "08-operations/runbooks/control-plane-outage.md",
@@ -569,8 +584,8 @@
     },
     {
       "path": "08-operations/runbooks/database-restore.md",
-      "bytes": 879,
-      "sha256": "098bfa4820c8946d716a8b0f74450c7ea7afa22e442f021eb76f1cc258498867"
+      "bytes": 1290,
+      "sha256": "cd14b7b9ed05e0c8c41ea1f036af38cbb88bcb0297a1d9abe1f8508ae864a294"
     },
     {
       "path": "08-operations/runbooks/security-incident.md",
@@ -579,13 +594,23 @@
     },
     {
       "path": "08-operations/runbooks/signing-key-compromise.md",
-      "bytes": 1071,
-      "sha256": "b477bb6cc69a83ac6652906f7ff2f3de1dcf336d359746b4c3a7184ba9943296"
+      "bytes": 1547,
+      "sha256": "a0dbb0d8b4512997fa8ae3a3ecf0b9250232e11b52f7f6062d896c61c7aa9a7e"
+    },
+    {
+      "path": "08-operations/runbooks/support-bundle-collection.md",
+      "bytes": 898,
+      "sha256": "99080ce32b0b43fbb24165592229c514dc29513467231860f8b14093bda17fbc"
     },
     {
       "path": "08-operations/runbooks/turn-capacity-or-ddos.md",
-      "bytes": 857,
-      "sha256": "e79e7e42cbcbfc0b564d89b10a73473a0c890f234446bfb8101e6c2e61bb7ee3"
+      "bytes": 1617,
+      "sha256": "4b352ca72498982e7d015635b71600eb4b190115935a8259a307a17782a1a6e2"
+    },
+    {
+      "path": "08-operations/runbooks/update-rollout-incident.md",
+      "bytes": 1390,
+      "sha256": "0b65aabc9f017cab4aaf23f6ff98c3569b2fa5930eee5ae9de7f1e704c6e21ea"
     },
     {
       "path": "08-operations/slo-alert-catalog.md",
@@ -699,8 +724,8 @@
     },
     {
       "path": "DOCUMENT_INDEX.md",
-      "bytes": 5750,
-      "sha256": "c1c96b64a66da14d5b75c5348e19af9b360c5971c56870a2fb9c61c89abd03e8"
+      "bytes": 5900,
+      "sha256": "b9f3d0abb6d938db98092396e886b554d73750e3d78c3fe5a9414dcf8972afef"
     },
     {
       "path": "FINAL_AUDIT_REPORT.md",
@@ -714,8 +739,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 3103,
-      "sha256": "8787813ecb03d69bd4b90da56615582ddaadf3bcd4450b9719f91734bdee1df3"
+      "bytes": 3514,
+      "sha256": "a2c548a22a262aa8b4e47ff73e97c18fa6830936fe1fb2d48b237d2e48e50ca0"
     },
     {
       "path": "START_HERE.md",

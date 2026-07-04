@@ -17,15 +17,22 @@ public sealed class SupportBundleTests
         {
             SupportBundleSnapshot snapshot = new("OPERATOR_CONSOLE", "0.9.0", "correlation-123", "CONNECTED",
                 "TURN_TLS", 42, 17, "TRANSPORT_ICE_FAILED", DateTimeOffset.UnixEpoch.AddDays(20_000));
-            string bundle = await SupportBundleBuilder.CreateAsync(directory, snapshot);
+            SupportBundlePreview preview = SupportBundleBuilder.Preview(snapshot);
+            Assert.Contains("clipboard, chat and transferred-file content", preview.ExcludedSensitiveCategories);
+            await Assert.ThrowsAsync<InvalidOperationException>(() => SupportBundleBuilder.CreateAsync(directory,
+                snapshot, new SupportBundleApproval(preview.PreviewId, Approved: false)));
+            string bundle = await SupportBundleBuilder.CreateAsync(directory, snapshot,
+                new SupportBundleApproval(preview.PreviewId, Approved: true));
             using ZipArchive archive = ZipFile.OpenRead(bundle);
-            Assert.Equal(["product.json", "session.json"], archive.Entries.Select(entry => entry.FullName).Order().ToArray());
+            Assert.Equal(["privacy.json", "product.json", "session.json"], archive.Entries.Select(entry => entry.FullName).Order().ToArray());
             string content = string.Join('\n', archive.Entries.Select(Read));
-            Assert.DoesNotContain("token", content, StringComparison.OrdinalIgnoreCase);
-            Assert.DoesNotContain("clipboard", content, StringComparison.OrdinalIgnoreCase);
-            Assert.DoesNotContain("chat", content, StringComparison.OrdinalIgnoreCase);
-            Assert.DoesNotContain("file content", content, StringComparison.OrdinalIgnoreCase);
+            string diagnostics = string.Join('\n', archive.Entries.Where(entry => entry.FullName != "privacy.json").Select(Read));
+            Assert.DoesNotContain("token", diagnostics, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("clipboard", diagnostics, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("chat", diagnostics, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("file content", diagnostics, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("correlation-123", content, StringComparison.Ordinal);
+            Assert.Contains("\"uploadPerformed\": false", content, StringComparison.Ordinal);
         }
         finally
         {

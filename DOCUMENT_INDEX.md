@@ -132,12 +132,15 @@ Generated for the final re-audited bundle. Machine-readable contracts are marked
 ## 08-operations
 
 - `08-operations/disaster-recovery-plan.md`
+- `08-operations/failure-drill-plan.md`
 - `08-operations/operations-overview.md`
 - `08-operations/runbooks/control-plane-outage.md`
 - `08-operations/runbooks/database-restore.md`
 - `08-operations/runbooks/security-incident.md`
 - `08-operations/runbooks/signing-key-compromise.md`
+- `08-operations/runbooks/support-bundle-collection.md`
 - `08-operations/runbooks/turn-capacity-or-ddos.md`
+- `08-operations/runbooks/update-rollout-incident.md`
 - `08-operations/slo-alert-catalog.md`
 
 ## 09-templates

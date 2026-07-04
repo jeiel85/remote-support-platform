@@ -1,0 +1,23 @@
+rule_files: [prometheus-rules.yaml]
+evaluation_interval: 1m
+tests:
+  - interval: 1m
+    input_series:
+      - series: 'rsp_audit_backlog_oldest_seconds'
+        values: '301x10'
+    alert_rule_test:
+      - eval_time: 6m
+        alertname: AuditPipelineStalled
+        exp_alerts:
+          - exp_labels: { severity: sev2, owner: security }
+            exp_annotations: { runbook: 08-operations/runbooks/security-incident.md }
+  - interval: 1m
+    input_series:
+      - series: 'rsp_security_events_total{event_code="UPDATE_SIGNATURE_INVALID"}'
+        values: '0 0 1 1 1'
+    alert_rule_test:
+      - eval_time: 3m
+        alertname: SigningAnomaly
+        exp_alerts:
+          - exp_labels: { severity: sev1, owner: security, event_code: UPDATE_SIGNATURE_INVALID }
+            exp_annotations: { runbook: 08-operations/runbooks/signing-key-compromise.md }

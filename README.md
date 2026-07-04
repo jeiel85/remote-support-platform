@@ -25,10 +25,11 @@ The final audit separates attended GA, Managed Host, and unattended release trai
 - Goal 13: separately released Managed Host foundation.
 - Goal 14: separately approved unattended access.
 
-Goals 01–10 now have runnable implementation evidence. Goal 10 adds tenant
-RBAC, versioned policies, tamper-evident audit, device governance, privacy
-workflows and a separately deployable Blazor Admin Portal. Signed updates and
-production observability remain Goal 11.
+Goals 01–11 now have runnable implementation evidence. Goal 11 adds the
+signature/hash/Authenticode-bound updater, anti-rollback state, transactional
+health rollback, release verifier, bounded observability, dashboards/alerts,
+support-bundle approval and deterministic failure drills. External penetration,
+provider-backed recovery/capacity evidence and commercial approval remain Goal 12.
 
 The canonical machine-readable contracts are OpenAPI, Protobuf, JSON Schemas, native C ABI header, PostgreSQL schema, requirements traceability CSV and acceptance-test CSV. Markdown explains intent but does not override those contracts.
 
@@ -53,10 +54,15 @@ The bootstrap downloads the pinned .NET SDK and hash-locked Python/CMake tools i
 ZIP, per-user Operator Setup executable, manifests and provenance under
 `artifacts/packages/attended`. Run `./eng/test-attended-package.ps1 -Architecture
 x64` to exercise both packaged applications plus install/repair/downgrade/
-uninstall behavior in an isolated temporary root. Configure real endpoints as
+uninstall plus transactional update rollback behavior in an isolated temporary root. Configure real endpoints as
 described in `deploy/client/README.md`.
 
 Local packages are unsigned development artifacts unless release signing is
 explicitly required and `RS_SIGN_CERT_THUMBPRINT` is available. Arm64 packaging
 also requires a matching arm64 native runtime; neither condition is silently
 bypassed.
+
+Protected release jobs generate staged update metadata with
+`eng/publish-update.ps1`; clean workers verify it through
+`RemoteSupport.ReleaseVerifier`. Local builds never receive production update
+role keys or silently accept an unsigned update artifact.

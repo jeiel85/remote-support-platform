@@ -2,8 +2,13 @@
 /src/client/native/ @jeiel85
 /src/client/managed/RemoteSupport.Ipc/ @jeiel85
 /src/client/managed/RemoteSupport.Security/ @jeiel85
+/src/client/managed/RemoteSupport.Updater/ @jeiel85
+/src/client/managed/RemoteSupport.Observability/ @jeiel85
 /02-protocol/ @jeiel85
 /schemas/ @jeiel85
 /eng/ @jeiel85
 /tools/supply-chain/ @jeiel85
+/tools/operations/ @jeiel85
+/tools/update/ @jeiel85
 /deploy/ @jeiel85
+/08-operations/ @jeiel85

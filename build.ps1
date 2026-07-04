@@ -18,7 +18,9 @@ $dotnet = & (Join-Path $root 'eng\bootstrap-dotnet.ps1')
 $python = & (Join-Path $root 'eng\ensure-python-tools.ps1')
 
 function Invoke-Restore {
-    & $dotnet restore (Join-Path $root 'RemoteSupport.sln') --locked-mode
+    # The attended Windows baseline is restored with an explicit RID so every
+    # lock file includes the native assets used by NSec and the packaged apps.
+    & $dotnet restore (Join-Path $root 'RemoteSupport.sln') --locked-mode --runtime win-x64
 }
 
 function Invoke-GenerateContracts {
@@ -70,6 +72,8 @@ switch ($Target) {
     'IntegrationTest' {
         & $python (Join-Path $root 'tools\database\verify_schema.py') $root
         & $python (Join-Path $root 'tools\network\verify_goal07.py') $root
+        & $python (Join-Path $root 'tools\operations\verify_goal11.py') $root
+        & $python (Join-Path $root 'tools\operations\run_goal11_drills.py') $root
         & $dotnet run --project (Join-Path $root 'tools\fuzz\RemoteSupport.ProtocolFuzz\RemoteSupport.ProtocolFuzz.csproj') -c $Configuration --no-restore -- --iterations 10000
     }
     'Package' {
@@ -92,6 +96,8 @@ switch ($Target) {
         & $dotnet build (Join-Path $root 'RemoteSupport.sln') -c $Configuration --no-restore
         & $dotnet test (Join-Path $root 'RemoteSupport.sln') -c $Configuration --no-build --logger "trx;LogFilePrefix=managed" --results-directory (Join-Path $root 'artifacts\test-results')
         & $python (Join-Path $root 'tools\security\scan_secrets.py') $root
+        & $python (Join-Path $root 'tools\operations\verify_goal11.py') $root
+        & $python (Join-Path $root 'tools\operations\run_goal11_drills.py') $root
         & $dotnet list (Join-Path $root 'RemoteSupport.sln') package --vulnerable --include-transitive
         & $python (Join-Path $root 'tools\supply-chain\create_sbom.py') $root
     }

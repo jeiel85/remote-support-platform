@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.RateLimiting;
@@ -12,6 +14,8 @@ using RemoteSupport.Server;
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 ControlPlaneOptions controlPlane = builder.Configuration.GetSection(ControlPlaneOptions.SectionName).Get<ControlPlaneOptions>() ?? new();
 GovernanceOptions governance = builder.Configuration.GetSection(GovernanceOptions.SectionName).Get<GovernanceOptions>() ?? new();
+ObservabilityOptions observability = builder.Configuration.GetSection(ObservabilityOptions.SectionName).Get<ObservabilityOptions>() ?? new();
+UpdatePublicationOptions updatePublication = builder.Configuration.GetSection(UpdatePublicationOptions.SectionName).Get<UpdatePublicationOptions>() ?? new();
 bool testing = builder.Environment.IsEnvironment("Testing");
 bool development = builder.Environment.IsDevelopment();
 bool releaseTestHarness = testing && string.Equals(
@@ -23,8 +27,14 @@ bool allowNonProductionAdapters = releaseTestHarness;
 #endif
 controlPlane.Validate(allowNonProductionAdapters);
 governance.Validate();
+observability.Validate(allowNonProductionAdapters);
+updatePublication.Validate(allowNonProductionAdapters);
 builder.Services.AddSingleton(controlPlane);
 builder.Services.AddSingleton(governance);
+builder.Services.AddSingleton(observability);
+builder.Services.AddSingleton(updatePublication);
+builder.Services.AddSingleton<ControlPlaneTelemetry>();
+builder.Services.AddSingleton<UpdatePublicationStore>();
 builder.Services.AddSingleton<RemoteSupport.Server.ISystemClock, RemoteSupport.Server.SystemClock>();
 builder.Services.AddSingleton<ControlPlaneCrypto>();
 
@@ -112,23 +122,39 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 });
 
 WebApplication app = builder.Build();
+ControlPlaneTelemetry telemetry = app.Services.GetRequiredService<ControlPlaneTelemetry>();
+ILogger observabilityLog = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("RemoteSupport.Observability");
 app.UseWebSockets(new WebSocketOptions
 {
     KeepAliveInterval = TimeSpan.FromSeconds(20),
 });
 app.Use(async (context, next) =>
 {
+    long started = Stopwatch.GetTimestamp();
+    using IDisposable? activity = telemetry.StartRequest(context);
+    string correlation = Activity.Current?.TraceId.ToString() ?? Guid.NewGuid().ToString("N");
+    using IDisposable? logScope = observabilityLog.BeginScope(new Dictionary<string, object> { ["CorrelationId"] = correlation });
+    context.Response.Headers["X-Correlation-Id"] = correlation;
     context.Response.Headers.CacheControl = "no-store";
     context.Response.Headers["X-Content-Type-Options"] = "nosniff";
     context.Response.Headers["Referrer-Policy"] = "no-referrer";
     try { await next(); }
     catch (ControlPlaneException exception)
     {
+        telemetry.RecordSecurityEvent(exception.Code);
         if (context.Response.HasStarted) throw;
         context.Response.StatusCode = exception.StatusCode;
         await context.Response.WriteAsJsonAsync(new ProblemContract(exception.Code,
             exception.StatusCode == 404 ? "The session was not found." : exception.Message,
             Guid.NewGuid(), exception.StatusCode >= 500));
+    }
+    finally
+    {
+        telemetry.RecordRequest(context, Stopwatch.GetElapsedTime(started));
+        string route = context.GetEndpoint() is RouteEndpoint endpoint ? endpoint.RoutePattern.RawText ?? "unmatched" : "unmatched";
+        if (observabilityLog.IsEnabled(LogLevel.Information))
+            ObservabilityLog.RequestCompleted(observabilityLog, context.Request.Method, route,
+                context.Response.StatusCode);
     }
 });
 app.UseRateLimiter();
@@ -336,6 +362,25 @@ app.MapPost("/internal/v1/turn-usage", async (HttpRequest request, TurnCredentia
 app.MapGet("/v1/sessions/{sessionId:guid}", (Guid sessionId, ClaimsPrincipal principal,
     AttendedSessionService service, GovernanceService governanceService) =>
     Results.Ok(service.Get(sessionId, OperatorFrom(principal, governanceService, testing)))).RequireAuthorization("Operator");
+app.MapGet("/updates/root", (int currentRootVersion, UpdatePublicationStore updates) =>
+{
+    PublishedUpdate? update = updates.GetNextRoot(currentRootVersion);
+    return update is null ? Results.StatusCode(StatusCodes.Status304NotModified) : SignedMetadata(update);
+}).AllowAnonymous();
+app.MapGet("/updates/manifest", (string product, string channel, string architecture, long currentSequence,
+    UpdatePublicationStore updates) =>
+{
+    PublishedUpdate? update = updates.GetManifest(product, channel, architecture, currentSequence);
+    return update is null ? Results.StatusCode(StatusCodes.Status304NotModified) : SignedMetadata(update);
+}).AllowAnonymous();
+app.MapGet("/internal/metrics", (HttpRequest request, ObservabilityOptions options, ControlPlaneTelemetry metrics) =>
+{
+    string presented = request.Headers.Authorization.ToString();
+    string expected = "Bearer " + options.MetricsBearerToken;
+    bool accepted = presented.Length == expected.Length && CryptographicOperations.FixedTimeEquals(
+        Encoding.UTF8.GetBytes(presented), Encoding.UTF8.GetBytes(expected));
+    return accepted ? Results.Text(metrics.RenderPrometheus(), "text/plain; version=0.0.4", Encoding.UTF8) : Results.NotFound();
+}).AllowAnonymous();
 app.MapGet("/health/live", () => Results.Ok(new { status = "ok" })).AllowAnonymous();
 
 app.Run();
@@ -346,6 +391,11 @@ static string BootstrapToken(HttpRequest request)
     if (!header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase) || header.Length <= 7)
         throw new ControlPlaneException(401, "AUTHENTICATION_REQUIRED", "Authentication required.");
     return header[7..];
+}
+
+static IResult SignedMetadata(PublishedUpdate update)
+{
+    return Results.Bytes(update.Content, "application/json", lastModified: null, entityTag: new Microsoft.Net.Http.Headers.EntityTagHeaderValue(update.ETag));
 }
 
 static long IfMatch(HttpRequest request)
@@ -370,6 +420,13 @@ static OperatorIdentity OperatorFrom(ClaimsPrincipal principal, GovernanceServic
 }
 
 public partial class Program { }
+
+internal static partial class ObservabilityLog
+{
+    [LoggerMessage(EventId = 1100, Level = LogLevel.Information,
+        Message = "HTTP {Method} {Route} completed with {StatusCode}")]
+    public static partial void RequestCompleted(ILogger logger, string method, string route, int statusCode);
+}
 
 internal sealed class TestOidcHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger,
     UrlEncoder encoder) : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder)

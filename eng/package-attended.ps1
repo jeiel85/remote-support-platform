@@ -32,7 +32,8 @@ foreach ($architecture in $Architectures) {
     if (Test-Path -LiteralPath $work) { Remove-Item -LiteralPath $work -Recurse -Force }
     $agentPublish = Join-Path $work 'agent'
     $operatorPublish = Join-Path $work 'operator'
-    New-Item -ItemType Directory -Force -Path $agentPublish, $operatorPublish | Out-Null
+    $updaterPublish = Join-Path $work 'updater'
+    New-Item -ItemType Directory -Force -Path $agentPublish, $operatorPublish, $updaterPublish | Out-Null
 
     $native = if ($architecture -eq 'x64') {
         Join-Path $root "artifacts/native/$Configuration/remote_support_native.dll"
@@ -44,9 +45,13 @@ foreach ($architecture in $Architectures) {
     }
 
     & $dotnet publish (Join-Path $root 'src/client/managed/RemoteSupport.Agent.App/RemoteSupport.Agent.App.csproj') `
-        -c $Configuration -r $rid --self-contained true -p:PublishSingleFile=false -p:Version=$Version -o $agentPublish
+        -c $Configuration -r $rid --self-contained true --no-restore -p:PublishSingleFile=false -p:Version=$Version -o $agentPublish
     & $dotnet publish (Join-Path $root 'src/client/managed/RemoteSupport.LocalViewer.App/RemoteSupport.LocalViewer.App.csproj') `
-        -c $Configuration -r $rid --self-contained true -p:PublishSingleFile=false -p:Version=$Version -o $operatorPublish
+        -c $Configuration -r $rid --self-contained true --no-restore -p:PublishSingleFile=false -p:Version=$Version -o $operatorPublish
+    & $dotnet publish (Join-Path $root 'src/client/managed/RemoteSupport.Updater/RemoteSupport.Updater.csproj') `
+        -c $Configuration -r $rid --self-contained true --no-restore -p:PublishSingleFile=true -p:DebugType=None -p:DebugSymbols=false `
+        -p:Version=$Version -o $updaterPublish
+    Copy-Item -LiteralPath (Join-Path $updaterPublish 'RemoteSupport.Updater.exe') -Destination $operatorPublish -Force
     Copy-Item -LiteralPath $native -Destination (Join-Path $agentPublish 'remote_support_native.dll') -Force
     Copy-Item -LiteralPath $native -Destination (Join-Path $operatorPublish 'remote_support_native.dll') -Force
     Copy-Item -LiteralPath $config -Destination (Join-Path $agentPublish 'client-config.json') -Force
@@ -69,7 +74,7 @@ foreach ($architecture in $Architectures) {
         --product OPERATOR_CONSOLE --version $Version --sequence $ReleaseSequence --architecture $architecture
     $setupPublish = Join-Path $work 'setup'
     & $dotnet publish (Join-Path $root 'src/client/managed/RemoteSupport.Operator.Setup/RemoteSupport.Operator.Setup.csproj') `
-        -c $Configuration -r $rid --self-contained true -p:PublishSingleFile=true -p:DebugType=None -p:DebugSymbols=false `
+        -c $Configuration -r $rid --self-contained true --no-restore -p:PublishSingleFile=true -p:DebugType=None -p:DebugSymbols=false `
         -p:Version=$Version "-p:PayloadZip=$operatorZip" "-p:PayloadManifest=$operatorManifest" -o $setupPublish
     $setup = Join-Path $setupPublish 'RemoteSupport.Operator.Setup.exe'
     $setupOutput = Join-Path $output "RemoteSupport-Operator-Setup-$Version-$architecture.exe"

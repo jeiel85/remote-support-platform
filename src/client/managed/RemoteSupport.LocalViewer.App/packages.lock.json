@@ -10,7 +10,7 @@
       "remotesupport.application": {
         "type": "Project",
         "dependencies": {
-          "RemoteSupport.Domain": "[0.9.0-beta.1, )"
+          "RemoteSupport.Domain": "[1.0.0, )"
         }
       },
       "remotesupport.contracts": {
@@ -25,17 +25,17 @@
       "remotesupport.infrastructure": {
         "type": "Project",
         "dependencies": {
-          "RemoteSupport.Application": "[0.9.0-beta.1, )",
-          "RemoteSupport.Ipc": "[0.9.0-beta.1, )",
-          "RemoteSupport.Observability": "[0.9.0-beta.1, )",
-          "RemoteSupport.Protocol": "[0.9.0-beta.1, )",
-          "RemoteSupport.Security": "[0.9.0-beta.1, )"
+          "RemoteSupport.Application": "[1.0.0, )",
+          "RemoteSupport.Ipc": "[1.0.0, )",
+          "RemoteSupport.Observability": "[1.0.0, )",
+          "RemoteSupport.Protocol": "[1.0.0, )",
+          "RemoteSupport.Security": "[1.0.0, )"
         }
       },
       "remotesupport.ipc": {
         "type": "Project",
         "dependencies": {
-          "RemoteSupport.Contracts": "[0.9.0-beta.1, )"
+          "RemoteSupport.Contracts": "[1.0.0, )"
         }
       },
       "remotesupport.media": {
@@ -47,8 +47,8 @@
       "remotesupport.protocol": {
         "type": "Project",
         "dependencies": {
-          "RemoteSupport.Contracts": "[0.9.0-beta.1, )",
-          "RemoteSupport.Domain": "[0.9.0-beta.1, )"
+          "RemoteSupport.Contracts": "[1.0.0, )",
+          "RemoteSupport.Domain": "[1.0.0, )"
         }
       },
       "remotesupport.security": {

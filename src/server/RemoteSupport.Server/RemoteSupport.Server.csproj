@@ -7,6 +7,9 @@
     <PackageReference Include="Npgsql" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\client\managed\RemoteSupport.Observability\RemoteSupport.Observability.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="Migrations\*.sql" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

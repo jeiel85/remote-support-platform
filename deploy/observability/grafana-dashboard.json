@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 41,
+  "title": "Remote Support Production Health",
+  "uid": "rsp-production-health",
+  "tags": ["remote-support", "goal-11"],
+  "templating": {
+    "list": [
+      { "name": "region", "type": "query", "query": "label_values(turn_allocation_total, region)" },
+      { "name": "channel", "type": "custom", "query": "internal,canary,stable" }
+    ]
+  },
+  "panels": [
+    { "id": 1, "type": "timeseries", "title": "Control API success", "targets": [{ "expr": "1 - sum(rate(rsp_control_api_failures_total[5m])) / clamp_min(sum(rate(rsp_control_api_requests_total[5m])), 0.01)" }] },
+    { "id": 2, "type": "timeseries", "title": "Connection and signaling", "targets": [{ "expr": "sum by (outcome) (rate(rsp_signaling_connect_total[5m]))" }] },
+    { "id": 3, "type": "timeseries", "title": "TURN allocation and capacity", "targets": [{ "expr": "sum by (region, outcome) (rate(turn_allocation_total{region=~\"$region\"}[5m]))" }] },
+    { "id": 4, "type": "timeseries", "title": "Crash-free sessions", "targets": [{ "expr": "1 - sum(rate(rsp_client_crash_total[1h])) / clamp_min(sum(rate(rsp_client_session_total[1h])), 0.01)" }] },
+    { "id": 5, "type": "timeseries", "title": "Update rollout", "targets": [{ "expr": "sum by (channel, outcome) (rate(rsp_update_total{channel=~\"$channel\"}[10m]))" }] },
+    { "id": 6, "type": "timeseries", "title": "Audit and security", "targets": [{ "expr": "rsp_audit_backlog_oldest_seconds" }, { "expr": "sum by (event_code) (increase(rsp_security_events_total[5m]))" }] }
+  ]
+}

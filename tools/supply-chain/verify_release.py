@@ -19,6 +19,12 @@ def main() -> int:
         raise AssertionError("Managed test evidence is missing")
     packages = artifacts / "packages/attended"
     subprocess.run([sys.executable, str(Path(__file__).parents[1] / "packaging/verify_goal09.py"), str(packages)], check=True)
+    goal11 = artifacts / "evidence/goal-11-drill.json"
+    if not goal11.exists():
+        raise AssertionError("Goal 11 failure-drill evidence is missing")
+    drill = json.loads(goal11.read_text(encoding="utf-8"))
+    if any(drill[name]["result"] != "PASS" for name in ("turnReplacement", "alerts", "privacy")) or drill["restore"]["integrity"] != "PASS":
+        raise AssertionError("Goal 11 failure-drill evidence did not pass")
     print(f"Verified release evidence: {sbom} and {len(tests)} test result file(s)")
     return 0
 

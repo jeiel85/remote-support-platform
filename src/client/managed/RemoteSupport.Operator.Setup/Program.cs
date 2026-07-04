@@ -24,10 +24,13 @@ internal static class OperatorSetup
             Recover(paths);
             return command switch
             {
-                "install" => await InstallAsync(paths, repair: false),
-                "repair" => await InstallAsync(paths, repair: true),
+                "install" => await InstallAsync(paths, repair: false, transactional: false),
+                "repair" => await InstallAsync(paths, repair: true, transactional: false),
+                "stage" => await InstallAsync(paths, repair: false, transactional: true),
+                "commit" => Commit(paths),
+                "rollback" => Rollback(paths),
                 "uninstall" => Uninstall(paths),
-                _ => throw new SetupException("Usage: RemoteSupport.Operator.Setup [install|repair|uninstall]"),
+                _ => throw new SetupException("Usage: RemoteSupport.Operator.Setup [install|repair|stage|commit|rollback|uninstall]"),
             };
         }
         catch (SetupException exception)
@@ -42,13 +45,15 @@ internal static class OperatorSetup
         }
     }
 
-    private static async Task<int> InstallAsync(SetupPaths paths, bool repair)
+    private static async Task<int> InstallAsync(SetupPaths paths, bool repair, bool transactional)
     {
         using Stream manifestStream = Resource(ManifestResource);
         PayloadManifest manifest = await JsonSerializer.DeserializeAsync<PayloadManifest>(manifestStream, Json)
             ?? throw new SetupException("Embedded payload manifest is missing.");
         ValidateManifest(manifest);
         InstalledState? installed = ReadState(paths.StateFile);
+        if (File.Exists(paths.PendingFile))
+            throw new SetupException("A pending update must be committed or rolled back first.");
         if (!repair && installed is not null && manifest.ReleaseSequence < installed.ReleaseSequence)
             throw new SetupException("Downgrade blocked: installed release sequence is newer.");
         if (repair && installed is not null && manifest.ReleaseSequence != installed.ReleaseSequence)
@@ -57,33 +62,84 @@ internal static class OperatorSetup
         string staging = Path.Combine(paths.StagingRoot, Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(staging);
         string backup = paths.InstallDirectory + ".previous";
+        bool activated = false;
         try
         {
             using Stream payload = Resource(PayloadResource);
             await VerifyAndExtractAsync(payload, staging, manifest);
             Directory.CreateDirectory(Path.GetDirectoryName(paths.InstallDirectory)!);
-            WriteJournal(paths, new SetupJournal("staged", staging, backup));
+            WriteJournal(paths, new SetupJournal("staged", staging, backup, installed));
             if (Directory.Exists(backup)) Directory.Delete(backup, recursive: true);
             if (Directory.Exists(paths.InstallDirectory)) Directory.Move(paths.InstallDirectory, backup);
-            WriteJournal(paths, new SetupJournal("swapping", staging, backup));
+            WriteJournal(paths, new SetupJournal("swapping", staging, backup, installed));
             Directory.Move(staging, paths.InstallDirectory);
+            activated = true;
             InstalledState state = new(manifest.Product, manifest.Version, manifest.ReleaseSequence,
                 manifest.Architecture, DateTimeOffset.UtcNow, manifest.Files.Select(file => file.Path).ToArray());
             AtomicJson(paths.StateFile, state);
             File.Delete(paths.JournalFile);
-            if (Directory.Exists(backup)) Directory.Delete(backup, recursive: true);
-            Console.WriteLine($"Remote Support Operator Console {manifest.Version} installed for the current user.");
+            if (transactional)
+                AtomicJson(paths.PendingFile, new PendingInstall(manifest.ReleaseSequence, installed, Directory.Exists(backup)));
+            else if (Directory.Exists(backup)) Directory.Delete(backup, recursive: true);
+            Console.WriteLine(transactional
+                ? $"Remote Support Operator Console {manifest.Version} staged pending health confirmation."
+                : $"Remote Support Operator Console {manifest.Version} installed for the current user.");
             return 0;
         }
         catch
         {
+            if (activated && Directory.Exists(paths.InstallDirectory)) Directory.Delete(paths.InstallDirectory, recursive: true);
             if (!Directory.Exists(paths.InstallDirectory) && Directory.Exists(backup)) Directory.Move(backup, paths.InstallDirectory);
+            if (installed is null) File.Delete(paths.StateFile); else AtomicJson(paths.StateFile, installed);
+            File.Delete(paths.PendingFile);
             throw;
         }
         finally
         {
             if (Directory.Exists(staging)) Directory.Delete(staging, recursive: true);
         }
+    }
+
+    private static int Commit(SetupPaths paths)
+    {
+        PendingInstall pending = ReadJson<PendingInstall>(paths.PendingFile)
+            ?? throw new SetupException("No update is pending health confirmation.");
+        InstalledState state = ReadState(paths.StateFile) ?? throw new SetupException("Pending update state is missing.");
+        if (state.ReleaseSequence != pending.ReleaseSequence)
+            throw new SetupException("Pending update sequence does not match the installed state.");
+        string backup = paths.InstallDirectory + ".previous";
+        // Removing the pending marker is the commit point. Failure to clean an
+        // obsolete backup after this point must not turn a healthy install into
+        // an ambiguous rollback request; the next transaction also cleans it.
+        File.Delete(paths.PendingFile);
+        try { if (Directory.Exists(backup)) Directory.Delete(backup, recursive: true); }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        { Console.Error.WriteLine($"Committed update retained an obsolete backup for later cleanup: {exception.GetType().Name}."); }
+        Console.WriteLine($"Remote Support Operator Console {state.Version} health confirmation committed.");
+        return 0;
+    }
+
+    private static int Rollback(SetupPaths paths)
+    {
+        PendingInstall? pending = ReadJson<PendingInstall>(paths.PendingFile);
+        if (pending is null)
+        {
+            Console.WriteLine("No staged update required rollback.");
+            return 0;
+        }
+        string backup = paths.InstallDirectory + ".previous";
+        if (pending.HadPreviousInstall && (!Directory.Exists(backup) || pending.PreviousState is null))
+            throw new SetupException("Last-known-good installation backup or state is missing; current installation was preserved.");
+        if (Directory.Exists(paths.InstallDirectory)) Directory.Delete(paths.InstallDirectory, recursive: true);
+        if (pending.HadPreviousInstall)
+        {
+            Directory.Move(backup, paths.InstallDirectory);
+            AtomicJson(paths.StateFile, pending.PreviousState!);
+        }
+        else File.Delete(paths.StateFile);
+        File.Delete(paths.PendingFile);
+        Console.WriteLine("Remote Support Operator Console rolled back to the last-known-good installation.");
+        return 0;
     }
 
     private static int Uninstall(SetupPaths paths)
@@ -96,8 +152,12 @@ internal static class OperatorSetup
         }
         EnsureUnder(paths.ProgramsRoot, paths.InstallDirectory);
         if (Directory.Exists(paths.InstallDirectory)) Directory.Delete(paths.InstallDirectory, recursive: true);
+        string backup = paths.InstallDirectory + ".previous";
+        EnsureUnder(paths.ProgramsRoot, backup);
+        if (Directory.Exists(backup)) Directory.Delete(backup, recursive: true);
         File.Delete(paths.StateFile);
         File.Delete(paths.JournalFile);
+        File.Delete(paths.PendingFile);
         Console.WriteLine("Remote Support Operator Console was removed. No service or scheduled task was installed.");
         return 0;
     }
@@ -167,7 +227,13 @@ internal static class OperatorSetup
         if (journal is null) return;
         EnsureUnder(paths.StagingRoot, journal.StagingDirectory);
         EnsureUnder(paths.ProgramsRoot, journal.BackupDirectory);
-        if (!Directory.Exists(paths.InstallDirectory) && Directory.Exists(journal.BackupDirectory))
+        if (journal.Phase == "swapping")
+        {
+            if (Directory.Exists(paths.InstallDirectory)) Directory.Delete(paths.InstallDirectory, recursive: true);
+            if (Directory.Exists(journal.BackupDirectory)) Directory.Move(journal.BackupDirectory, paths.InstallDirectory);
+            if (journal.PreviousState is null) File.Delete(paths.StateFile); else AtomicJson(paths.StateFile, journal.PreviousState);
+        }
+        else if (!Directory.Exists(paths.InstallDirectory) && Directory.Exists(journal.BackupDirectory))
             Directory.Move(journal.BackupDirectory, paths.InstallDirectory);
         if (Directory.Exists(journal.StagingDirectory)) Directory.Delete(journal.StagingDirectory, recursive: true);
         File.Delete(paths.JournalFile);
@@ -212,8 +278,10 @@ internal sealed record PayloadManifest(int SchemaVersion, string Product, string
 internal sealed record PayloadFile(string Path, long Size, string Sha256);
 internal sealed record InstalledState(string Product, string Version, long ReleaseSequence, string Architecture,
     DateTimeOffset InstalledAt, IReadOnlyList<string> Files);
-internal sealed record SetupJournal(string Phase, string StagingDirectory, string BackupDirectory);
-internal sealed record SetupPaths(string ProgramsRoot, string InstallDirectory, string StateFile, string JournalFile, string StagingRoot)
+internal sealed record SetupJournal(string Phase, string StagingDirectory, string BackupDirectory, InstalledState? PreviousState);
+internal sealed record PendingInstall(long ReleaseSequence, InstalledState? PreviousState, bool HadPreviousInstall);
+internal sealed record SetupPaths(string ProgramsRoot, string InstallDirectory, string StateFile, string JournalFile,
+    string PendingFile, string StagingRoot)
 {
     public static SetupPaths Create()
     {
@@ -231,7 +299,8 @@ internal sealed record SetupPaths(string ProgramsRoot, string InstallDirectory, 
         string programs = Path.Combine(local, "Programs", "RemoteSupport");
         string data = Path.Combine(local, "RemoteSupport");
         return new SetupPaths(programs, Path.Combine(programs, "Operator"), Path.Combine(data, "operator-install.json"),
-            Path.Combine(data, "operator-install.journal.json"), Path.Combine(data, ".staging"));
+            Path.Combine(data, "operator-install.journal.json"), Path.Combine(data, "operator-update-pending.json"),
+            Path.Combine(data, ".staging"));
     }
 }
 internal sealed class SetupException(string message) : Exception(message);

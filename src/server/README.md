@@ -14,6 +14,11 @@ The Goal 06 host is `RemoteSupport.Server`. Release startup requires:
   TURN/UDP, TURN/TCP, and TURN/TLS.
 - `Governance__ExportDirectory`, an encrypted region-approved filesystem or
   object-storage mount used for short-lived tenant export artifacts.
+- `UpdatePublication__Directory`, an absolute protected directory containing
+  `roots/root-N.json` and `manifests/PRODUCT.CHANNEL.ARCH.json` outputs from the
+  protected release pipeline;
+- `Observability__MetricsBearerToken`, a high-entropy secret supplied only to
+  the Prometheus scraper for `/internal/metrics`.
 
 The server applies immutable SQL files from `Migrations` before accepting
 traffic. The attended module writes its state, hash-chained audit record and
@@ -49,3 +54,9 @@ The governance worker completes privacy exports, expires one-time artifacts and
 invitations, advances closure cooling-off workflows, revokes tenant access on
 completion and creates audit retention checkpoints. Raw invitation, enrollment,
 device credential and export-download secrets are never persisted.
+
+Update clients receive only the next sequential root and a newer manifest
+matching the requested product/channel/architecture. Publication storage is not
+a trust anchor: clients independently enforce metadata thresholds, expiry,
+sequence, artifact hash and Authenticode publisher. Metrics use route templates
+and bounded status/error labels; a missing or wrong scrape token receives 404.

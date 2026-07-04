@@ -20,6 +20,14 @@
 9. Promote or abort.
 10. Reconcile outbox/external notifications idempotently.
 
+## Required evidence
+
+Record backup/base and WAL identifiers, requested and achieved recovery point,
+writer-fence and first-healthy timestamps, measured RPO/RTO, schema version,
+tenant-isolation query results, audit-chain verification, outbox replay counts,
+synthetic attended-session result, operator and independent approver. A copied
+backup without this isolated restore evidence is not a successful drill.
+
 ## Cautions
 
 - Active session tokens issued after restore point may require global revocation.

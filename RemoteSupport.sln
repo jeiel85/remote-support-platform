@@ -67,6 +67,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteSupport.AdminPortal",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteSupport.AdminPortal.Tests", "tests\RemoteSupport.AdminPortal.Tests\RemoteSupport.AdminPortal.Tests.csproj", "{8BB1E55E-56A9-46D5-A014-14E09A76C279}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteSupport.Updater", "src\client\managed\RemoteSupport.Updater\RemoteSupport.Updater.csproj", "{C0D31100-6D7B-4D3F-9E12-0B599A4A1100}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteSupport.UpdateTool", "tools\update\RemoteSupport.UpdateTool\RemoteSupport.UpdateTool.csproj", "{C0D31101-6D7B-4D3F-9E12-0B599A4A1101}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -77,6 +81,30 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C0D31101-6D7B-4D3F-9E12-0B599A4A1101}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C0D31101-6D7B-4D3F-9E12-0B599A4A1101}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C0D31101-6D7B-4D3F-9E12-0B599A4A1101}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C0D31101-6D7B-4D3F-9E12-0B599A4A1101}.Debug|x64.Build.0 = Debug|Any CPU
+		{C0D31101-6D7B-4D3F-9E12-0B599A4A1101}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C0D31101-6D7B-4D3F-9E12-0B599A4A1101}.Debug|x86.Build.0 = Debug|Any CPU
+		{C0D31101-6D7B-4D3F-9E12-0B599A4A1101}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C0D31101-6D7B-4D3F-9E12-0B599A4A1101}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C0D31101-6D7B-4D3F-9E12-0B599A4A1101}.Release|x64.ActiveCfg = Release|Any CPU
+		{C0D31101-6D7B-4D3F-9E12-0B599A4A1101}.Release|x64.Build.0 = Release|Any CPU
+		{C0D31101-6D7B-4D3F-9E12-0B599A4A1101}.Release|x86.ActiveCfg = Release|Any CPU
+		{C0D31101-6D7B-4D3F-9E12-0B599A4A1101}.Release|x86.Build.0 = Release|Any CPU
+		{C0D31100-6D7B-4D3F-9E12-0B599A4A1100}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C0D31100-6D7B-4D3F-9E12-0B599A4A1100}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C0D31100-6D7B-4D3F-9E12-0B599A4A1100}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C0D31100-6D7B-4D3F-9E12-0B599A4A1100}.Debug|x64.Build.0 = Debug|Any CPU
+		{C0D31100-6D7B-4D3F-9E12-0B599A4A1100}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C0D31100-6D7B-4D3F-9E12-0B599A4A1100}.Debug|x86.Build.0 = Debug|Any CPU
+		{C0D31100-6D7B-4D3F-9E12-0B599A4A1100}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C0D31100-6D7B-4D3F-9E12-0B599A4A1100}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C0D31100-6D7B-4D3F-9E12-0B599A4A1100}.Release|x64.ActiveCfg = Release|Any CPU
+		{C0D31100-6D7B-4D3F-9E12-0B599A4A1100}.Release|x64.Build.0 = Release|Any CPU
+		{C0D31100-6D7B-4D3F-9E12-0B599A4A1100}.Release|x86.ActiveCfg = Release|Any CPU
+		{C0D31100-6D7B-4D3F-9E12-0B599A4A1100}.Release|x86.Build.0 = Release|Any CPU
 		{D883B493-5A57-46A1-80E8-F5BEF21B0AE3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D883B493-5A57-46A1-80E8-F5BEF21B0AE3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D883B493-5A57-46A1-80E8-F5BEF21B0AE3}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -375,5 +403,7 @@ Global
 		{A0239D29-2591-42A1-B1C3-8CB62CD61CA7} = {C53F926E-EF29-395D-66B6-043B6FE31570}
 		{BF852BB8-4BEC-4C21-BCEE-E5651841136C} = {C53F926E-EF29-395D-66B6-043B6FE31570}
 		{8BB1E55E-56A9-46D5-A014-14E09A76C279} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{C0D31100-6D7B-4D3F-9E12-0B599A4A1100} = {C53F926E-EF29-395D-66B6-043B6FE31570}
+		{C0D31101-6D7B-4D3F-9E12-0B599A4A1101} = {07C2787E-EAC7-C090-1BA3-A61EC2A24D84}
 	EndGlobalSection
 EndGlobal
