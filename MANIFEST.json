@@ -774,8 +774,8 @@
     },
     {
       "path": "11-bootstrap/initialize-repository.ps1",
-      "bytes": 7742,
-      "sha256": "396aa94969a2fb1e65f8f9f10cb13d0a2b2a39f0417132ed46198fceb767a7a6"
+      "bytes": 7882,
+      "sha256": "d817671a22d774d03cd239aed6924f7e8db9cb8b37392bef40f18400620e51ce"
     },
     {
       "path": "11-bootstrap/requirements.txt",
