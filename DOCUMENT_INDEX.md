@@ -12,10 +12,13 @@ Generated for the final re-audited bundle. Machine-readable contracts are marked
 ## 00-product
 
 - `00-product/commercialization-and-compliance.md`
+- `00-product/data-processing-agreement.md`
 - `00-product/functional-requirements.md`
 - `00-product/nonfunctional-requirements.md`
+- `00-product/privacy-notice.md`
 - `00-product/product-scope.md`
 - `00-product/risk-register.md`
+- `00-product/terms-of-service.md`
 - `00-product/user-flows.md`
 
 ## 01-architecture
@@ -96,16 +99,20 @@ Generated for the final re-audited bundle. Machine-readable contracts are marked
 
 ## 06-quality
 
+- `06-quality/av-edr-false-positive-process.md`
 - `06-quality/compatibility-matrix.md`
 - `06-quality/observability.md`
+- `06-quality/penetration-test-scope-and-closure.md`
 - `06-quality/performance-and-slo.md`
 - `06-quality/release-gates.md`
+- `06-quality/supported-capability-matrix.md`
 - `06-quality/test-strategy.md`
 
 ## 07-delivery
 
 - `07-delivery/acceptance-test-cases.csv` — **contract**
 - `07-delivery/acceptance-test-catalog.md`
+- `07-delivery/beta-program.md`
 - `07-delivery/bootstrap-and-build.md`
 - `07-delivery/ci-cd.md`
 - `07-delivery/coding-standards.md`
@@ -125,6 +132,7 @@ Generated for the final re-audited bundle. Machine-readable contracts are marked
 - `07-delivery/goals/goal-14-unattended.md`
 - `07-delivery/implementation-order.md`
 - `07-delivery/product-backlog.md`
+- `07-delivery/release-gate-approval.md`
 - `07-delivery/repository-structure.md`
 - `07-delivery/traceability/requirements-traceability.csv` — **contract**
 - `07-delivery/traceability/requirements-traceability.md`
@@ -138,10 +146,12 @@ Generated for the final re-audited bundle. Machine-readable contracts are marked
 - `08-operations/runbooks/database-restore.md`
 - `08-operations/runbooks/security-incident.md`
 - `08-operations/runbooks/signing-key-compromise.md`
+- `08-operations/runbooks/abuse-response.md`
 - `08-operations/runbooks/support-bundle-collection.md`
 - `08-operations/runbooks/turn-capacity-or-ddos.md`
 - `08-operations/runbooks/update-rollout-incident.md`
 - `08-operations/slo-alert-catalog.md`
+- `08-operations/tabletop-exercises.md`
 
 ## 09-templates
 

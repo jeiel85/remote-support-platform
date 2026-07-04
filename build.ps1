@@ -74,6 +74,7 @@ switch ($Target) {
         & $python (Join-Path $root 'tools\network\verify_goal07.py') $root
         & $python (Join-Path $root 'tools\operations\verify_goal11.py') $root
         & $python (Join-Path $root 'tools\operations\run_goal11_drills.py') $root
+        & $python (Join-Path $root 'tools\operations\verify_goal12.py') $root
         & $dotnet run --project (Join-Path $root 'tools\fuzz\RemoteSupport.ProtocolFuzz\RemoteSupport.ProtocolFuzz.csproj') -c $Configuration --no-restore -- --iterations 10000
     }
     'Package' {
@@ -98,6 +99,7 @@ switch ($Target) {
         & $python (Join-Path $root 'tools\security\scan_secrets.py') $root
         & $python (Join-Path $root 'tools\operations\verify_goal11.py') $root
         & $python (Join-Path $root 'tools\operations\run_goal11_drills.py') $root
+        & $python (Join-Path $root 'tools\operations\verify_goal12.py') $root
         & $dotnet list (Join-Path $root 'RemoteSupport.sln') package --vulnerable --include-transitive
         & $python (Join-Path $root 'tools\supply-chain\create_sbom.py') $root
     }

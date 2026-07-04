@@ -1,11 +1,16 @@
 {
   "schemaVersion": 1,
-  "fileCount": 149,
+  "fileCount": 159,
   "files": [
     {
       "path": "00-product/commercialization-and-compliance.md",
       "bytes": 6340,
       "sha256": "c6adf42d7dc105f956116b5703aa236fc3e2bec5a668d91fcfdadcb593213ec9"
+    },
+    {
+      "path": "00-product/data-processing-agreement.md",
+      "bytes": 2701,
+      "sha256": "4f134a581dc9338e1c54295a43cd25f7b377650dd9890d12af0ab6ebaab829b5"
     },
     {
       "path": "00-product/functional-requirements.md",
@@ -18,6 +23,11 @@
       "sha256": "92c567a732d33c440d8e58d209f1ca6543e5ef893c3bed57c129c6876d3430f6"
     },
     {
+      "path": "00-product/privacy-notice.md",
+      "bytes": 2573,
+      "sha256": "fcc61a3ef5f3e7d9697a43a680ce3f1545f38d56d8cfe88dfb8bf80da2d045c6"
+    },
+    {
       "path": "00-product/product-scope.md",
       "bytes": 1867,
       "sha256": "1316547ca5fddae18e70f15075845ebc0542a78fb1580ccffdb9b1b1f2df40e7"
@@ -26,6 +36,11 @@
       "path": "00-product/risk-register.md",
       "bytes": 2443,
       "sha256": "1a8cb5668c14a4d5405cf470de1da65c23203d7b3431966b12cd0f35a7f22ae1"
+    },
+    {
+      "path": "00-product/terms-of-service.md",
+      "bytes": 2039,
+      "sha256": "aefa9ad8e1f74177282bb64c78bf14ff526748c24dd08aa68892f02a81a10db3"
     },
     {
       "path": "00-product/user-flows.md",
@@ -363,6 +378,11 @@
       "sha256": "9e13467a143d3f83426501033448f541e06958dac26c051b7a32eae1b11da37d"
     },
     {
+      "path": "06-quality/av-edr-false-positive-process.md",
+      "bytes": 3107,
+      "sha256": "d46b8fc43ff3db3abc505a205e413e6c35cb7fe33c83a00509d144f6a3d0c3a6"
+    },
+    {
       "path": "06-quality/compatibility-matrix.md",
       "bytes": 3206,
       "sha256": "da19dca95e4894d9798640ec3b566867cabccdedd9731d665c42ec857bd63208"
@@ -383,6 +403,11 @@
       "sha256": "016c98b5feac4078632a4726a266a38a5597bcd5a8c89ed38d0536ddf01fee2b"
     },
     {
+      "path": "06-quality/penetration-test-scope-and-closure.md",
+      "bytes": 3234,
+      "sha256": "3a1107c0f12acb4a79b95c65a794234c4592bda1a3b7de7e3b8fef83896baa84"
+    },
+    {
       "path": "06-quality/performance-and-slo.md",
       "bytes": 1675,
       "sha256": "016b6dfc2e060bc93aca80ff157a3852be09411b00d17334f09a6cf52f262d9c"
@@ -391,6 +416,11 @@
       "path": "06-quality/release-gates.md",
       "bytes": 1852,
       "sha256": "60b690bb000495d6875ef3ae07296158961e579a3fdc1c1436e089cb1513fa8a"
+    },
+    {
+      "path": "06-quality/supported-capability-matrix.md",
+      "bytes": 4719,
+      "sha256": "916023726fc152e7f2815ed7baf0bd1ffd7f00faaaa99ad283500b46f82c8dde"
     },
     {
       "path": "06-quality/test-strategy.md",
@@ -406,6 +436,11 @@
       "path": "07-delivery/acceptance-test-catalog.md",
       "bytes": 83345,
       "sha256": "91c1a0fce3d54d85b1e70dad4c79b9ca7ed2eceb7c055b27601cc9312785a9f8"
+    },
+    {
+      "path": "07-delivery/beta-program.md",
+      "bytes": 2697,
+      "sha256": "f763404bc55e481e8f6769799f386361815c88f618ebc7f742b7a5abfa2a81e9"
     },
     {
       "path": "07-delivery/bootstrap-and-build.md",
@@ -548,6 +583,11 @@
       "sha256": "aaeb4266c3f79a52e96f833a04adc9f3f2f57f167c937000ecb58fc8d4b0e42e"
     },
     {
+      "path": "07-delivery/release-gate-approval.md",
+      "bytes": 4787,
+      "sha256": "8f990f2286bb1cbafc4f7c152f78b535789d16b146ad202306a023acf548cbc3"
+    },
+    {
       "path": "07-delivery/repository-structure.md",
       "bytes": 2132,
       "sha256": "879e6db7a7fd8239d785a476cfb69e17b007864ce8cf2ce1ada38dc2ab7f525e"
@@ -576,6 +616,11 @@
       "path": "08-operations/operations-overview.md",
       "bytes": 1383,
       "sha256": "d648991e13154d95caaa59d6c8f66c2d41459e5c5420435c6bb583ce19ecc6c8"
+    },
+    {
+      "path": "08-operations/runbooks/abuse-response.md",
+      "bytes": 3297,
+      "sha256": "6adbff4dd91844fa7193b15a157366ee82a5b138d5577c2eac1023a4c6280b62"
     },
     {
       "path": "08-operations/runbooks/control-plane-outage.md",
@@ -616,6 +661,11 @@
       "path": "08-operations/slo-alert-catalog.md",
       "bytes": 3163,
       "sha256": "27e2d59547af42cf3b3d193571fdbcb5021373537c69b08676e1f032381911b7"
+    },
+    {
+      "path": "08-operations/tabletop-exercises.md",
+      "bytes": 4262,
+      "sha256": "b3b09ee79c4640f219cff086fbe85df183289a6b1c40d618b4c7b66d7f32b2b8"
     },
     {
       "path": "08-operations/turn-capacity-model.md",
@@ -724,8 +774,8 @@
     },
     {
       "path": "DOCUMENT_INDEX.md",
-      "bytes": 5900,
-      "sha256": "b9f3d0abb6d938db98092396e886b554d73750e3d78c3fe5a9414dcf8972afef"
+      "bytes": 6317,
+      "sha256": "15eab677dd431e6916319bbe8dfca64ee41e25702b001af3ff17bf5ee1b27fe1"
     },
     {
       "path": "FINAL_AUDIT_REPORT.md",
