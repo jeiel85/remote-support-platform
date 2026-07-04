@@ -20,7 +20,7 @@ internal sealed class GovernanceOptions
 }
 
 internal sealed class GovernanceService(IGovernanceStore store, ControlPlaneCrypto crypto,
-    ISystemClock clock, GovernanceOptions options, GovernanceExportStore exportStore)
+    ISystemClock clock, GovernanceOptions options, GovernanceExportStore exportStore, ControlPlaneOptions controlPlane)
 {
     private static readonly HashSet<string> ValidRoles = new(StringComparer.Ordinal)
     {
@@ -358,10 +358,11 @@ internal sealed class GovernanceService(IGovernanceStore store, ControlPlaneCryp
                 throw new ControlPlaneException(403, "DEVICE_PROOF_INVALID", "Device proof was invalid.");
             ValidateDeviceInfo(request.DeviceInfo);
             Guid deviceId = crypto.DeriveGuid("device-id", tenantId + "\0" + idempotencyKey);
+            DeviceKeyRecord activeKey = new(1, request.DevicePublicKey.GetRawText(), keyThumbprint, "ACTIVE", now, null, null);
             DeviceRecord device = new(deviceId, request.InstallationId, request.DeviceInfo.DisplayName.Trim(),
                 request.DeviceInfo.Architecture, request.DeviceInfo.OsVersion.Trim(), request.DeviceInfo.AppVersion.Trim(),
-                request.DevicePublicKey.GetRawText(), keyThumbprint, crypto.LookupHash(credential), "ACTIVE", 1,
-                now, now, null, null, idempotencyHash);
+                crypto.LookupHash(credential), "ACTIVE", 1, now, now, null, null, idempotencyHash, 1,
+                new Dictionary<int, DeviceKeyRecord> { [1] = activeKey });
             tenant.Devices.Add(deviceId, device);
             tenant.EnrollmentTokens[token.Id] = token with { UseCount = token.UseCount + 1 };
             TouchAuthorization(tenant, now);
@@ -411,6 +412,150 @@ internal sealed class GovernanceService(IGovernanceStore store, ControlPlaneCryp
             GovernanceAudit.Append(tenant, context.Actor, "DEVICE", "DEVICE_REVOKED", "SUCCEEDED", "DEVICE",
                 deviceId.ToString("D"), new { authorizationVersion = device.AuthorizationVersion + 1 }, now);
             return true;
+        });
+
+    internal (JsonElement Jwk, string Thumbprint) GetDeviceActiveKey(DeviceAccessContext access) =>
+        store.Execute(access.TenantId, tenant =>
+        {
+            if (!tenant.Devices.TryGetValue(access.DeviceId, out DeviceRecord? device) || device.Status != "ACTIVE")
+                throw NotFound();
+            DeviceKeyRecord key = device.Keys[access.KeyVersion];
+            return (JsonDocument.Parse(key.PublicJwk).RootElement.Clone(), key.KeyThumbprint);
+        });
+
+    internal void RequireActiveDeviceForSessionCreation(TenantRequestContext context, Guid deviceId) =>
+        store.Execute(context.TenantId, tenant =>
+        {
+            context.RequireRole("OWNER", "ADMIN", "OPERATOR");
+            if (!tenant.Devices.TryGetValue(deviceId, out DeviceRecord? device) || device.Status != "ACTIVE")
+                throw NotFound();
+            return true;
+        });
+
+    private static readonly HashSet<string> ValidServiceStates = new(StringComparer.Ordinal)
+    {
+        "HEALTHY", "DEGRADED", "UPDATE_PENDING", "RESTART_REQUIRED",
+    };
+
+    public void ReportDeviceHeartbeat(DeviceAccessContext access, DeviceHeartbeat heartbeat) =>
+        store.Execute(access.TenantId, tenant =>
+        {
+            if (!tenant.Devices.TryGetValue(access.DeviceId, out DeviceRecord? device) || device.Status != "ACTIVE")
+                throw NotFound();
+            string appVersion = RequiredText(heartbeat.AppVersion, 64, "DEVICE_HEARTBEAT_INVALID");
+            string osVersion = RequiredText(heartbeat.OsVersion, 128, "DEVICE_HEARTBEAT_INVALID");
+            if (!ValidServiceStates.Contains(heartbeat.ServiceState) || heartbeat.InteractiveSessions is < 0 or > 128)
+                throw BadRequest("DEVICE_HEARTBEAT_INVALID");
+            DateTimeOffset now = clock.UtcNow;
+            tenant.Devices[access.DeviceId] = device with
+            {
+                AppVersion = appVersion,
+                OsVersion = osVersion,
+                ServiceState = heartbeat.ServiceState,
+                InteractiveSessions = heartbeat.InteractiveSessions,
+                LastSeenAt = now,
+                UpdatedAt = now,
+            };
+            return true;
+        });
+
+    private static string CanonicalizationVersion(string purpose) =>
+        purpose == "KEY_ROTATION" ? "RSP-DEVICE-KEY-ROTATION-V1" : "RSP-DEVICE-CREDENTIAL-V1";
+
+    public DeviceCredentialChallenge CreateDeviceCredentialChallenge(Guid deviceId, DeviceCredentialChallengeRequest request)
+    {
+        Guid tenantId = store.FindTenantByDeviceId(deviceId) ?? throw NotFound();
+        return store.Execute(tenantId, tenant =>
+        {
+            if (!tenant.Devices.TryGetValue(deviceId, out DeviceRecord? device) || device.Status != "ACTIVE")
+                throw NotFound();
+            if (request.Purpose is not ("CREDENTIAL_REFRESH" or "KEY_ROTATION")) throw BadRequest("CHALLENGE_PURPOSE_INVALID");
+            int expectedKeyVersion = request.Purpose == "KEY_ROTATION" ? device.ActiveKeyVersion + 1 : device.ActiveKeyVersion;
+            if (request.KeyVersion != expectedKeyVersion) throw BadRequest("CHALLENGE_KEY_VERSION_INVALID");
+            DateTimeOffset now = clock.UtcNow;
+            foreach (Guid expired in device.CredentialChallenges
+                .Where(item => item.Value.ExpiresAt <= now).Select(item => item.Key).ToArray())
+                device.CredentialChallenges.Remove(expired);
+            if (device.CredentialChallenges.Count >= 32)
+                throw new ControlPlaneException(429, "CHALLENGE_WINDOW_FULL", "Pending challenge capacity was exceeded.");
+            string nonce = ControlPlaneCrypto.GenerateSecret(32);
+            Guid challengeId = Guid.NewGuid();
+            DateTimeOffset expiresAt = now + controlPlane.DeviceCredentialChallengeLifetime;
+            device.CredentialChallenges.Add(challengeId, new DeviceCredentialChallengeRecord(challengeId,
+                request.KeyVersion, request.Purpose, crypto.LookupHash(nonce), expiresAt, null));
+            return new DeviceCredentialChallenge(challengeId, nonce, expiresAt, CanonicalizationVersion(request.Purpose),
+                request.Purpose);
+        });
+    }
+
+    public DeviceCredentialResult ExchangeDeviceCredential(Guid deviceId, DeviceCredentialExchangeRequest request)
+    {
+        Guid tenantId = store.FindTenantByDeviceId(deviceId) ?? throw NotFound();
+        return store.Execute(tenantId, tenant =>
+        {
+            DateTimeOffset now = clock.UtcNow;
+            if (!tenant.Devices.TryGetValue(deviceId, out DeviceRecord? device) || device.Status != "ACTIVE")
+                throw NotFound();
+            if (!device.CredentialChallenges.TryGetValue(request.ChallengeId, out DeviceCredentialChallengeRecord? challenge) ||
+                challenge.ConsumedAt is not null || challenge.ExpiresAt <= now || challenge.Purpose != "CREDENTIAL_REFRESH" ||
+                challenge.KeyVersion != request.KeyVersion || !device.Keys.TryGetValue(request.KeyVersion, out DeviceKeyRecord? key) ||
+                key.Status != "ACTIVE" || !FixedSecret(challenge.NonceHash, crypto.LookupHash(request.Proof.Nonce)) ||
+                !FixedSecret(request.Proof.KeyId, key.KeyThumbprint))
+                throw new ControlPlaneException(409, "CHALLENGE_INVALID", "The credential challenge was invalid.");
+            using JsonDocument jwk = JsonDocument.Parse(key.PublicJwk);
+            if (!ControlPlaneCrypto.VerifyP256(jwk.RootElement, request.Proof.Algorithm,
+                    DeviceCredentialProofBytes("RSP-DEVICE-CREDENTIAL-V1", deviceId, request.ChallengeId, "CREDENTIAL_REFRESH", request.Proof.Nonce),
+                    request.Proof.Signature))
+                throw new ControlPlaneException(403, "DEVICE_PROOF_INVALID", "Device proof was invalid.");
+            device.CredentialChallenges[request.ChallengeId] = challenge with { ConsumedAt = now };
+            DateTimeOffset expiresAt = now + controlPlane.DeviceCredentialLifetime;
+            string accessToken = crypto.IssueDeviceToken(tenantId, deviceId, key.KeyThumbprint,
+                device.AuthorizationVersion, request.KeyVersion, now, expiresAt);
+            return new DeviceCredentialResult(accessToken, expiresAt, device.AuthorizationVersion, request.KeyVersion);
+        });
+    }
+
+    public DeviceKeyRotationResult RotateDeviceKey(DeviceAccessContext access, Guid deviceId, DeviceKeyRotationRequest request) =>
+        store.Execute(access.TenantId, tenant =>
+        {
+            DateTimeOffset now = clock.UtcNow;
+            if (!tenant.Devices.TryGetValue(deviceId, out DeviceRecord? device) || device.Status != "ACTIVE" ||
+                deviceId != access.DeviceId)
+                throw NotFound();
+            if (!device.CredentialChallenges.TryGetValue(request.ChallengeId, out DeviceCredentialChallengeRecord? challenge) ||
+                challenge.ConsumedAt is not null || challenge.ExpiresAt <= now || challenge.Purpose != "KEY_ROTATION" ||
+                challenge.KeyVersion != device.ActiveKeyVersion + 1 ||
+                !FixedSecret(challenge.NonceHash, crypto.LookupHash(request.CurrentKeyProof.Nonce)) ||
+                !FixedSecret(request.CurrentKeyProof.KeyId, device.ActiveKey.KeyThumbprint))
+                throw new ControlPlaneException(409, "CHALLENGE_INVALID", "The key-rotation challenge was invalid.");
+            string newKeyThumbprint;
+            try
+            {
+                newKeyThumbprint = ControlPlaneCrypto.Thumbprint(request.NewPublicKey);
+            }
+            catch (Exception exception) when (exception is FormatException or KeyNotFoundException or InvalidOperationException)
+            {
+                throw BadRequest("DEVICE_KEY_INVALID");
+            }
+            if (device.Keys.Values.Any(key => key.KeyThumbprint == newKeyThumbprint))
+                throw Conflict("DEVICE_KEY_REUSED");
+            using JsonDocument currentJwk = JsonDocument.Parse(device.ActiveKey.PublicJwk);
+            // The CURRENT key authorizes rotation to the new key; possession of the new key is proven
+            // separately by the mandatory CREDENTIAL_REFRESH exchange the device must perform next.
+            if (!ControlPlaneCrypto.VerifyP256(currentJwk.RootElement, request.CurrentKeyProof.Algorithm,
+                    DeviceCredentialProofBytes("RSP-DEVICE-KEY-ROTATION-V1", deviceId, request.ChallengeId, "KEY_ROTATION",
+                        request.CurrentKeyProof.Nonce, newKeyThumbprint), request.CurrentKeyProof.Signature))
+                throw new ControlPlaneException(403, "DEVICE_PROOF_INVALID", "Current device key proof was invalid.");
+            int newVersion = device.ActiveKeyVersion + 1;
+            device.CredentialChallenges[request.ChallengeId] = challenge with { ConsumedAt = now };
+            device.Keys[device.ActiveKeyVersion] = device.ActiveKey with { Status = "RETIRED", ValidUntil = now };
+            device.Keys[newVersion] = new DeviceKeyRecord(newVersion, request.NewPublicKey.GetRawText(),
+                newKeyThumbprint, "ACTIVE", now, null, null);
+            tenant.Devices[deviceId] = device with { ActiveKeyVersion = newVersion, UpdatedAt = now };
+            GovernanceAudit.Append(tenant, new TenantActor(deviceId, deviceId.ToString("D"), device.DisplayName,
+                null, "DEVICE", null, [], null), "DEVICE", "DEVICE_KEY_ROTATED", "SUCCEEDED", "DEVICE",
+                deviceId.ToString("D"), new { previousKeyVersion = device.ActiveKeyVersion, newVersion, newKeyThumbprint }, now);
+            return new DeviceKeyRotationResult(newVersion, true);
         });
 
     public IReadOnlyList<PolicyContract> ListPolicies(TenantRequestContext context) => store.Execute(context.TenantId, tenant =>
@@ -725,6 +870,24 @@ internal sealed class GovernanceService(IGovernanceStore store, ControlPlaneCryp
 
     internal static byte[] CreateEnrollmentProofBytes(DeviceEnrollmentRequest request, string thumbprint) =>
         EnrollmentProofBytes(request, thumbprint);
+
+    private static byte[] DeviceCredentialProofBytes(string canonicalizationVersion, Guid deviceId, Guid challengeId,
+        string purpose, string nonce, string? newKeyThumbprint = null)
+    {
+        JsonElement payload = newKeyThumbprint is null
+            ? JsonSerializer.SerializeToElement(new { deviceId, challengeId, purpose, nonce })
+            : JsonSerializer.SerializeToElement(new { deviceId, challengeId, purpose, nonce, newKeyThumbprint });
+        byte[] prefix = Encoding.UTF8.GetBytes(canonicalizationVersion + "\0");
+        byte[] canonical = ControlPlaneCrypto.Canonicalize(payload);
+        byte[] result = new byte[prefix.Length + canonical.Length];
+        prefix.CopyTo(result, 0);
+        canonical.CopyTo(result, prefix.Length);
+        return result;
+    }
+
+    internal static byte[] CreateDeviceCredentialProofBytes(string canonicalizationVersion, Guid deviceId,
+        Guid challengeId, string purpose, string nonce, string? newKeyThumbprint = null) =>
+        DeviceCredentialProofBytes(canonicalizationVersion, deviceId, challengeId, purpose, nonce, newKeyThumbprint);
 
     private static void ValidateDeviceInfo(DeviceInfo info)
     {

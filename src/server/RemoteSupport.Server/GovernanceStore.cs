@@ -35,9 +35,20 @@ internal sealed record InvitationRecord(Guid Id, string Email, string[] Roles, s
     Guid InvitedByUserId, DateTimeOffset ExpiresAt, DateTimeOffset CreatedAt, Guid? AcceptedByUserId,
     DateTimeOffset? AcceptedAt, DateTimeOffset? RevokedAt);
 internal sealed record DeviceRecord(Guid Id, Guid InstallationId, string DisplayName, string Architecture,
-    string OsVersion, string AppVersion, string PublicJwk, string KeyThumbprint, string CredentialHash,
-    string Status, long AuthorizationVersion, DateTimeOffset EnrolledAt, DateTimeOffset UpdatedAt,
-    DateTimeOffset? LastSeenAt, DateTimeOffset? RevokedAt, string EnrollmentIdempotencyHash);
+    string OsVersion, string AppVersion, string CredentialHash, string Status, long AuthorizationVersion,
+    DateTimeOffset EnrolledAt, DateTimeOffset UpdatedAt, DateTimeOffset? LastSeenAt, DateTimeOffset? RevokedAt,
+    string EnrollmentIdempotencyHash, int ActiveKeyVersion, Dictionary<int, DeviceKeyRecord> Keys)
+{
+    public string? ServiceState { get; init; }
+    public int InteractiveSessions { get; init; }
+    public Dictionary<Guid, DeviceCredentialChallengeRecord> CredentialChallenges { get; init; } = [];
+    public Dictionary<string, DpopReplayRecord> DpopReplays { get; init; } = new(StringComparer.Ordinal);
+    public DeviceKeyRecord ActiveKey => Keys[ActiveKeyVersion];
+}
+internal sealed record DeviceKeyRecord(int Version, string PublicJwk, string KeyThumbprint, string Status,
+    DateTimeOffset ValidFrom, DateTimeOffset? ValidUntil, DateTimeOffset? RevokedAt);
+internal sealed record DeviceCredentialChallengeRecord(Guid Id, int KeyVersion, string Purpose, string NonceHash,
+    DateTimeOffset ExpiresAt, DateTimeOffset? ConsumedAt);
 internal sealed record EnrollmentTokenRecord(Guid Id, string TokenHash, Guid CreatedByUserId, int MaximumUses,
     int UseCount, DateTimeOffset ExpiresAt, DateTimeOffset? RevokedAt, DateTimeOffset CreatedAt);
 internal sealed record PolicyRecord(Guid Id, string Name, string? Description, string Status, int? ActiveVersion,
@@ -68,6 +79,7 @@ internal interface IGovernanceStore
     T Execute<T>(Guid tenantId, Func<TenantAggregate, T> action);
     TenantAggregate? Snapshot(Guid tenantId);
     Guid? FindTenantBySecret(string purpose, string secretHash);
+    Guid? FindTenantByDeviceId(Guid deviceId);
     IReadOnlyList<Guid> ListTenantIdsForMaintenance();
 }
 
@@ -118,6 +130,16 @@ internal sealed class InMemoryGovernanceStore : IGovernanceStore
                 };
                 if (match) return tenantId;
             }
+            return null;
+        }
+    }
+
+    public Guid? FindTenantByDeviceId(Guid deviceId)
+    {
+        lock (gate)
+        {
+            foreach ((Guid tenantId, TenantAggregate tenant) in tenants)
+                if (tenant.Devices.ContainsKey(deviceId)) return tenantId;
             return null;
         }
     }
@@ -203,6 +225,15 @@ internal sealed class PostgresGovernanceStore(NpgsqlDataSource dataSource) : IGo
             """, connection);
         command.Parameters.AddWithValue(purpose);
         command.Parameters.AddWithValue(secretHash);
+        return command.ExecuteScalar() as Guid?;
+    }
+
+    public Guid? FindTenantByDeviceId(Guid deviceId)
+    {
+        using NpgsqlConnection connection = dataSource.OpenConnection();
+        using NpgsqlCommand command = new(
+            "select tenant_id from governance_device_lookups where device_id=$1", connection);
+        command.Parameters.AddWithValue(deviceId);
         return command.ExecuteScalar() as Guid?;
     }
 
@@ -298,6 +329,16 @@ internal sealed class PostgresGovernanceStore(NpgsqlDataSource dataSource) : IGo
         foreach (EnrollmentTokenRecord token in aggregate.EnrollmentTokens.Values)
             InsertSecret(connection, transaction, aggregate.Tenant.Id, "ENROLLMENT", token.TokenHash,
                 token.Id, token.ExpiresAt, token.RevokedAt ?? (token.UseCount >= token.MaximumUses ? token.ExpiresAt : null));
+        foreach (Guid deviceId in aggregate.Devices.Keys)
+        {
+            using NpgsqlCommand insertDevice = new("""
+                insert into governance_device_lookups(device_id, tenant_id) values ($1,$2)
+                on conflict (device_id) do nothing
+                """, connection, transaction);
+            insertDevice.Parameters.AddWithValue(deviceId);
+            insertDevice.Parameters.AddWithValue(aggregate.Tenant.Id);
+            insertDevice.ExecuteNonQuery();
+        }
     }
 
     private static void InsertSecret(NpgsqlConnection connection, NpgsqlTransaction transaction, Guid tenantId,

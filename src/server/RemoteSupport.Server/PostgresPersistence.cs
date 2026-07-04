@@ -80,7 +80,7 @@ internal sealed class PostgresAttendedSessionStore(NpgsqlDataSource dataSource) 
             SessionAggregate aggregate = JsonSerializer.Deserialize<SessionAggregate>(reader.GetString(0), JsonOptions)
                 ?? throw new InvalidOperationException("Stored attended-session aggregate was invalid.");
             sessions.ById.Add(aggregate.Id, aggregate);
-            sessions.ByCodeHash.Add(aggregate.CodeHash, aggregate.Id);
+            if (aggregate.CodeHash is not null) sessions.ByCodeHash.Add(aggregate.CodeHash, aggregate.Id);
         }
         return sessions;
     }
@@ -101,7 +101,7 @@ internal sealed class PostgresAttendedSessionStore(NpgsqlDataSource dataSource) 
             upsert.Parameters.AddWithValue((object?)session.TenantId ?? DBNull.Value);
             upsert.Parameters.AddWithValue(session.State);
             upsert.Parameters.AddWithValue(session.StateVersion);
-            upsert.Parameters.AddWithValue(session.CodeHash);
+            upsert.Parameters.AddWithValue((object?)session.CodeHash ?? DBNull.Value);
             upsert.Parameters.AddWithValue(session.ExpiresAt);
             upsert.Parameters.AddWithValue(document);
             upsert.ExecuteNonQuery();

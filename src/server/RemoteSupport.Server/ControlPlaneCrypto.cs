@@ -202,7 +202,7 @@ internal sealed class ControlPlaneCrypto
             writer.WriteStartArray();
             foreach (string scope in decision.GrantedScopes.Order(StringComparer.Ordinal)) writer.WriteStringValue(scope);
             writer.WriteEndArray();
-            writer.WriteString("hostEphemeralKeyThumbprint", session.Host.KeyThumbprint);
+            writer.WriteString("hostEphemeralKeyThumbprint", session.Host!.KeyThumbprint);
             writer.WriteString("hostPeerId", session.Host.PeerId.ToString("D"));
             writer.WriteString("sessionId", session.Id.ToString("D"));
             writer.WriteNumber("stateVersion", session.StateVersion);
@@ -240,7 +240,7 @@ internal sealed class ControlPlaneCrypto
             writer.WriteStartArray();
             foreach (string scope in session.GrantedScopes.Order(StringComparer.Ordinal)) writer.WriteStringValue(scope);
             writer.WriteEndArray();
-            writer.WriteString("hostPeerId", session.Host.PeerId.ToString("D"));
+            writer.WriteString("hostPeerId", session.Host!.PeerId.ToString("D"));
             writer.WriteString("operatorPeerId", session.Operator!.PeerId.ToString("D"));
             writer.WriteNumber("permissionRevision", session.PermissionRevision);
             writer.WriteString("sessionId", session.Id.ToString("D"));
@@ -279,7 +279,38 @@ internal sealed class ControlPlaneCrypto
         return encodedPayload + "." + signature;
     }
 
-    public bool VerifyPeerToken(string token, DateTimeOffset now, out JsonDocument? payload)
+    public bool VerifyPeerToken(string token, DateTimeOffset now, out JsonDocument? payload) =>
+        VerifySignedToken(token, now, out payload);
+
+    public string IssueDeviceToken(Guid tenantId, Guid deviceId, string keyThumbprint, long authorizationVersion,
+        int keyVersion, DateTimeOffset issuedAt, DateTimeOffset expiresAt)
+    {
+        ArrayBufferWriter<byte> payload = new();
+        using (Utf8JsonWriter writer = new(payload))
+        {
+            writer.WriteStartObject();
+            writer.WriteNumber("authorizationVersion", authorizationVersion);
+            writer.WritePropertyName("cnf");
+            writer.WriteStartObject();
+            writer.WriteString("jkt", keyThumbprint);
+            writer.WriteEndObject();
+            writer.WriteString("deviceId", deviceId);
+            writer.WriteNumber("exp", expiresAt.ToUnixTimeSeconds());
+            writer.WriteNumber("iat", issuedAt.ToUnixTimeSeconds());
+            writer.WriteNumber("keyVersion", keyVersion);
+            writer.WriteString("sub", deviceId);
+            writer.WriteString("tenantId", tenantId);
+            writer.WriteEndObject();
+        }
+        string encodedPayload = Base64UrlEncode(payload.WrittenSpan);
+        string signature = Base64UrlEncode(HMACSHA256.HashData(tokenKey, Encoding.ASCII.GetBytes(encodedPayload)));
+        return encodedPayload + "." + signature;
+    }
+
+    public bool VerifyDeviceToken(string token, DateTimeOffset now, out JsonDocument? payload) =>
+        VerifySignedToken(token, now, out payload);
+
+    private bool VerifySignedToken(string token, DateTimeOffset now, out JsonDocument? payload)
     {
         payload = null;
         string[] parts = token.Split('.');

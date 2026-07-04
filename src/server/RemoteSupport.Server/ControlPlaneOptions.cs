@@ -19,6 +19,8 @@ public sealed class ControlPlaneOptions
     public string? SignalingPublicUrl { get; set; }
     public TimeSpan SignalingTicketLifetime { get; set; } = TimeSpan.FromSeconds(60);
     public TimeSpan DpopProofLifetime { get; set; } = TimeSpan.FromMinutes(2);
+    public TimeSpan DeviceCredentialLifetime { get; set; } = TimeSpan.FromMinutes(15);
+    public TimeSpan DeviceCredentialChallengeLifetime { get; set; } = TimeSpan.FromMinutes(5);
     public string? TurnSharedSecretBase64 { get; set; }
     public string? TurnMeteringKeyBase64 { get; set; }
     public string TurnRegion { get; set; } = "local";
@@ -50,6 +52,8 @@ public sealed class ControlPlaneOptions
             ChallengeLifetime <= TimeSpan.Zero || ChallengeLifetime > TimeSpan.FromMinutes(2) ||
             SignalingTicketLifetime <= TimeSpan.Zero || SignalingTicketLifetime > TimeSpan.FromSeconds(60) ||
             DpopProofLifetime <= TimeSpan.Zero || DpopProofLifetime > TimeSpan.FromMinutes(2) ||
+            DeviceCredentialLifetime <= TimeSpan.Zero || DeviceCredentialLifetime > TimeSpan.FromMinutes(15) ||
+            DeviceCredentialChallengeLifetime <= TimeSpan.Zero || DeviceCredentialChallengeLifetime > TimeSpan.FromMinutes(5) ||
             TurnCredentialLifetime <= TimeSpan.Zero || TurnCredentialLifetime > TimeSpan.FromMinutes(10) ||
             MaximumCodeAttempts is < 1 or > 20 || ResolveRequestsPerMinute is < 1 or > 10_000)
         {

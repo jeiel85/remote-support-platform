@@ -381,7 +381,7 @@ public sealed class AttendedSessionApiTests
         AuthorizedPair pair = await CreateAuthorizedPair(client, factory, host, oper);
         SessionAggregate aggregate = Assert.Single(factory.Services.GetRequiredService<AttendedSessionService>().Snapshot());
         SignalingConnectionBinding binding = new(pair.Created.SessionId, pair.Host.PeerId, "HOST",
-            aggregate.Host.KeyThumbprint, aggregate.GrantedScopes, aggregate.PermissionRevision, aggregate.TransportEpoch);
+            aggregate.Host!.KeyThumbprint, aggregate.GrantedScopes, aggregate.PermissionRevision, aggregate.TransportEpoch);
         SignalingTicketService tickets = factory.Services.GetRequiredService<SignalingTicketService>();
 
         for (int sequence = 1; sequence <= 120; sequence++) tickets.AcceptSequence(binding, sequence, false);
@@ -599,7 +599,7 @@ public sealed class AttendedSessionApiTests
         PeerAuthorizationChallenge challenge = (await challengeResponse.Content.ReadFromJsonAsync<PeerAuthorizationChallenge>())!;
         SessionAggregate aggregate = Assert.Single(factory.Services.GetRequiredService<AttendedSessionService>().Snapshot());
         ChallengeRecord record = aggregate.Challenges[challenge.ChallengeId];
-        PeerRecord peer = role == "HOST" ? aggregate.Host : aggregate.Operator!;
+        PeerRecord peer = role == "HOST" ? aggregate.Host! : aggregate.Operator!;
         string signature = key.SignLowS(ControlPlaneCrypto.PeerAuthorizationBytes(aggregate, record, peer, challenge.Nonce));
         PeerAuthorizationRequest body = new(challenge.ChallengeId, role,
             new ProofOfPossession(challenge.Nonce, signature, key.Jwk, "ecdsa-p256-sha256-p1363"));

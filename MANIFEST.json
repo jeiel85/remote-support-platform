@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "fileCount": 159,
+  "fileCount": 160,
   "files": [
     {
       "path": "00-product/commercialization-and-compliance.md",
@@ -149,8 +149,8 @@
     },
     {
       "path": "02-protocol/ipc/service_ipc.proto",
-      "bytes": 4886,
-      "sha256": "6c1568144aeb2125fad8933c5bc743e039c5e583a0adca83edff12ced11c9303"
+      "bytes": 5712,
+      "sha256": "ed26f3637c40d7ea4f77cfd049827db5896c15e7eb9d8c96dfd860df8c69337d"
     },
     {
       "path": "02-protocol/managed-host-command-channel.md",
@@ -501,6 +501,11 @@
       "path": "07-delivery/evidence/goal-11.md",
       "bytes": 4000,
       "sha256": "432cf0f8becac1cfe21ed125ce88c18bc5d776e6eccf52cc49ffe9bec394e96b"
+    },
+    {
+      "path": "07-delivery/evidence/goal-12.md",
+      "bytes": 3443,
+      "sha256": "19be8374a0c0b05a0cbcda60d39e59b0f9f7c9d4e1084f45184f5332171071e8"
     },
     {
       "path": "07-delivery/goals/goal-01-foundation.md",

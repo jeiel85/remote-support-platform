@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Text.Encodings.Web;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication;
@@ -56,6 +57,7 @@ else
 builder.Services.AddSingleton<AttendedSessionService>();
 builder.Services.AddSingleton<ResolveAbuseGuard>();
 builder.Services.AddSingleton<PeerAccessService>();
+builder.Services.AddSingleton<DeviceAccessService>();
 builder.Services.AddSingleton<SignalingTicketService>();
 builder.Services.AddSingleton<TurnCredentialService>();
 builder.Services.AddSingleton<SignalingProtocolValidator>();
@@ -222,6 +224,63 @@ app.MapDelete("/v1/devices/{deviceId:guid}", (Guid deviceId, HttpContext context
     service.RevokeDevice(TenantContextMiddleware.Get(context), deviceId, IfMatch(context.Request));
     return Results.NoContent();
 }).RequireAuthorization("Authenticated");
+
+app.MapPost("/v1/devices/{deviceId:guid}/heartbeat", (Guid deviceId, DeviceHeartbeat request, HttpRequest http,
+    DeviceAccessService deviceAccess, GovernanceService service) =>
+{
+    service.ReportDeviceHeartbeat(deviceAccess.Authenticate(http, deviceId), request);
+    return Results.NoContent();
+}).AllowAnonymous();
+
+app.MapPost("/v1/devices/{deviceId:guid}/credential-challenges", (Guid deviceId,
+    DeviceCredentialChallengeRequest request, GovernanceService service) =>
+    Results.Created($"/v1/devices/{deviceId:D}/credential-challenges", service.CreateDeviceCredentialChallenge(deviceId, request)))
+    .AllowAnonymous().RequireRateLimiting("peerCredential");
+
+app.MapPost("/v1/devices/{deviceId:guid}/credentials", (Guid deviceId,
+    DeviceCredentialExchangeRequest request, GovernanceService service) =>
+    Results.Ok(service.ExchangeDeviceCredential(deviceId, request)))
+    .AllowAnonymous().RequireRateLimiting("peerCredential");
+
+app.MapPost("/v1/devices/{deviceId:guid}/keys/rotate", (Guid deviceId, DeviceKeyRotationRequest request,
+    HttpRequest http, DeviceAccessService deviceAccess, GovernanceService service) =>
+    Results.Accepted($"/v1/devices/{deviceId:D}", service.RotateDeviceKey(deviceAccess.Authenticate(http, deviceId),
+        deviceId, request))).AllowAnonymous();
+
+app.MapPost("/v1/devices/{deviceId:guid}/sessions", (Guid deviceId, ManagedSessionRequest request,
+    HttpContext context, ClaimsPrincipal principal, GovernanceService governance, AttendedSessionService sessions) =>
+{
+    TenantRequestContext tenantContext = TenantContextMiddleware.Get(context);
+    governance.RequireActiveDeviceForSessionCreation(tenantContext, deviceId);
+    PolicyDecisionContract decision = governance.EvaluatePolicy(tenantContext, new PolicyEvaluationRequest(
+        deviceId, request.SessionType, request.RequestedScopes, request.RequestedDurationSeconds, false));
+    OperatorIdentity identity = OperatorFrom(principal, governance, testing);
+    return Results.Created($"/v1/sessions/{deviceId:D}", sessions.CreateManagedSession(deviceId, identity, request,
+        decision, context.Request.Headers["Idempotency-Key"].ToString()));
+}).RequireAuthorization("Operator");
+
+app.MapGet("/v1/devices/{deviceId:guid}/pending-session-requests", async (Guid deviceId, int? waitSeconds,
+    HttpRequest http, DeviceAccessService deviceAccess, AttendedSessionService sessions, CancellationToken cancellationToken) =>
+    Results.Ok(await sessions.PollManagedSessionRequestsAsync(deviceAccess.Authenticate(http, deviceId),
+        waitSeconds ?? 20, cancellationToken))).AllowAnonymous();
+
+app.MapPost("/v1/sessions/{sessionId:guid}/managed-host-decision", (Guid sessionId,
+    ManagedHostDecisionRequest request, HttpRequest http, DeviceAccessService deviceAccess,
+    GovernanceService governance, AttendedSessionService sessions) =>
+{
+    DeviceAccessContext access = deviceAccess.AuthenticateAny(http);
+    (JsonElement deviceJwk, string deviceThumbprint) = governance.GetDeviceActiveKey(access);
+    string hostThumbprint;
+    try { hostThumbprint = ControlPlaneCrypto.Thumbprint(request.HostEphemeralPublicKey); }
+    catch (Exception exception) when (exception is FormatException or KeyNotFoundException or InvalidOperationException)
+    { throw new ControlPlaneException(400, "HOST_KEY_INVALID", "The host ephemeral key was invalid."); }
+    if (!string.Equals(request.DecisionProof.KeyId, deviceThumbprint, StringComparison.Ordinal) ||
+        !ControlPlaneCrypto.VerifyP256(deviceJwk, request.DecisionProof.Algorithm,
+            AttendedSessionService.ManagedHostDecisionProofBytes(sessionId, request, hostThumbprint),
+            request.DecisionProof.Signature))
+        throw new ControlPlaneException(403, "DEVICE_PROOF_INVALID", "Managed host decision proof was invalid.");
+    return Results.Ok(sessions.DecideManagedHostSession(access, sessionId, IfMatch(http), request));
+}).AllowAnonymous();
 
 app.MapGet("/v1/tenant/policies", (HttpContext context, GovernanceService service) =>
     Results.Ok(service.ListPolicies(TenantContextMiddleware.Get(context)))).RequireAuthorization("Authenticated");

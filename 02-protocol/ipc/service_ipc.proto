@@ -67,6 +67,8 @@ message IpcEnvelope {
     CommandResult command_result = 33;
     AgentHeartbeat agent_heartbeat = 34;
     ServiceEvent service_event = 35;
+    ManagedSessionConsentRequest managed_session_consent_request = 36;
+    ManagedSessionConsentResult managed_session_consent_result = 37;
   }
 }
 
@@ -189,4 +191,23 @@ message ServiceEvent {
   string reason_code = 2;
   uint64 sequence = 3;
   int64 occurred_utc_unix_ms = 4;
+}
+
+// Service asks the interactive Agent to present the managed-session local
+// consent/notification workflow (goal-13-managed-host.md). The Service never
+// renders consent UI itself (01-architecture/windows-process-model.md).
+message ManagedSessionConsentRequest {
+  string session_id = 1;
+  string operator_display_name = 2;
+  string operator_tenant_display_name = 3;
+  repeated remote_support.v1.CapabilityScope requested_scopes = 4;
+  bool policy_requires_consent = 5;
+  int64 expires_utc_unix_ms = 6;
+}
+
+message ManagedSessionConsentResult {
+  string session_id = 1;
+  bool approved = 2;
+  repeated remote_support.v1.CapabilityScope granted_scopes = 3;
+  string reason_code = 4;
 }

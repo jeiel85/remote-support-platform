@@ -28,6 +28,7 @@
     <ProjectReference Include="..\..\src\client\managed\RemoteSupport.Infrastructure\RemoteSupport.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\client\managed\RemoteSupport.Observability\RemoteSupport.Observability.csproj" />
     <ProjectReference Include="..\..\src\client\managed\RemoteSupport.Security\RemoteSupport.Security.csproj" />
+    <ProjectReference Include="..\..\src\client\managed\RemoteSupport.Ipc\RemoteSupport.Ipc.csproj" />
     <ProjectReference Include="..\..\src\shared-contracts\RemoteSupport.Contracts\RemoteSupport.Contracts.csproj" />
   </ItemGroup>
   <ItemGroup>

@@ -155,7 +155,7 @@ internal sealed class AttendedSessionService(
             session.Consent.NonceConsumed = false;
             return new PendingConsent(session.Id, session.Consent.Id,
                 new OperatorDisplay(session.Operator.DisplayName!, session.Operator.TenantDisplayName!, session.Operator.VerifiedTenant),
-                session.RequestedScopes, session.Consent.ExpiresAt, session.StateVersion, nonce, session.Host.KeyThumbprint);
+                session.RequestedScopes, session.Consent.ExpiresAt, session.StateVersion, nonce, session.Host!.KeyThumbprint);
         });
     }
 
@@ -180,7 +180,7 @@ internal sealed class AttendedSessionService(
             if (decision.ConsentRequestId != session.Consent.Id || session.Consent.NonceConsumed ||
                 session.Consent.NonceHash is null || !FixedHashEquals(session.Consent.NonceHash, crypto.LookupHash(decision.ConsentNonce)) ||
                 !string.Equals(decision.DecisionProof.Nonce, decision.ConsentNonce, StringComparison.Ordinal) ||
-                !string.Equals(decision.DecisionProof.KeyId, session.Host.KeyThumbprint, StringComparison.Ordinal)) throw Conflict("CONSENT_NONCE_INVALID");
+                !string.Equals(decision.DecisionProof.KeyId, session.Host!.KeyThumbprint, StringComparison.Ordinal)) throw Conflict("CONSENT_NONCE_INVALID");
             string[] granted = NormalizeScopes(decision.GrantedScopes, allowEmpty: !decision.Approved);
             if (!decision.Approved && granted.Length != 0) throw BadRequest("REJECTED_CONSENT_HAS_SCOPES");
             if (granted.Except(session.RequestedScopes, StringComparer.Ordinal).Any()) throw BadRequest("GRANTED_SCOPE_NOT_REQUESTED");
@@ -195,7 +195,7 @@ internal sealed class AttendedSessionService(
             session.State = decision.Approved ? "AUTHORIZED" : "REJECTED";
             session.StateVersion++;
             AppendLifecycle(session, decision.Approved ? "CONSENT_APPROVED" : "CONSENT_REJECTED", "HOST",
-                session.Host.PeerId.ToString("D"), now, new { grantedScopes = granted, session.StateVersion });
+                session.Host!.PeerId.ToString("D"), now, new { grantedScopes = granted, session.StateVersion });
             return ToResponse(session);
         });
         if (deferredFailure is not null) throw deferredFailure;
@@ -209,7 +209,7 @@ internal sealed class AttendedSessionService(
             SessionAggregate session = RequireSession(collection, sessionId);
             BootstrapRecord bootstrap = RequireBootstrap(session, bootstrapToken, null, consume: true);
             if (session.State != "AUTHORIZED" || clock.UtcNow >= session.ExpiresAt) throw Conflict("SESSION_NOT_AUTHORIZED");
-            PeerRecord peer = bootstrap.Role == "HOST" ? session.Host : session.Operator!;
+            PeerRecord peer = bootstrap.Role == "HOST" ? session.Host! : session.Operator!;
             string nonce = ControlPlaneCrypto.GenerateSecret(24);
             ChallengeRecord challenge = new(Guid.NewGuid(), peer.PeerId, peer.Role, crypto.LookupHash(nonce),
                 clock.UtcNow + options.ChallengeLifetime, session.TransportEpoch);
@@ -232,7 +232,7 @@ internal sealed class AttendedSessionService(
                 challenge.Consumed || challenge.PeerId != bootstrap.PeerId || challenge.Role != bootstrap.Role ||
                 challenge.ExpiresAt <= clock.UtcNow || challenge.TransportEpoch != session.TransportEpoch ||
                 !FixedHashEquals(challenge.NonceHash, crypto.LookupHash(request.Proof.Nonce))) throw Conflict("PEER_CHALLENGE_INVALID");
-            PeerRecord peer = bootstrap.Role == "HOST" ? session.Host : session.Operator!;
+            PeerRecord peer = bootstrap.Role == "HOST" ? session.Host! : session.Operator!;
             string presentedThumbprint;
             try { presentedThumbprint = ControlPlaneCrypto.Thumbprint(request.Proof.PublicKey); }
             catch (Exception exception) when (exception is FormatException or KeyNotFoundException or InvalidOperationException)
@@ -249,7 +249,7 @@ internal sealed class AttendedSessionService(
             string token = crypto.IssuePeerToken(session, peer, issuedAt, expiresAt);
             AppendLifecycle(session, "PEER_AUTHORIZED", peer.Role, peer.Subject ?? peer.PeerId.ToString("D"),
                 clock.UtcNow, new { peer.PeerId, peer.Role, expiresAt });
-            PeerRecord remote = peer.Role == "HOST" ? session.Operator! : session.Host;
+            PeerRecord remote = peer.Role == "HOST" ? session.Operator! : session.Host!;
             using JsonDocument remoteJwk = JsonDocument.Parse(remote.PublicJwk);
             return new PeerAuthorization(session.Id, peer.PeerId, peer.Role, token, session.GrantedScopes,
                 session.PermissionRevision, session.TransportEpoch, expiresAt, remote.PeerId, remote.Role,
@@ -272,7 +272,7 @@ internal sealed class AttendedSessionService(
         return store.Execute(collection =>
         {
             SessionAggregate session = RequireSession(collection, sessionId);
-            if (access.SessionId != sessionId || access.PeerId != session.Host.PeerId && access.PeerId != session.Operator?.PeerId)
+            if (access.SessionId != sessionId || access.PeerId != session.Host!.PeerId && access.PeerId != session.Operator?.PeerId)
                 throw new ControlPlaneException(403, "AUTHZ_SCOPE_DENIED", "Peer cannot terminate this session.");
             if (session.State == "TERMINATED") return ToResponse(session);
             if (session.State != "AUTHORIZED") throw Conflict("SESSION_STATE_CONFLICT");
@@ -296,7 +296,7 @@ internal sealed class AttendedSessionService(
         return store.Execute(collection =>
         {
             SessionAggregate session = RequireSession(collection, sessionId);
-            if (access.Role != "HOST" || access.PeerId != session.Host.PeerId)
+            if (access.Role != "HOST" || access.PeerId != session.Host!.PeerId)
                 throw new ControlPlaneException(403, "AUTHZ_SCOPE_DENIED", "Only the attended host can revoke scopes.");
             if (session.State != "AUTHORIZED" || session.StateVersion != expectedVersion) throw Conflict("SESSION_STATE_CONFLICT");
             if (revoked.Except(session.GrantedScopes, StringComparer.Ordinal).Any()) throw BadRequest("SCOPE_NOT_GRANTED");
@@ -309,6 +309,168 @@ internal sealed class AttendedSessionService(
             return ToResponse(session);
         });
     }
+    public ManagedSessionCreated CreateManagedSession(Guid deviceId, OperatorIdentity identity,
+        ManagedSessionRequest request, PolicyDecisionContract decision, string idempotencyKey)
+    {
+        if (request.SessionType != "MANAGED_ATTENDED") throw BadRequest("SESSION_TYPE_UNSUPPORTED");
+        if (string.IsNullOrWhiteSpace(idempotencyKey) || idempotencyKey.Length is < 16 or > 128)
+            throw BadRequest("IDEMPOTENCY_KEY_INVALID");
+        string[] scopes = NormalizeScopes(request.RequestedScopes);
+        if (scopes.Contains("UNATTENDED_SESSION", StringComparer.Ordinal))
+            throw BadRequest("SCOPE_NOT_SUPPORTED_FOR_MANAGED_ATTENDED");
+        if (!decision.Allow) throw new ControlPlaneException(403, "POLICY_DENIED", "Policy denied the managed session.");
+        if (scopes.Except(decision.GrantedScopes, StringComparer.Ordinal).Any())
+            throw new ControlPlaneException(403, "POLICY_SCOPE_DENIED", "Policy does not permit a requested scope.");
+        string operatorThumbprint;
+        try { operatorThumbprint = ControlPlaneCrypto.Thumbprint(request.OperatorEphemeralPublicKey); }
+        catch (Exception exception) when (exception is FormatException or KeyNotFoundException or InvalidOperationException)
+        { throw BadRequest("OPERATOR_KEY_INVALID"); }
+        int maximumSeconds = Math.Min((int)options.SessionLifetime.TotalSeconds, decision.MaxSessionDurationSeconds);
+        int durationSeconds = Math.Min(request.RequestedDurationSeconds ?? maximumSeconds, maximumSeconds);
+        if (durationSeconds < 60) throw BadRequest("SESSION_DURATION_INVALID");
+        string idempotencyHash = crypto.LookupHash($"managed-idempotency\0{identity.TenantId}\0{deviceId}\0{idempotencyKey}");
+        return store.Execute(collection =>
+        {
+            DateTimeOffset now = clock.UtcNow;
+            SessionAggregate? previous = collection.ById.Values.SingleOrDefault(session =>
+                string.Equals(session.IdempotencyHash, idempotencyHash, StringComparison.Ordinal));
+            if (previous is not null)
+                return new ManagedSessionCreated(ToResponse(previous), previous.Operator!.PeerId,
+                    crypto.DeriveSecret("managed-operator-bootstrap", idempotencyHash), "QUEUED",
+                    previous.RequiresLocalConsent, true);
+            Guid sessionId = crypto.DeriveGuid("managed-session-id", idempotencyHash);
+            if (collection.ById.ContainsKey(sessionId))
+                throw new ControlPlaneException(503, "IDEMPOTENCY_DERIVATION_COLLISION", "Unable to allocate a session identifier.");
+            Guid operatorPeerId = Guid.NewGuid();
+            DateTimeOffset expiresAt = now.AddSeconds(durationSeconds);
+            SessionAggregate session = new()
+            {
+                Id = sessionId,
+                CreatedAt = now,
+                ExpiresAt = expiresAt,
+                SessionType = "MANAGED_ATTENDED",
+                DeviceId = deviceId,
+                TenantId = identity.TenantId,
+                RequestedScopes = scopes,
+                State = "HOST_PENDING",
+                IdempotencyHash = idempotencyHash,
+                PolicyDecisionHash = decision.InputHash,
+                RequiresLocalConsent = decision.RequiresLocalConsent,
+            };
+            session.Operator = new PeerRecord(operatorPeerId, "OPERATOR", request.OperatorEphemeralPublicKey.GetRawText(),
+                operatorThumbprint, identity.Subject, identity.DisplayName, identity.TenantDisplayName, identity.VerifiedTenant);
+            string operatorToken = crypto.DeriveSecret("managed-operator-bootstrap", idempotencyHash);
+            session.BootstrapCredentials[crypto.LookupHash(operatorToken)] = new BootstrapRecord(operatorPeerId,
+                "OPERATOR", now + options.OperatorBootstrapLifetime, 10);
+            AppendLifecycle(session, "MANAGED_SESSION_CREATED", "OPERATOR", identity.Subject, now,
+                new { deviceId, requestedScopes = scopes, session.State, decision.DecisionId });
+            collection.ById.Add(sessionId, session);
+            return new ManagedSessionCreated(ToResponse(session), operatorPeerId, operatorToken, "QUEUED",
+                decision.RequiresLocalConsent, true);
+        });
+    }
+
+    public async Task<PagedManagedSessionRequests> PollManagedSessionRequestsAsync(DeviceAccessContext access,
+        int waitSeconds, CancellationToken cancellationToken)
+    {
+        DateTimeOffset deadline = clock.UtcNow + TimeSpan.FromSeconds(Math.Clamp(waitSeconds, 0, 20));
+        while (true)
+        {
+            PagedManagedSessionRequests result = store.Execute(collection => new PagedManagedSessionRequests(
+                collection.ById.Values.Where(session => session.DeviceId == access.DeviceId &&
+                        session.State == "HOST_PENDING" && session.ExpiresAt > clock.UtcNow)
+                    .OrderBy(session => session.CreatedAt)
+                    .Select(session => new PendingManagedSessionRequest(session.Id, session.SessionType,
+                        new PendingOperatorDisplay(Guid.Empty, session.Operator?.DisplayName ?? string.Empty,
+                            session.Operator?.TenantDisplayName ?? string.Empty),
+                        session.RequestedScopes, session.PolicyDecisionHash ?? string.Empty,
+                        ConsentNonceFor(session.Id), session.RequiresLocalConsent, true,
+                        session.ExpiresAt, session.StateVersion))
+                    .ToArray()));
+            if (result.Items.Count > 0 || clock.UtcNow >= deadline) return result;
+            await Task.Delay(TimeSpan.FromMilliseconds(500), cancellationToken);
+        }
+    }
+
+    internal static byte[] ManagedHostDecisionProofBytes(Guid sessionId, ManagedHostDecisionRequest request,
+        string hostKeyThumbprint)
+    {
+        System.Buffers.ArrayBufferWriter<byte> buffer = new();
+        using (Utf8JsonWriter writer = new(buffer))
+        {
+            writer.WriteStartObject();
+            writer.WriteBoolean("approved", request.Approved);
+            writer.WriteString("consentNonce", request.ConsentNonce);
+            writer.WritePropertyName("grantedScopes");
+            writer.WriteStartArray();
+            foreach (string scope in request.GrantedScopes.Order(StringComparer.Ordinal)) writer.WriteStringValue(scope);
+            writer.WriteEndArray();
+            writer.WriteString("hostEphemeralKeyThumbprint", hostKeyThumbprint);
+            writer.WriteString("sessionId", sessionId.ToString("D"));
+            writer.WriteEndObject();
+        }
+        byte[] prefix = System.Text.Encoding.UTF8.GetBytes("RSP-MANAGED-HOST-DECISION-V1\0");
+        byte[] canonical = ControlPlaneCrypto.Canonicalize(JsonDocument.Parse(buffer.WrittenSpan.ToArray()).RootElement);
+        byte[] result = new byte[prefix.Length + canonical.Length];
+        prefix.CopyTo(result, 0);
+        canonical.CopyTo(result, prefix.Length);
+        return result;
+    }
+
+    public ManagedHostDecisionResult DecideManagedHostSession(DeviceAccessContext access, Guid sessionId,
+        long expectedVersion, ManagedHostDecisionRequest request)
+    {
+        ControlPlaneException? deferredFailure = null;
+        ManagedHostDecisionResult? result = store.Execute(collection =>
+        {
+            SessionAggregate session = RequireSession(collection, sessionId);
+            if (session.SessionType != "MANAGED_ATTENDED" || session.DeviceId != access.DeviceId)
+                throw new ControlPlaneException(403, "AUTHZ_SCOPE_DENIED", "Device cannot decide this session.");
+            DateTimeOffset now = clock.UtcNow;
+            if (now >= session.ExpiresAt)
+            {
+                Expire(session, now);
+                deferredFailure = Conflict("SESSION_EXPIRED");
+                return null;
+            }
+            if (session.State != "HOST_PENDING") throw Conflict("SESSION_STATE_CONFLICT");
+            if (session.StateVersion != expectedVersion) throw Conflict("STATE_VERSION_CONFLICT");
+            if (!DpopProof.FixedEquals(ConsentNonceFor(session.Id), request.ConsentNonce))
+                throw Conflict("CONSENT_NONCE_INVALID");
+            if (!request.Approved)
+            {
+                session.State = "FAILED";
+                session.StateVersion++;
+                AppendLifecycle(session, "MANAGED_HOST_REJECTED", "HOST", access.DeviceId.ToString("D"), now,
+                    new { session.StateVersion });
+                return new ManagedHostDecisionResult(ToResponse(session), Guid.Empty, null);
+            }
+            string[] granted = NormalizeScopes(request.GrantedScopes, allowEmpty: true);
+            if (granted.Except(session.RequestedScopes, StringComparer.Ordinal).Any())
+                throw BadRequest("GRANTED_SCOPE_NOT_REQUESTED");
+            string hostThumbprint;
+            try { hostThumbprint = ControlPlaneCrypto.Thumbprint(request.HostEphemeralPublicKey); }
+            catch (Exception exception) when (exception is FormatException or KeyNotFoundException or InvalidOperationException)
+            { throw BadRequest("HOST_KEY_INVALID"); }
+            Guid hostPeerId = Guid.NewGuid();
+            session.Host = new PeerRecord(hostPeerId, "HOST", request.HostEphemeralPublicKey.GetRawText(), hostThumbprint,
+                null, null, null, false);
+            session.GrantedScopes = granted;
+            session.PermissionRevision = 1;
+            session.TransportEpoch = 1;
+            session.State = "AUTHORIZED";
+            session.StateVersion++;
+            string hostToken = ControlPlaneCrypto.GenerateSecret();
+            session.BootstrapCredentials[crypto.LookupHash(hostToken)] = new BootstrapRecord(hostPeerId, "HOST",
+                now + options.HostBootstrapLifetime, 10);
+            AppendLifecycle(session, "MANAGED_HOST_APPROVED", "HOST", access.DeviceId.ToString("D"), now,
+                new { hostPeerId, grantedScopes = granted, session.StateVersion });
+            return new ManagedHostDecisionResult(ToResponse(session), hostPeerId, hostToken);
+        });
+        if (deferredFailure is not null) throw deferredFailure;
+        return result!;
+    }
+
     public IReadOnlyCollection<SessionAggregate> Snapshot() => store.Snapshot();
 
     private BootstrapRecord RequireBootstrap(SessionAggregate session, string token, string? role, bool consume)
@@ -321,15 +483,17 @@ internal sealed class AttendedSessionService(
         return credential;
     }
 
+    private string ConsentNonceFor(Guid sessionId) => crypto.DeriveSecret("managed-consent-nonce", sessionId.ToString("D"));
+
     private static SessionAggregate RequireSession(SessionCollection collection, Guid sessionId) =>
         collection.ById.TryGetValue(sessionId, out SessionAggregate? session) ? session : throw NotFound();
 
-    private static SessionResponse ToResponse(SessionAggregate session) => new(session.Id, session.TenantId, "ATTENDED",
+    private static SessionResponse ToResponse(SessionAggregate session) => new(session.Id, session.TenantId, session.SessionType,
         session.State, session.StateVersion, session.PermissionRevision, session.TransportEpoch,
         session.RequestedScopes, session.GrantedScopes, session.CreatedAt, session.ExpiresAt);
 
     private static AttendedSessionCreated Created(SessionAggregate session, string supportCode, string hostToken,
-        string baseUrl) => new(session.Id, supportCode, session.ExpiresAt, hostToken, session.Host.PeerId,
+        string baseUrl) => new(session.Id, supportCode, session.ExpiresAt, hostToken, session.Host!.PeerId,
             "WAITING_FOR_OPERATOR", 1,
             $"{baseUrl.TrimEnd('/')}/v1/attended-sessions/{session.Id:D}/pending-consent");
 

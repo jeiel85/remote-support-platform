@@ -8,12 +8,16 @@ internal sealed class SessionAggregate
     public required Guid Id { get; init; }
     public required DateTimeOffset CreatedAt { get; init; }
     public required DateTimeOffset ExpiresAt { get; init; }
-    public required string CodeHash { get; init; }
-    public required PeerRecord Host { get; init; }
+    public string? CodeHash { get; init; }
+    public PeerRecord? Host { get; set; }
     public string? IdempotencyHash { get; init; }
     public string? IdempotencyRequestHash { get; init; }
     public int IdempotencyDerivationCounter { get; init; }
     public string State { get; set; } = "WAITING_FOR_OPERATOR";
+    public string SessionType { get; init; } = "ATTENDED";
+    public Guid? DeviceId { get; init; }
+    public string? PolicyDecisionHash { get; init; }
+    public bool RequiresLocalConsent { get; init; }
     public long StateVersion { get; set; } = 1;
     public long PermissionRevision { get; set; }
     public long TransportEpoch { get; set; }

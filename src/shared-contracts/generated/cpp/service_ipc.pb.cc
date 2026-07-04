@@ -267,6 +267,76 @@ struct RebootGrantResultDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 RebootGrantResultDefaultTypeInternal _RebootGrantResult_default_instance_;
 
+inline constexpr ManagedSessionConsentResult::Impl_::Impl_(
+    ::_pbi::ConstantInitialized) noexcept
+      : _cached_size_{0},
+        granted_scopes_{},
+        _granted_scopes_cached_byte_size_{0},
+        session_id_(
+            &::google::protobuf::internal::fixed_address_empty_string,
+            ::_pbi::ConstantInitialized()),
+        reason_code_(
+            &::google::protobuf::internal::fixed_address_empty_string,
+            ::_pbi::ConstantInitialized()),
+        approved_{false} {}
+
+template <typename>
+PROTOBUF_CONSTEXPR ManagedSessionConsentResult::ManagedSessionConsentResult(::_pbi::ConstantInitialized)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(ManagedSessionConsentResult_class_data_.base()),
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(::_pbi::ConstantInitialized()) {
+}
+struct ManagedSessionConsentResultDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR ManagedSessionConsentResultDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  ~ManagedSessionConsentResultDefaultTypeInternal() {}
+  union {
+    ManagedSessionConsentResult _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ManagedSessionConsentResultDefaultTypeInternal _ManagedSessionConsentResult_default_instance_;
+
+inline constexpr ManagedSessionConsentRequest::Impl_::Impl_(
+    ::_pbi::ConstantInitialized) noexcept
+      : _cached_size_{0},
+        requested_scopes_{},
+        _requested_scopes_cached_byte_size_{0},
+        session_id_(
+            &::google::protobuf::internal::fixed_address_empty_string,
+            ::_pbi::ConstantInitialized()),
+        operator_display_name_(
+            &::google::protobuf::internal::fixed_address_empty_string,
+            ::_pbi::ConstantInitialized()),
+        operator_tenant_display_name_(
+            &::google::protobuf::internal::fixed_address_empty_string,
+            ::_pbi::ConstantInitialized()),
+        expires_utc_unix_ms_{::int64_t{0}},
+        policy_requires_consent_{false} {}
+
+template <typename>
+PROTOBUF_CONSTEXPR ManagedSessionConsentRequest::ManagedSessionConsentRequest(::_pbi::ConstantInitialized)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(ManagedSessionConsentRequest_class_data_.base()),
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(::_pbi::ConstantInitialized()) {
+}
+struct ManagedSessionConsentRequestDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR ManagedSessionConsentRequestDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
+  ~ManagedSessionConsentRequestDefaultTypeInternal() {}
+  union {
+    ManagedSessionConsentRequest _instance;
+  };
+};
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ManagedSessionConsentRequestDefaultTypeInternal _ManagedSessionConsentRequest_default_instance_;
+
 inline constexpr InputBatchResult::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
       : _cached_size_{0},
@@ -616,7 +686,7 @@ const ::uint32_t
         0x085, // bitmap
         PROTOBUF_FIELD_OFFSET(::remote_support::ipc::v1::IpcEnvelope, _impl_._has_bits_),
         PROTOBUF_FIELD_OFFSET(::remote_support::ipc::v1::IpcEnvelope, _impl_._oneof_case_[0]),
-        29, // hasbit index offset
+        31, // hasbit index offset
         PROTOBUF_FIELD_OFFSET(::remote_support::ipc::v1::IpcEnvelope, _impl_.protocol_major_),
         PROTOBUF_FIELD_OFFSET(::remote_support::ipc::v1::IpcEnvelope, _impl_.protocol_minor_),
         PROTOBUF_FIELD_OFFSET(::remote_support::ipc::v1::IpcEnvelope, _impl_.request_id_),
@@ -642,6 +712,8 @@ const ::uint32_t
         PROTOBUF_FIELD_OFFSET(::remote_support::ipc::v1::IpcEnvelope, _impl_.body_),
         PROTOBUF_FIELD_OFFSET(::remote_support::ipc::v1::IpcEnvelope, _impl_.body_),
         PROTOBUF_FIELD_OFFSET(::remote_support::ipc::v1::IpcEnvelope, _impl_.body_),
+        PROTOBUF_FIELD_OFFSET(::remote_support::ipc::v1::IpcEnvelope, _impl_.body_),
+        PROTOBUF_FIELD_OFFSET(::remote_support::ipc::v1::IpcEnvelope, _impl_.body_),
         2,
         3,
         0,
@@ -650,6 +722,8 @@ const ::uint32_t
         1,
         7,
         6,
+        ~0u,
+        ~0u,
         ~0u,
         ~0u,
         ~0u,
@@ -850,28 +924,56 @@ const ::uint32_t
         0,
         1,
         2,
+        0x081, // bitmap
+        PROTOBUF_FIELD_OFFSET(::remote_support::ipc::v1::ManagedSessionConsentRequest, _impl_._has_bits_),
+        9, // hasbit index offset
+        PROTOBUF_FIELD_OFFSET(::remote_support::ipc::v1::ManagedSessionConsentRequest, _impl_.session_id_),
+        PROTOBUF_FIELD_OFFSET(::remote_support::ipc::v1::ManagedSessionConsentRequest, _impl_.operator_display_name_),
+        PROTOBUF_FIELD_OFFSET(::remote_support::ipc::v1::ManagedSessionConsentRequest, _impl_.operator_tenant_display_name_),
+        PROTOBUF_FIELD_OFFSET(::remote_support::ipc::v1::ManagedSessionConsentRequest, _impl_.requested_scopes_),
+        PROTOBUF_FIELD_OFFSET(::remote_support::ipc::v1::ManagedSessionConsentRequest, _impl_.policy_requires_consent_),
+        PROTOBUF_FIELD_OFFSET(::remote_support::ipc::v1::ManagedSessionConsentRequest, _impl_.expires_utc_unix_ms_),
+        1,
+        2,
+        3,
+        0,
+        5,
+        4,
+        0x081, // bitmap
+        PROTOBUF_FIELD_OFFSET(::remote_support::ipc::v1::ManagedSessionConsentResult, _impl_._has_bits_),
+        7, // hasbit index offset
+        PROTOBUF_FIELD_OFFSET(::remote_support::ipc::v1::ManagedSessionConsentResult, _impl_.session_id_),
+        PROTOBUF_FIELD_OFFSET(::remote_support::ipc::v1::ManagedSessionConsentResult, _impl_.approved_),
+        PROTOBUF_FIELD_OFFSET(::remote_support::ipc::v1::ManagedSessionConsentResult, _impl_.granted_scopes_),
+        PROTOBUF_FIELD_OFFSET(::remote_support::ipc::v1::ManagedSessionConsentResult, _impl_.reason_code_),
+        1,
+        3,
+        0,
+        2,
 };
 
 static const ::_pbi::MigrationSchema
     schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
         {0, sizeof(::remote_support::ipc::v1::IpcEnvelope)},
-        {53, sizeof(::remote_support::ipc::v1::ClientHello)},
-        {66, sizeof(::remote_support::ipc::v1::ServiceHello)},
-        {81, sizeof(::remote_support::ipc::v1::ChallengeResponse)},
-        {86, sizeof(::remote_support::ipc::v1::CapabilityQuery)},
-        {87, sizeof(::remote_support::ipc::v1::CapabilityResult)},
-        {102, sizeof(::remote_support::ipc::v1::StartPrivilegedInput)},
-        {119, sizeof(::remote_support::ipc::v1::StopPrivilegedInput)},
-        {124, sizeof(::remote_support::ipc::v1::PrivilegedInputEvent)},
-        {130, sizeof(::remote_support::ipc::v1::InputBatch)},
-        {143, sizeof(::remote_support::ipc::v1::InputBatchResult)},
-        {156, sizeof(::remote_support::ipc::v1::StoreRebootGrant)},
-        {171, sizeof(::remote_support::ipc::v1::ConsumeRebootGrant)},
-        {180, sizeof(::remote_support::ipc::v1::RebootGrantResult)},
-        {191, sizeof(::remote_support::ipc::v1::RequestSystemReboot)},
-        {204, sizeof(::remote_support::ipc::v1::CommandResult)},
-        {213, sizeof(::remote_support::ipc::v1::AgentHeartbeat)},
-        {226, sizeof(::remote_support::ipc::v1::ServiceEvent)},
+        {57, sizeof(::remote_support::ipc::v1::ClientHello)},
+        {70, sizeof(::remote_support::ipc::v1::ServiceHello)},
+        {85, sizeof(::remote_support::ipc::v1::ChallengeResponse)},
+        {90, sizeof(::remote_support::ipc::v1::CapabilityQuery)},
+        {91, sizeof(::remote_support::ipc::v1::CapabilityResult)},
+        {106, sizeof(::remote_support::ipc::v1::StartPrivilegedInput)},
+        {123, sizeof(::remote_support::ipc::v1::StopPrivilegedInput)},
+        {128, sizeof(::remote_support::ipc::v1::PrivilegedInputEvent)},
+        {134, sizeof(::remote_support::ipc::v1::InputBatch)},
+        {147, sizeof(::remote_support::ipc::v1::InputBatchResult)},
+        {160, sizeof(::remote_support::ipc::v1::StoreRebootGrant)},
+        {175, sizeof(::remote_support::ipc::v1::ConsumeRebootGrant)},
+        {184, sizeof(::remote_support::ipc::v1::RebootGrantResult)},
+        {195, sizeof(::remote_support::ipc::v1::RequestSystemReboot)},
+        {208, sizeof(::remote_support::ipc::v1::CommandResult)},
+        {217, sizeof(::remote_support::ipc::v1::AgentHeartbeat)},
+        {230, sizeof(::remote_support::ipc::v1::ServiceEvent)},
+        {241, sizeof(::remote_support::ipc::v1::ManagedSessionConsentRequest)},
+        {256, sizeof(::remote_support::ipc::v1::ManagedSessionConsentResult)},
 };
 static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
     &::remote_support::ipc::v1::_IpcEnvelope_default_instance_._instance,
@@ -892,11 +994,13 @@ static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
     &::remote_support::ipc::v1::_CommandResult_default_instance_._instance,
     &::remote_support::ipc::v1::_AgentHeartbeat_default_instance_._instance,
     &::remote_support::ipc::v1::_ServiceEvent_default_instance_._instance,
+    &::remote_support::ipc::v1::_ManagedSessionConsentRequest_default_instance_._instance,
+    &::remote_support::ipc::v1::_ManagedSessionConsentResult_default_instance_._instance,
 };
 const char descriptor_table_protodef_service_5fipc_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
     "\n\021service_ipc.proto\022\025remote_support.ipc."
-    "v1\032\024remote_support.proto\"\332\n\n\013IpcEnvelope"
+    "v1\032\024remote_support.proto\"\230\014\n\013IpcEnvelope"
     "\022\026\n\016protocol_major\030\001 \001(\r\022\026\n\016protocol_min"
     "or\030\002 \001(\r\022\022\n\nrequest_id\030\003 \001(\t\022\031\n\021caller_p"
     "rocess_id\030\004 \001(\r\022!\n\031caller_windows_sessio"
@@ -930,85 +1034,100 @@ const char descriptor_table_protodef_service_5fipc_2eproto[] ABSL_ATTRIBUTE_SECT
     "pc.v1.CommandResultH\000\022@\n\017agent_heartbeat"
     "\030\" \001(\0132%.remote_support.ipc.v1.AgentHear"
     "tbeatH\000\022<\n\rservice_event\030# \001(\0132#.remote_"
-    "support.ipc.v1.ServiceEventH\000B\006\n\004body\"\277\001"
-    "\n\013ClientHello\022\032\n\022launch_nonce_proof\030\001 \001("
-    "\014\022\024\n\014client_nonce\030\002 \001(\014\022\032\n\022executable_ve"
-    "rsion\030\003 \001(\t\022\031\n\021executable_sha256\030\004 \001(\014\022G"
-    "\n\026requested_capabilities\030\005 \003(\0162\'.remote_"
-    "support.ipc.v1.BrokerCapability\"\350\001\n\014Serv"
-    "iceHello\022\025\n\rservice_nonce\030\001 \001(\014\022\036\n\026clien"
-    "t_nonce_signature\030\002 \001(\014\022\027\n\017service_versi"
-    "on\030\003 \001(\t\022\031\n\021max_message_bytes\030\004 \001(\004\022E\n\024g"
-    "ranted_capabilities\030\005 \003(\0162\'.remote_suppo"
-    "rt.ipc.v1.BrokerCapability\022&\n\036capability"
-    "_expires_utc_unix_ms\030\006 \001(\003\"4\n\021ChallengeR"
-    "esponse\022\037\n\027service_nonce_signature\030\001 \001(\014"
-    "\"\021\n\017CapabilityQuery\"\364\001\n\020CapabilityResult"
-    "\022\026\n\016installed_mode\030\001 \001(\010\022\"\n\032privileged_i"
-    "nput_available\030\002 \001(\010\022\030\n\020reboot_available"
-    "\030\003 \001(\010\022 \n\030secure_desktop_supported\030\004 \001(\010"
-    "\022\"\n\032secure_desktop_status_code\030\005 \001(\t\022D\n\023"
-    "active_capabilities\030\006 \003(\0162\'.remote_suppo"
-    "rt.ipc.v1.BrokerCapability\"\374\001\n\024StartPriv"
-    "ilegedInput\022\017\n\007peer_id\030\001 \001(\t\022\033\n\023permissi"
-    "on_revision\030\002 \001(\004\022\032\n\022display_generation\030"
-    "\003 \001(\004\022\033\n\023expires_utc_unix_ms\030\004 \001(\003\022\"\n\032se"
-    "rver_authorization_proof\030\005 \001(\014\022@\n\024grante"
-    "d_input_scopes\030\006 \003(\0162\".remote_support.v1"
-    ".CapabilityScope\022\027\n\017transport_epoch\030\007 \001("
-    "\004\"*\n\023StopPrivilegedInput\022\023\n\013reason_code\030"
-    "\001 \001(\t\"\304\001\n\024PrivilegedInputEvent\0222\n\007pointe"
-    "r\030\001 \001(\0132\037.remote_support.v1.PointerEvent"
-    "H\000\0224\n\010keyboard\030\002 \001(\0132 .remote_support.v1"
-    ".KeyboardEventH\000\0229\n\013release_all\030\003 \001(\0132\"."
-    "remote_support.v1.ReleaseAllInputH\000B\007\n\005e"
-    "vent\"\271\001\n\nInputBatch\022\033\n\023permission_revisi"
-    "on\030\001 \001(\004\022\032\n\022display_generation\030\002 \001(\004\022\034\n\024"
-    "first_input_sequence\030\003 \001(\004\022;\n\006events\030\004 \003"
-    "(\0132+.remote_support.ipc.v1.PrivilegedInp"
-    "utEvent\022\027\n\017transport_epoch\030\005 \001(\004\"\270\001\n\020Inp"
-    "utBatchResult\022#\n\033last_applied_input_sequ"
-    "ence\030\001 \001(\004\022$\n\034last_rejected_input_sequen"
-    "ce\030\002 \001(\004\022\022\n\nerror_code\030\003 \001(\t\022\"\n\032active_p"
-    "ermission_revision\030\004 \001(\004\022!\n\031active_displ"
-    "ay_generation\030\005 \001(\004\"\230\001\n\020StoreRebootGrant"
-    "\022\022\n\nsession_id\030\001 \001(\t\022\027\n\017encrypted_grant\030"
-    "\002 \001(\014\022\033\n\023expires_utc_unix_ms\030\003 \001(\003\022\022\n\ngr"
-    "ant_hash\030\004 \001(\014\022\021\n\tdevice_id\030\005 \001(\t\022\023\n\013ope"
-    "rator_id\030\006 \001(\t\"X\n\022ConsumeRebootGrant\022\022\n\n"
-    "session_id\030\001 \001(\t\022\022\n\ngrant_hash\030\002 \001(\014\022\032\n\022"
-    "launch_nonce_proof\030\003 \001(\014\"l\n\021RebootGrantR"
-    "esult\022\r\n\005found\030\001 \001(\010\022\027\n\017encrypted_grant\030"
-    "\002 \001(\014\022\022\n\nerror_code\030\003 \001(\t\022\033\n\023expires_utc"
-    "_unix_ms\030\004 \001(\003\"\226\001\n\023RequestSystemReboot\022\022"
-    "\n\nsession_id\030\001 \001(\t\022\031\n\021countdown_seconds\030"
-    "\002 \001(\r\022\016\n\006reason\030\003 \001(\t\022\"\n\032server_authoriz"
-    "ation_proof\030\004 \001(\014\022\034\n\024reconnect_grant_has"
-    "h\030\005 \001(\014\"N\n\rCommandResult\022\021\n\tsucceeded\030\001 "
-    "\001(\010\022\022\n\nerror_code\030\002 \001(\t\022\026\n\016correlation_i"
-    "d\030\003 \001(\t\"\273\001\n\016AgentHeartbeat\022\025\n\ragent_vers"
-    "ion\030\001 \001(\t\022\032\n\022windows_session_id\030\002 \001(\r\0229\n"
-    "\005state\030\003 \001(\0162*.remote_support.ipc.v1.Ins"
-    "talledAgentState\022\030\n\020sent_utc_unix_ms\030\004 \001"
-    "(\003\022!\n\031active_product_session_id\030\005 \001(\t\"\220\001"
-    "\n\014ServiceEvent\022;\n\nevent_type\030\001 \001(\0162\'.rem"
-    "ote_support.ipc.v1.ServiceEventType\022\023\n\013r"
-    "eason_code\030\002 \001(\t\022\020\n\010sequence\030\003 \001(\004\022\034\n\024oc"
-    "curred_utc_unix_ms\030\004 \001(\003*\246\001\n\020BrokerCapab"
-    "ility\022!\n\035BROKER_CAPABILITY_UNSPECIFIED\020\000"
-    "\022\026\n\022QUERY_CAPABILITIES\020\001\022\024\n\020PRIVILEGED_I"
-    "NPUT\020\002\022\030\n\024REBOOT_GRANT_STORAGE\020\003\022\021\n\rSYST"
-    "EM_REBOOT\020\004\022\024\n\020HEALTH_REPORTING\020\005*\253\001\n\023In"
-    "stalledAgentState\022%\n!INSTALLED_AGENT_STA"
-    "TE_UNSPECIFIED\020\000\022\014\n\010STARTING\020\001\022\010\n\004IDLE\020\002"
-    "\022\023\n\017SESSION_PENDING\020\003\022\022\n\016SESSION_ACTIVE\020"
-    "\004\022\020\n\014RECONNECTING\020\005\022\014\n\010STOPPING\020\006\022\014\n\010DEG"
-    "RADED\020\007*\265\001\n\020ServiceEventType\022\"\n\036SERVICE_"
-    "EVENT_TYPE_UNSPECIFIED\020\000\022\036\n\032PRIVILEGED_C"
-    "ONTEXT_EXPIRED\020\001\022\023\n\017DESKTOP_CHANGED\020\002\022\030\n"
-    "\024REBOOT_GRANT_EXPIRED\020\003\022\030\n\024CHILD_PROCESS"
-    "_EXITED\020\004\022\024\n\020SERVICE_DEGRADED\020\005B\027\252\002\024Remo"
-    "teSupport.Ipc.V1b\006proto3"
+    "support.ipc.v1.ServiceEventH\000\022^\n\037managed"
+    "_session_consent_request\030$ \001(\01323.remote_"
+    "support.ipc.v1.ManagedSessionConsentRequ"
+    "estH\000\022\\\n\036managed_session_consent_result\030"
+    "% \001(\01322.remote_support.ipc.v1.ManagedSes"
+    "sionConsentResultH\000B\006\n\004body\"\277\001\n\013ClientHe"
+    "llo\022\032\n\022launch_nonce_proof\030\001 \001(\014\022\024\n\014clien"
+    "t_nonce\030\002 \001(\014\022\032\n\022executable_version\030\003 \001("
+    "\t\022\031\n\021executable_sha256\030\004 \001(\014\022G\n\026requeste"
+    "d_capabilities\030\005 \003(\0162\'.remote_support.ip"
+    "c.v1.BrokerCapability\"\350\001\n\014ServiceHello\022\025"
+    "\n\rservice_nonce\030\001 \001(\014\022\036\n\026client_nonce_si"
+    "gnature\030\002 \001(\014\022\027\n\017service_version\030\003 \001(\t\022\031"
+    "\n\021max_message_bytes\030\004 \001(\004\022E\n\024granted_cap"
+    "abilities\030\005 \003(\0162\'.remote_support.ipc.v1."
+    "BrokerCapability\022&\n\036capability_expires_u"
+    "tc_unix_ms\030\006 \001(\003\"4\n\021ChallengeResponse\022\037\n"
+    "\027service_nonce_signature\030\001 \001(\014\"\021\n\017Capabi"
+    "lityQuery\"\364\001\n\020CapabilityResult\022\026\n\016instal"
+    "led_mode\030\001 \001(\010\022\"\n\032privileged_input_avail"
+    "able\030\002 \001(\010\022\030\n\020reboot_available\030\003 \001(\010\022 \n\030"
+    "secure_desktop_supported\030\004 \001(\010\022\"\n\032secure"
+    "_desktop_status_code\030\005 \001(\t\022D\n\023active_cap"
+    "abilities\030\006 \003(\0162\'.remote_support.ipc.v1."
+    "BrokerCapability\"\374\001\n\024StartPrivilegedInpu"
+    "t\022\017\n\007peer_id\030\001 \001(\t\022\033\n\023permission_revisio"
+    "n\030\002 \001(\004\022\032\n\022display_generation\030\003 \001(\004\022\033\n\023e"
+    "xpires_utc_unix_ms\030\004 \001(\003\022\"\n\032server_autho"
+    "rization_proof\030\005 \001(\014\022@\n\024granted_input_sc"
+    "opes\030\006 \003(\0162\".remote_support.v1.Capabilit"
+    "yScope\022\027\n\017transport_epoch\030\007 \001(\004\"*\n\023StopP"
+    "rivilegedInput\022\023\n\013reason_code\030\001 \001(\t\"\304\001\n\024"
+    "PrivilegedInputEvent\0222\n\007pointer\030\001 \001(\0132\037."
+    "remote_support.v1.PointerEventH\000\0224\n\010keyb"
+    "oard\030\002 \001(\0132 .remote_support.v1.KeyboardE"
+    "ventH\000\0229\n\013release_all\030\003 \001(\0132\".remote_sup"
+    "port.v1.ReleaseAllInputH\000B\007\n\005event\"\271\001\n\nI"
+    "nputBatch\022\033\n\023permission_revision\030\001 \001(\004\022\032"
+    "\n\022display_generation\030\002 \001(\004\022\034\n\024first_inpu"
+    "t_sequence\030\003 \001(\004\022;\n\006events\030\004 \003(\0132+.remot"
+    "e_support.ipc.v1.PrivilegedInputEvent\022\027\n"
+    "\017transport_epoch\030\005 \001(\004\"\270\001\n\020InputBatchRes"
+    "ult\022#\n\033last_applied_input_sequence\030\001 \001(\004"
+    "\022$\n\034last_rejected_input_sequence\030\002 \001(\004\022\022"
+    "\n\nerror_code\030\003 \001(\t\022\"\n\032active_permission_"
+    "revision\030\004 \001(\004\022!\n\031active_display_generat"
+    "ion\030\005 \001(\004\"\230\001\n\020StoreRebootGrant\022\022\n\nsessio"
+    "n_id\030\001 \001(\t\022\027\n\017encrypted_grant\030\002 \001(\014\022\033\n\023e"
+    "xpires_utc_unix_ms\030\003 \001(\003\022\022\n\ngrant_hash\030\004"
+    " \001(\014\022\021\n\tdevice_id\030\005 \001(\t\022\023\n\013operator_id\030\006"
+    " \001(\t\"X\n\022ConsumeRebootGrant\022\022\n\nsession_id"
+    "\030\001 \001(\t\022\022\n\ngrant_hash\030\002 \001(\014\022\032\n\022launch_non"
+    "ce_proof\030\003 \001(\014\"l\n\021RebootGrantResult\022\r\n\005f"
+    "ound\030\001 \001(\010\022\027\n\017encrypted_grant\030\002 \001(\014\022\022\n\ne"
+    "rror_code\030\003 \001(\t\022\033\n\023expires_utc_unix_ms\030\004"
+    " \001(\003\"\226\001\n\023RequestSystemReboot\022\022\n\nsession_"
+    "id\030\001 \001(\t\022\031\n\021countdown_seconds\030\002 \001(\r\022\016\n\006r"
+    "eason\030\003 \001(\t\022\"\n\032server_authorization_proo"
+    "f\030\004 \001(\014\022\034\n\024reconnect_grant_hash\030\005 \001(\014\"N\n"
+    "\rCommandResult\022\021\n\tsucceeded\030\001 \001(\010\022\022\n\nerr"
+    "or_code\030\002 \001(\t\022\026\n\016correlation_id\030\003 \001(\t\"\273\001"
+    "\n\016AgentHeartbeat\022\025\n\ragent_version\030\001 \001(\t\022"
+    "\032\n\022windows_session_id\030\002 \001(\r\0229\n\005state\030\003 \001"
+    "(\0162*.remote_support.ipc.v1.InstalledAgen"
+    "tState\022\030\n\020sent_utc_unix_ms\030\004 \001(\003\022!\n\031acti"
+    "ve_product_session_id\030\005 \001(\t\"\220\001\n\014ServiceE"
+    "vent\022;\n\nevent_type\030\001 \001(\0162\'.remote_suppor"
+    "t.ipc.v1.ServiceEventType\022\023\n\013reason_code"
+    "\030\002 \001(\t\022\020\n\010sequence\030\003 \001(\004\022\034\n\024occurred_utc"
+    "_unix_ms\030\004 \001(\003\"\363\001\n\034ManagedSessionConsent"
+    "Request\022\022\n\nsession_id\030\001 \001(\t\022\035\n\025operator_"
+    "display_name\030\002 \001(\t\022$\n\034operator_tenant_di"
+    "splay_name\030\003 \001(\t\022<\n\020requested_scopes\030\004 \003"
+    "(\0162\".remote_support.v1.CapabilityScope\022\037"
+    "\n\027policy_requires_consent\030\005 \001(\010\022\033\n\023expir"
+    "es_utc_unix_ms\030\006 \001(\003\"\224\001\n\033ManagedSessionC"
+    "onsentResult\022\022\n\nsession_id\030\001 \001(\t\022\020\n\010appr"
+    "oved\030\002 \001(\010\022:\n\016granted_scopes\030\003 \003(\0162\".rem"
+    "ote_support.v1.CapabilityScope\022\023\n\013reason"
+    "_code\030\004 \001(\t*\246\001\n\020BrokerCapability\022!\n\035BROK"
+    "ER_CAPABILITY_UNSPECIFIED\020\000\022\026\n\022QUERY_CAP"
+    "ABILITIES\020\001\022\024\n\020PRIVILEGED_INPUT\020\002\022\030\n\024REB"
+    "OOT_GRANT_STORAGE\020\003\022\021\n\rSYSTEM_REBOOT\020\004\022\024"
+    "\n\020HEALTH_REPORTING\020\005*\253\001\n\023InstalledAgentS"
+    "tate\022%\n!INSTALLED_AGENT_STATE_UNSPECIFIE"
+    "D\020\000\022\014\n\010STARTING\020\001\022\010\n\004IDLE\020\002\022\023\n\017SESSION_P"
+    "ENDING\020\003\022\022\n\016SESSION_ACTIVE\020\004\022\020\n\014RECONNEC"
+    "TING\020\005\022\014\n\010STOPPING\020\006\022\014\n\010DEGRADED\020\007*\265\001\n\020S"
+    "erviceEventType\022\"\n\036SERVICE_EVENT_TYPE_UN"
+    "SPECIFIED\020\000\022\036\n\032PRIVILEGED_CONTEXT_EXPIRE"
+    "D\020\001\022\023\n\017DESKTOP_CHANGED\020\002\022\030\n\024REBOOT_GRANT"
+    "_EXPIRED\020\003\022\030\n\024CHILD_PROCESS_EXITED\020\004\022\024\n\020"
+    "SERVICE_DEGRADED\020\005B\027\252\002\024RemoteSupport.Ipc"
+    ".V1b\006proto3"
 };
 static const ::_pbi::DescriptorTable* PROTOBUF_NONNULL const
     descriptor_table_service_5fipc_2eproto_deps[1] = {
@@ -1018,13 +1137,13 @@ static ::absl::once_flag descriptor_table_service_5fipc_2eproto_once;
 PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_service_5fipc_2eproto = {
     false,
     false,
-    4544,
+    5131,
     descriptor_table_protodef_service_5fipc_2eproto,
     "service_ipc.proto",
     &descriptor_table_service_5fipc_2eproto_once,
     descriptor_table_service_5fipc_2eproto_deps,
     1,
-    18,
+    20,
     schemas,
     file_default_instances,
     TableStruct_service_5fipc_2eproto::offsets,
@@ -1272,6 +1391,32 @@ void IpcEnvelope::set_allocated_service_event(::remote_support::ipc::v1::Service
   }
   // @@protoc_insertion_point(field_set_allocated:remote_support.ipc.v1.IpcEnvelope.service_event)
 }
+void IpcEnvelope::set_allocated_managed_session_consent_request(::remote_support::ipc::v1::ManagedSessionConsentRequest* PROTOBUF_NULLABLE managed_session_consent_request) {
+  ::google::protobuf::Arena* message_arena = GetArena();
+  clear_body();
+  if (managed_session_consent_request) {
+    ::google::protobuf::Arena* submessage_arena = managed_session_consent_request->GetArena();
+    if (message_arena != submessage_arena) {
+      managed_session_consent_request = ::google::protobuf::internal::GetOwnedMessage(message_arena, managed_session_consent_request, submessage_arena);
+    }
+    set_has_managed_session_consent_request();
+    _impl_.body_.managed_session_consent_request_ = managed_session_consent_request;
+  }
+  // @@protoc_insertion_point(field_set_allocated:remote_support.ipc.v1.IpcEnvelope.managed_session_consent_request)
+}
+void IpcEnvelope::set_allocated_managed_session_consent_result(::remote_support::ipc::v1::ManagedSessionConsentResult* PROTOBUF_NULLABLE managed_session_consent_result) {
+  ::google::protobuf::Arena* message_arena = GetArena();
+  clear_body();
+  if (managed_session_consent_result) {
+    ::google::protobuf::Arena* submessage_arena = managed_session_consent_result->GetArena();
+    if (message_arena != submessage_arena) {
+      managed_session_consent_result = ::google::protobuf::internal::GetOwnedMessage(message_arena, managed_session_consent_result, submessage_arena);
+    }
+    set_has_managed_session_consent_result();
+    _impl_.body_.managed_session_consent_result_ = managed_session_consent_result;
+  }
+  // @@protoc_insertion_point(field_set_allocated:remote_support.ipc.v1.IpcEnvelope.managed_session_consent_result)
+}
 IpcEnvelope::IpcEnvelope(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
     : ::google::protobuf::Message(arena, IpcEnvelope_class_data_.base()) {
@@ -1362,6 +1507,12 @@ IpcEnvelope::IpcEnvelope(
         break;
       case kServiceEvent:
         _impl_.body_.service_event_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.body_.service_event_);
+        break;
+      case kManagedSessionConsentRequest:
+        _impl_.body_.managed_session_consent_request_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.body_.managed_session_consent_request_);
+        break;
+      case kManagedSessionConsentResult:
+        _impl_.body_.managed_session_consent_result_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.body_.managed_session_consent_result_);
         break;
   }
 
@@ -1536,6 +1687,22 @@ void IpcEnvelope::clear_body() {
       }
       break;
     }
+    case kManagedSessionConsentRequest: {
+      if (GetArena() == nullptr) {
+        delete _impl_.body_.managed_session_consent_request_;
+      } else if (::google::protobuf::internal::DebugHardenClearOneofMessageOnArena()) {
+        ::google::protobuf::internal::MaybePoisonAfterClear(_impl_.body_.managed_session_consent_request_);
+      }
+      break;
+    }
+    case kManagedSessionConsentResult: {
+      if (GetArena() == nullptr) {
+        delete _impl_.body_.managed_session_consent_result_;
+      } else if (::google::protobuf::internal::DebugHardenClearOneofMessageOnArena()) {
+        ::google::protobuf::internal::MaybePoisonAfterClear(_impl_.body_.managed_session_consent_result_);
+      }
+      break;
+    }
     case BODY_NOT_SET: {
       break;
     }
@@ -1587,17 +1754,17 @@ IpcEnvelope::GetClassData() const {
   return IpcEnvelope_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<3, 24, 16, 94, 7>
+const ::_pbi::TcParseTable<3, 26, 18, 94, 7>
 IpcEnvelope::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(IpcEnvelope, _impl_._has_bits_),
     0, // no _extensions_
-    35, 56,  // max_field_number, fast_idx_mask
+    37, 56,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
     524032,  // skipmap
     offsetof(decltype(_table_), field_entries),
-    24,  // num_field_entries
-    16,  // num_aux_entries
+    26,  // num_field_entries
+    18,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
     IpcEnvelope_class_data_.base(),
     nullptr,  // post_loop_handler
@@ -1640,7 +1807,7 @@ IpcEnvelope::_table_ = {
       PROTOBUF_FIELD_OFFSET(IpcEnvelope, _impl_.broker_capability_)}},
   }}, {{
     33, 0, 1,
-    65528, 21,
+    65504, 21,
     65535, 65535
   }}, {{
     // uint32 protocol_major = 1;
@@ -1691,6 +1858,10 @@ IpcEnvelope::_table_ = {
     {PROTOBUF_FIELD_OFFSET(IpcEnvelope, _impl_.body_.agent_heartbeat_), _Internal::kOneofCaseOffset + 0, 14, (0 | ::_fl::kFcOneof | ::_fl::kMessage | ::_fl::kTvTable)},
     // .remote_support.ipc.v1.ServiceEvent service_event = 35;
     {PROTOBUF_FIELD_OFFSET(IpcEnvelope, _impl_.body_.service_event_), _Internal::kOneofCaseOffset + 0, 15, (0 | ::_fl::kFcOneof | ::_fl::kMessage | ::_fl::kTvTable)},
+    // .remote_support.ipc.v1.ManagedSessionConsentRequest managed_session_consent_request = 36;
+    {PROTOBUF_FIELD_OFFSET(IpcEnvelope, _impl_.body_.managed_session_consent_request_), _Internal::kOneofCaseOffset + 0, 16, (0 | ::_fl::kFcOneof | ::_fl::kMessage | ::_fl::kTvTable)},
+    // .remote_support.ipc.v1.ManagedSessionConsentResult managed_session_consent_result = 37;
+    {PROTOBUF_FIELD_OFFSET(IpcEnvelope, _impl_.body_.managed_session_consent_result_), _Internal::kOneofCaseOffset + 0, 17, (0 | ::_fl::kFcOneof | ::_fl::kMessage | ::_fl::kTvTable)},
   }},
   {{
       {::_pbi::TcParser::GetTable<::remote_support::ipc::v1::ClientHello>()},
@@ -1709,6 +1880,8 @@ IpcEnvelope::_table_ = {
       {::_pbi::TcParser::GetTable<::remote_support::ipc::v1::CommandResult>()},
       {::_pbi::TcParser::GetTable<::remote_support::ipc::v1::AgentHeartbeat>()},
       {::_pbi::TcParser::GetTable<::remote_support::ipc::v1::ServiceEvent>()},
+      {::_pbi::TcParser::GetTable<::remote_support::ipc::v1::ManagedSessionConsentRequest>()},
+      {::_pbi::TcParser::GetTable<::remote_support::ipc::v1::ManagedSessionConsentResult>()},
   }},
   {{
     "\41\0\0\12\0\0\22\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
@@ -1933,6 +2106,18 @@ PROTOBUF_NOINLINE void IpcEnvelope::Clear() {
           stream);
       break;
     }
+    case kManagedSessionConsentRequest: {
+      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+          36, *this_._impl_.body_.managed_session_consent_request_, this_._impl_.body_.managed_session_consent_request_->GetCachedSize(), target,
+          stream);
+      break;
+    }
+    case kManagedSessionConsentResult: {
+      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+          37, *this_._impl_.body_.managed_session_consent_result_, this_._impl_.body_.managed_session_consent_result_->GetCachedSize(), target,
+          stream);
+      break;
+    }
     default:
       break;
   }
@@ -2114,6 +2299,18 @@ PROTOBUF_NOINLINE void IpcEnvelope::Clear() {
     case kServiceEvent: {
       total_size += 2 +
                     ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.body_.service_event_);
+      break;
+    }
+    // .remote_support.ipc.v1.ManagedSessionConsentRequest managed_session_consent_request = 36;
+    case kManagedSessionConsentRequest: {
+      total_size += 2 +
+                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.body_.managed_session_consent_request_);
+      break;
+    }
+    // .remote_support.ipc.v1.ManagedSessionConsentResult managed_session_consent_result = 37;
+    case kManagedSessionConsentResult: {
+      total_size += 2 +
+                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.body_.managed_session_consent_result_);
       break;
     }
     case BODY_NOT_SET: {
@@ -2327,6 +2524,22 @@ void IpcEnvelope::MergeImpl(::google::protobuf::MessageLite& to_msg,
           _this->_impl_.body_.service_event_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.body_.service_event_);
         } else {
           _this->_impl_.body_.service_event_->MergeFrom(*from._impl_.body_.service_event_);
+        }
+        break;
+      }
+      case kManagedSessionConsentRequest: {
+        if (oneof_needs_init) {
+          _this->_impl_.body_.managed_session_consent_request_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.body_.managed_session_consent_request_);
+        } else {
+          _this->_impl_.body_.managed_session_consent_request_->MergeFrom(*from._impl_.body_.managed_session_consent_request_);
+        }
+        break;
+      }
+      case kManagedSessionConsentResult: {
+        if (oneof_needs_init) {
+          _this->_impl_.body_.managed_session_consent_result_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.body_.managed_session_consent_result_);
+        } else {
+          _this->_impl_.body_.managed_session_consent_result_->MergeFrom(*from._impl_.body_.managed_session_consent_result_);
         }
         break;
       }
@@ -8972,6 +9185,885 @@ void ServiceEvent::InternalSwap(ServiceEvent* PROTOBUF_RESTRICT PROTOBUF_NONNULL
 }
 
 ::google::protobuf::Metadata ServiceEvent::GetMetadata() const {
+  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+}
+// ===================================================================
+
+class ManagedSessionConsentRequest::_Internal {
+ public:
+  using HasBits =
+      decltype(::std::declval<ManagedSessionConsentRequest>()._impl_._has_bits_);
+  static constexpr ::int32_t kHasBitsOffset =
+      8 * PROTOBUF_FIELD_OFFSET(ManagedSessionConsentRequest, _impl_._has_bits_);
+};
+
+ManagedSessionConsentRequest::ManagedSessionConsentRequest(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(arena, ManagedSessionConsentRequest_class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  SharedCtor(arena);
+  // @@protoc_insertion_point(arena_constructor:remote_support.ipc.v1.ManagedSessionConsentRequest)
+}
+PROTOBUF_NDEBUG_INLINE ManagedSessionConsentRequest::Impl_::Impl_(
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] const ::remote_support::ipc::v1::ManagedSessionConsentRequest& from_msg)
+      : _has_bits_{from._has_bits_},
+        _cached_size_{0},
+        requested_scopes_{visibility, arena, from.requested_scopes_},
+        _requested_scopes_cached_byte_size_{0},
+        session_id_(arena, from.session_id_),
+        operator_display_name_(arena, from.operator_display_name_),
+        operator_tenant_display_name_(arena, from.operator_tenant_display_name_) {}
+
+ManagedSessionConsentRequest::ManagedSessionConsentRequest(
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const ManagedSessionConsentRequest& from)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(arena, ManagedSessionConsentRequest_class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  ManagedSessionConsentRequest* const _this = this;
+  (void)_this;
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
+  ::memcpy(reinterpret_cast<char*>(&_impl_) +
+               offsetof(Impl_, expires_utc_unix_ms_),
+           reinterpret_cast<const char*>(&from._impl_) +
+               offsetof(Impl_, expires_utc_unix_ms_),
+           offsetof(Impl_, policy_requires_consent_) -
+               offsetof(Impl_, expires_utc_unix_ms_) +
+               sizeof(Impl_::policy_requires_consent_));
+
+  // @@protoc_insertion_point(copy_constructor:remote_support.ipc.v1.ManagedSessionConsentRequest)
+}
+PROTOBUF_NDEBUG_INLINE ManagedSessionConsentRequest::Impl_::Impl_(
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+      : _cached_size_{0},
+        requested_scopes_{visibility, arena},
+        _requested_scopes_cached_byte_size_{0},
+        session_id_(arena),
+        operator_display_name_(arena),
+        operator_tenant_display_name_(arena) {}
+
+inline void ManagedSessionConsentRequest::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
+  new (&_impl_) Impl_(internal_visibility(), arena);
+  ::memset(reinterpret_cast<char*>(&_impl_) +
+               offsetof(Impl_, expires_utc_unix_ms_),
+           0,
+           offsetof(Impl_, policy_requires_consent_) -
+               offsetof(Impl_, expires_utc_unix_ms_) +
+               sizeof(Impl_::policy_requires_consent_));
+}
+ManagedSessionConsentRequest::~ManagedSessionConsentRequest() {
+  // @@protoc_insertion_point(destructor:remote_support.ipc.v1.ManagedSessionConsentRequest)
+  SharedDtor(*this);
+}
+inline void ManagedSessionConsentRequest::SharedDtor(MessageLite& self) {
+  ManagedSessionConsentRequest& this_ = static_cast<ManagedSessionConsentRequest&>(self);
+  if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
+    this_.CheckHasBitConsistency();
+  }
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.session_id_.Destroy();
+  this_._impl_.operator_display_name_.Destroy();
+  this_._impl_.operator_tenant_display_name_.Destroy();
+  this_._impl_.~Impl_();
+}
+
+inline void* PROTOBUF_NONNULL ManagedSessionConsentRequest::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+  return ::new (mem) ManagedSessionConsentRequest(arena);
+}
+constexpr auto ManagedSessionConsentRequest::InternalNewImpl_() {
+  constexpr auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+      PROTOBUF_FIELD_OFFSET(ManagedSessionConsentRequest, _impl_.requested_scopes_) +
+          decltype(ManagedSessionConsentRequest::_impl_.requested_scopes_)::
+              InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+  });
+  if (arena_bits.has_value()) {
+    return ::google::protobuf::internal::MessageCreator::CopyInit(
+        sizeof(ManagedSessionConsentRequest), alignof(ManagedSessionConsentRequest), *arena_bits);
+  } else {
+    return ::google::protobuf::internal::MessageCreator(&ManagedSessionConsentRequest::PlacementNew_,
+                                 sizeof(ManagedSessionConsentRequest),
+                                 alignof(ManagedSessionConsentRequest));
+  }
+}
+constexpr auto ManagedSessionConsentRequest::InternalGenerateClassData_() {
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_ManagedSessionConsentRequest_default_instance_._instance,
+          &_table_.header,
+          nullptr,  // OnDemandRegisterArenaDtor
+          nullptr,  // IsInitialized
+          &ManagedSessionConsentRequest::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<ManagedSessionConsentRequest>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &ManagedSessionConsentRequest::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<ManagedSessionConsentRequest>(), &ManagedSessionConsentRequest::ByteSizeLong,
+              &ManagedSessionConsentRequest::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(ManagedSessionConsentRequest, _impl_._cached_size_),
+          false,
+      },
+      &ManagedSessionConsentRequest::kDescriptorMethods,
+      &descriptor_table_service_5fipc_2eproto,
+      nullptr,  // tracker
+  };
+}
+
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull ManagedSessionConsentRequest_class_data_ =
+        ManagedSessionConsentRequest::InternalGenerateClassData_();
+
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+ManagedSessionConsentRequest::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&ManagedSessionConsentRequest_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(ManagedSessionConsentRequest_class_data_.tc_table);
+  return ManagedSessionConsentRequest_class_data_.base();
+}
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::_pbi::TcParseTable<3, 6, 0, 118, 2>
+ManagedSessionConsentRequest::_table_ = {
+  {
+    PROTOBUF_FIELD_OFFSET(ManagedSessionConsentRequest, _impl_._has_bits_),
+    0, // no _extensions_
+    6, 56,  // max_field_number, fast_idx_mask
+    offsetof(decltype(_table_), field_lookup_table),
+    4294967232,  // skipmap
+    offsetof(decltype(_table_), field_entries),
+    6,  // num_field_entries
+    0,  // num_aux_entries
+    offsetof(decltype(_table_), field_names),  // no aux_entries
+    ManagedSessionConsentRequest_class_data_.base(),
+    nullptr,  // post_loop_handler
+    ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::remote_support::ipc::v1::ManagedSessionConsentRequest>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+  }, {{
+    {::_pbi::TcParser::MiniParse, {}},
+    // string session_id = 1;
+    {::_pbi::TcParser::FastUS1,
+     {10, 1, 0,
+      PROTOBUF_FIELD_OFFSET(ManagedSessionConsentRequest, _impl_.session_id_)}},
+    // string operator_display_name = 2;
+    {::_pbi::TcParser::FastUS1,
+     {18, 2, 0,
+      PROTOBUF_FIELD_OFFSET(ManagedSessionConsentRequest, _impl_.operator_display_name_)}},
+    // string operator_tenant_display_name = 3;
+    {::_pbi::TcParser::FastUS1,
+     {26, 3, 0,
+      PROTOBUF_FIELD_OFFSET(ManagedSessionConsentRequest, _impl_.operator_tenant_display_name_)}},
+    // repeated .remote_support.v1.CapabilityScope requested_scopes = 4;
+    {::_pbi::TcParser::FastV32P1,
+     {34, 0, 0,
+      PROTOBUF_FIELD_OFFSET(ManagedSessionConsentRequest, _impl_.requested_scopes_)}},
+    // bool policy_requires_consent = 5;
+    {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(ManagedSessionConsentRequest, _impl_.policy_requires_consent_), 5>(),
+     {40, 5, 0,
+      PROTOBUF_FIELD_OFFSET(ManagedSessionConsentRequest, _impl_.policy_requires_consent_)}},
+    // int64 expires_utc_unix_ms = 6;
+    {::_pbi::TcParser::SingularVarintNoZag1<::uint64_t, offsetof(ManagedSessionConsentRequest, _impl_.expires_utc_unix_ms_), 4>(),
+     {48, 4, 0,
+      PROTOBUF_FIELD_OFFSET(ManagedSessionConsentRequest, _impl_.expires_utc_unix_ms_)}},
+    {::_pbi::TcParser::MiniParse, {}},
+  }}, {{
+    65535, 65535
+  }}, {{
+    // string session_id = 1;
+    {PROTOBUF_FIELD_OFFSET(ManagedSessionConsentRequest, _impl_.session_id_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
+    // string operator_display_name = 2;
+    {PROTOBUF_FIELD_OFFSET(ManagedSessionConsentRequest, _impl_.operator_display_name_), _Internal::kHasBitsOffset + 2, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
+    // string operator_tenant_display_name = 3;
+    {PROTOBUF_FIELD_OFFSET(ManagedSessionConsentRequest, _impl_.operator_tenant_display_name_), _Internal::kHasBitsOffset + 3, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
+    // repeated .remote_support.v1.CapabilityScope requested_scopes = 4;
+    {PROTOBUF_FIELD_OFFSET(ManagedSessionConsentRequest, _impl_.requested_scopes_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcRepeated | ::_fl::kPackedOpenEnum)},
+    // bool policy_requires_consent = 5;
+    {PROTOBUF_FIELD_OFFSET(ManagedSessionConsentRequest, _impl_.policy_requires_consent_), _Internal::kHasBitsOffset + 5, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
+    // int64 expires_utc_unix_ms = 6;
+    {PROTOBUF_FIELD_OFFSET(ManagedSessionConsentRequest, _impl_.expires_utc_unix_ms_), _Internal::kHasBitsOffset + 4, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt64)},
+  }},
+  // no aux_entries
+  {{
+    "\62\12\25\34\0\0\0\0"
+    "remote_support.ipc.v1.ManagedSessionConsentRequest"
+    "session_id"
+    "operator_display_name"
+    "operator_tenant_display_name"
+  }},
+};
+PROTOBUF_NOINLINE void ManagedSessionConsentRequest::Clear() {
+// @@protoc_insertion_point(message_clear_start:remote_support.ipc.v1.ManagedSessionConsentRequest)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  cached_has_bits = _impl_._has_bits_[0];
+  if (BatchCheckHasBit(cached_has_bits, 0x0000000fU)) {
+    if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+      _impl_.requested_scopes_.Clear();
+    }
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+      _impl_.session_id_.ClearNonDefaultToEmpty();
+    }
+    if (CheckHasBit(cached_has_bits, 0x00000004U)) {
+      _impl_.operator_display_name_.ClearNonDefaultToEmpty();
+    }
+    if (CheckHasBit(cached_has_bits, 0x00000008U)) {
+      _impl_.operator_tenant_display_name_.ClearNonDefaultToEmpty();
+    }
+  }
+  if (BatchCheckHasBit(cached_has_bits, 0x00000030U)) {
+    ::memset(&_impl_.expires_utc_unix_ms_, 0, static_cast<::size_t>(
+        reinterpret_cast<char*>(&_impl_.policy_requires_consent_) -
+        reinterpret_cast<char*>(&_impl_.expires_utc_unix_ms_)) + sizeof(_impl_.policy_requires_consent_));
+  }
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+::uint8_t* PROTOBUF_NONNULL ManagedSessionConsentRequest::_InternalSerialize(
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
+  const ManagedSessionConsentRequest& this_ = static_cast<const ManagedSessionConsentRequest&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
+::uint8_t* PROTOBUF_NONNULL ManagedSessionConsentRequest::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
+  const ManagedSessionConsentRequest& this_ = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
+    this_.CheckHasBitConsistency();
+  }
+  // @@protoc_insertion_point(serialize_to_array_start:remote_support.ipc.v1.ManagedSessionConsentRequest)
+  ::uint32_t cached_has_bits = 0;
+  (void)cached_has_bits;
+
+  cached_has_bits = this_._impl_._has_bits_[0];
+  // string session_id = 1;
+  if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+    if (!this_._internal_session_id().empty()) {
+      const ::std::string& _s = this_._internal_session_id();
+      ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+          _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "remote_support.ipc.v1.ManagedSessionConsentRequest.session_id");
+      target = stream->WriteStringMaybeAliased(1, _s, target);
+    }
+  }
+
+  // string operator_display_name = 2;
+  if (CheckHasBit(cached_has_bits, 0x00000004U)) {
+    if (!this_._internal_operator_display_name().empty()) {
+      const ::std::string& _s = this_._internal_operator_display_name();
+      ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+          _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "remote_support.ipc.v1.ManagedSessionConsentRequest.operator_display_name");
+      target = stream->WriteStringMaybeAliased(2, _s, target);
+    }
+  }
+
+  // string operator_tenant_display_name = 3;
+  if (CheckHasBit(cached_has_bits, 0x00000008U)) {
+    if (!this_._internal_operator_tenant_display_name().empty()) {
+      const ::std::string& _s = this_._internal_operator_tenant_display_name();
+      ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+          _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "remote_support.ipc.v1.ManagedSessionConsentRequest.operator_tenant_display_name");
+      target = stream->WriteStringMaybeAliased(3, _s, target);
+    }
+  }
+
+  // repeated .remote_support.v1.CapabilityScope requested_scopes = 4;
+  if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+    {
+      ::size_t byte_size = this_._impl_._requested_scopes_cached_byte_size_.Get();
+      if (byte_size > 0) {
+        target = stream->WriteEnumPacked(
+            4, this_._internal_requested_scopes(), byte_size, target);
+      }
+    }
+  }
+
+  // bool policy_requires_consent = 5;
+  if (CheckHasBit(cached_has_bits, 0x00000020U)) {
+    if (this_._internal_policy_requires_consent() != 0) {
+      target = stream->EnsureSpace(target);
+      target = ::_pbi::WireFormatLite::WriteBoolToArray(
+          5, this_._internal_policy_requires_consent(), target);
+    }
+  }
+
+  // int64 expires_utc_unix_ms = 6;
+  if (CheckHasBit(cached_has_bits, 0x00000010U)) {
+    if (this_._internal_expires_utc_unix_ms() != 0) {
+      target =
+          ::google::protobuf::internal::WireFormatLite::WriteInt64ToArrayWithField<6>(
+              stream, this_._internal_expires_utc_unix_ms(), target);
+    }
+  }
+
+  if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+    target =
+        ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+            this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:remote_support.ipc.v1.ManagedSessionConsentRequest)
+  return target;
+}
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+::size_t ManagedSessionConsentRequest::ByteSizeLong(const MessageLite& base) {
+  const ManagedSessionConsentRequest& this_ = static_cast<const ManagedSessionConsentRequest&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
+::size_t ManagedSessionConsentRequest::ByteSizeLong() const {
+  const ManagedSessionConsentRequest& this_ = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  // @@protoc_insertion_point(message_byte_size_start:remote_support.ipc.v1.ManagedSessionConsentRequest)
+  ::size_t total_size = 0;
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+  cached_has_bits = this_._impl_._has_bits_[0];
+  if (BatchCheckHasBit(cached_has_bits, 0x0000003fU)) {
+    // repeated .remote_support.v1.CapabilityScope requested_scopes = 4;
+    if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+      total_size += ::_pbi::WireFormatLite::EnumSizeWithPackedTagSize(
+          this_._internal_requested_scopes(), 1, this_._impl_._requested_scopes_cached_byte_size_);
+    }
+    // string session_id = 1;
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+      if (!this_._internal_session_id().empty()) {
+        total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
+                                        this_._internal_session_id());
+      }
+    }
+    // string operator_display_name = 2;
+    if (CheckHasBit(cached_has_bits, 0x00000004U)) {
+      if (!this_._internal_operator_display_name().empty()) {
+        total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
+                                        this_._internal_operator_display_name());
+      }
+    }
+    // string operator_tenant_display_name = 3;
+    if (CheckHasBit(cached_has_bits, 0x00000008U)) {
+      if (!this_._internal_operator_tenant_display_name().empty()) {
+        total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
+                                        this_._internal_operator_tenant_display_name());
+      }
+    }
+    // int64 expires_utc_unix_ms = 6;
+    if (CheckHasBit(cached_has_bits, 0x00000010U)) {
+      if (this_._internal_expires_utc_unix_ms() != 0) {
+        total_size += ::_pbi::WireFormatLite::Int64SizePlusOne(
+            this_._internal_expires_utc_unix_ms());
+      }
+    }
+    // bool policy_requires_consent = 5;
+    if (CheckHasBit(cached_has_bits, 0x00000020U)) {
+      if (this_._internal_policy_requires_consent() != 0) {
+        total_size += 2;
+      }
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+
+void ManagedSessionConsentRequest::MergeImpl(::google::protobuf::MessageLite& to_msg,
+                            const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this =
+      static_cast<ManagedSessionConsentRequest*>(&to_msg);
+  auto& from = static_cast<const ManagedSessionConsentRequest&>(from_msg);
+  if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
+    from.CheckHasBitConsistency();
+  }
+  // @@protoc_insertion_point(class_specific_merge_from_start:remote_support.ipc.v1.ManagedSessionConsentRequest)
+  ABSL_DCHECK_NE(&from, _this);
+  ::uint32_t cached_has_bits = 0;
+  (void)cached_has_bits;
+
+  cached_has_bits = from._impl_._has_bits_[0];
+  if (BatchCheckHasBit(cached_has_bits, 0x0000003fU)) {
+    if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+      _this->_internal_mutable_requested_scopes()->MergeFrom(from._internal_requested_scopes());
+    }
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+      if (!from._internal_session_id().empty()) {
+        _this->_internal_set_session_id(from._internal_session_id());
+      } else {
+        if (_this->_impl_.session_id_.IsDefault()) {
+          _this->_internal_set_session_id("");
+        }
+      }
+    }
+    if (CheckHasBit(cached_has_bits, 0x00000004U)) {
+      if (!from._internal_operator_display_name().empty()) {
+        _this->_internal_set_operator_display_name(from._internal_operator_display_name());
+      } else {
+        if (_this->_impl_.operator_display_name_.IsDefault()) {
+          _this->_internal_set_operator_display_name("");
+        }
+      }
+    }
+    if (CheckHasBit(cached_has_bits, 0x00000008U)) {
+      if (!from._internal_operator_tenant_display_name().empty()) {
+        _this->_internal_set_operator_tenant_display_name(from._internal_operator_tenant_display_name());
+      } else {
+        if (_this->_impl_.operator_tenant_display_name_.IsDefault()) {
+          _this->_internal_set_operator_tenant_display_name("");
+        }
+      }
+    }
+    if (CheckHasBit(cached_has_bits, 0x00000010U)) {
+      if (from._internal_expires_utc_unix_ms() != 0) {
+        _this->_impl_.expires_utc_unix_ms_ = from._impl_.expires_utc_unix_ms_;
+      }
+    }
+    if (CheckHasBit(cached_has_bits, 0x00000020U)) {
+      if (from._internal_policy_requires_consent() != 0) {
+        _this->_impl_.policy_requires_consent_ = from._impl_.policy_requires_consent_;
+      }
+    }
+  }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+}
+
+void ManagedSessionConsentRequest::CopyFrom(const ManagedSessionConsentRequest& from) {
+  // @@protoc_insertion_point(class_specific_copy_from_start:remote_support.ipc.v1.ManagedSessionConsentRequest)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+
+void ManagedSessionConsentRequest::InternalSwap(ManagedSessionConsentRequest* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+  using ::std::swap;
+  auto* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, other->GetArena());
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  _impl_.requested_scopes_.InternalSwap(&other->_impl_.requested_scopes_);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.session_id_, &other->_impl_.session_id_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.operator_display_name_, &other->_impl_.operator_display_name_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.operator_tenant_display_name_, &other->_impl_.operator_tenant_display_name_, arena);
+  ::google::protobuf::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(ManagedSessionConsentRequest, _impl_.policy_requires_consent_)
+      + sizeof(ManagedSessionConsentRequest::_impl_.policy_requires_consent_)
+      - PROTOBUF_FIELD_OFFSET(ManagedSessionConsentRequest, _impl_.expires_utc_unix_ms_)>(
+          reinterpret_cast<char*>(&_impl_.expires_utc_unix_ms_),
+          reinterpret_cast<char*>(&other->_impl_.expires_utc_unix_ms_));
+}
+
+::google::protobuf::Metadata ManagedSessionConsentRequest::GetMetadata() const {
+  return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
+}
+// ===================================================================
+
+class ManagedSessionConsentResult::_Internal {
+ public:
+  using HasBits =
+      decltype(::std::declval<ManagedSessionConsentResult>()._impl_._has_bits_);
+  static constexpr ::int32_t kHasBitsOffset =
+      8 * PROTOBUF_FIELD_OFFSET(ManagedSessionConsentResult, _impl_._has_bits_);
+};
+
+ManagedSessionConsentResult::ManagedSessionConsentResult(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(arena, ManagedSessionConsentResult_class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  SharedCtor(arena);
+  // @@protoc_insertion_point(arena_constructor:remote_support.ipc.v1.ManagedSessionConsentResult)
+}
+PROTOBUF_NDEBUG_INLINE ManagedSessionConsentResult::Impl_::Impl_(
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] const ::remote_support::ipc::v1::ManagedSessionConsentResult& from_msg)
+      : _has_bits_{from._has_bits_},
+        _cached_size_{0},
+        granted_scopes_{visibility, arena, from.granted_scopes_},
+        _granted_scopes_cached_byte_size_{0},
+        session_id_(arena, from.session_id_),
+        reason_code_(arena, from.reason_code_) {}
+
+ManagedSessionConsentResult::ManagedSessionConsentResult(
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const ManagedSessionConsentResult& from)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(arena, ManagedSessionConsentResult_class_data_.base()) {
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena) {
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  ManagedSessionConsentResult* const _this = this;
+  (void)_this;
+  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
+  _impl_.approved_ = from._impl_.approved_;
+
+  // @@protoc_insertion_point(copy_constructor:remote_support.ipc.v1.ManagedSessionConsentResult)
+}
+PROTOBUF_NDEBUG_INLINE ManagedSessionConsentResult::Impl_::Impl_(
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+      : _cached_size_{0},
+        granted_scopes_{visibility, arena},
+        _granted_scopes_cached_byte_size_{0},
+        session_id_(arena),
+        reason_code_(arena) {}
+
+inline void ManagedSessionConsentResult::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
+  new (&_impl_) Impl_(internal_visibility(), arena);
+  _impl_.approved_ = {};
+}
+ManagedSessionConsentResult::~ManagedSessionConsentResult() {
+  // @@protoc_insertion_point(destructor:remote_support.ipc.v1.ManagedSessionConsentResult)
+  SharedDtor(*this);
+}
+inline void ManagedSessionConsentResult::SharedDtor(MessageLite& self) {
+  ManagedSessionConsentResult& this_ = static_cast<ManagedSessionConsentResult&>(self);
+  if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
+    this_.CheckHasBitConsistency();
+  }
+  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.session_id_.Destroy();
+  this_._impl_.reason_code_.Destroy();
+  this_._impl_.~Impl_();
+}
+
+inline void* PROTOBUF_NONNULL ManagedSessionConsentResult::PlacementNew_(
+    const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
+    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
+  return ::new (mem) ManagedSessionConsentResult(arena);
+}
+constexpr auto ManagedSessionConsentResult::InternalNewImpl_() {
+  constexpr auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+      PROTOBUF_FIELD_OFFSET(ManagedSessionConsentResult, _impl_.granted_scopes_) +
+          decltype(ManagedSessionConsentResult::_impl_.granted_scopes_)::
+              InternalGetArenaOffset(
+                  ::google::protobuf::Message::internal_visibility()),
+  });
+  if (arena_bits.has_value()) {
+    return ::google::protobuf::internal::MessageCreator::CopyInit(
+        sizeof(ManagedSessionConsentResult), alignof(ManagedSessionConsentResult), *arena_bits);
+  } else {
+    return ::google::protobuf::internal::MessageCreator(&ManagedSessionConsentResult::PlacementNew_,
+                                 sizeof(ManagedSessionConsentResult),
+                                 alignof(ManagedSessionConsentResult));
+  }
+}
+constexpr auto ManagedSessionConsentResult::InternalGenerateClassData_() {
+  return ::google::protobuf::internal::ClassDataFull{
+      ::google::protobuf::internal::ClassData{
+          &_ManagedSessionConsentResult_default_instance_._instance,
+          &_table_.header,
+          nullptr,  // OnDemandRegisterArenaDtor
+          nullptr,  // IsInitialized
+          &ManagedSessionConsentResult::MergeImpl,
+          ::google::protobuf::Message::GetNewImpl<ManagedSessionConsentResult>(),
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          &ManagedSessionConsentResult::SharedDtor,
+          ::google::protobuf::Message::GetClearImpl<ManagedSessionConsentResult>(), &ManagedSessionConsentResult::ByteSizeLong,
+              &ManagedSessionConsentResult::_InternalSerialize,
+#endif  // PROTOBUF_CUSTOM_VTABLE
+          PROTOBUF_FIELD_OFFSET(ManagedSessionConsentResult, _impl_._cached_size_),
+          false,
+      },
+      &ManagedSessionConsentResult::kDescriptorMethods,
+      &descriptor_table_service_5fipc_2eproto,
+      nullptr,  // tracker
+  };
+}
+
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
+    ::google::protobuf::internal::ClassDataFull ManagedSessionConsentResult_class_data_ =
+        ManagedSessionConsentResult::InternalGenerateClassData_();
+
+PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
+ManagedSessionConsentResult::GetClassData() const {
+  ::google::protobuf::internal::PrefetchToLocalCache(&ManagedSessionConsentResult_class_data_);
+  ::google::protobuf::internal::PrefetchToLocalCache(ManagedSessionConsentResult_class_data_.tc_table);
+  return ManagedSessionConsentResult_class_data_.base();
+}
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+const ::_pbi::TcParseTable<2, 4, 0, 79, 2>
+ManagedSessionConsentResult::_table_ = {
+  {
+    PROTOBUF_FIELD_OFFSET(ManagedSessionConsentResult, _impl_._has_bits_),
+    0, // no _extensions_
+    4, 24,  // max_field_number, fast_idx_mask
+    offsetof(decltype(_table_), field_lookup_table),
+    4294967280,  // skipmap
+    offsetof(decltype(_table_), field_entries),
+    4,  // num_field_entries
+    0,  // num_aux_entries
+    offsetof(decltype(_table_), field_names),  // no aux_entries
+    ManagedSessionConsentResult_class_data_.base(),
+    nullptr,  // post_loop_handler
+    ::_pbi::TcParser::GenericFallback,  // fallback
+    #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
+    ::_pbi::TcParser::GetTable<::remote_support::ipc::v1::ManagedSessionConsentResult>(),  // to_prefetch
+    #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+  }, {{
+    // string reason_code = 4;
+    {::_pbi::TcParser::FastUS1,
+     {34, 2, 0,
+      PROTOBUF_FIELD_OFFSET(ManagedSessionConsentResult, _impl_.reason_code_)}},
+    // string session_id = 1;
+    {::_pbi::TcParser::FastUS1,
+     {10, 1, 0,
+      PROTOBUF_FIELD_OFFSET(ManagedSessionConsentResult, _impl_.session_id_)}},
+    // bool approved = 2;
+    {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(ManagedSessionConsentResult, _impl_.approved_), 3>(),
+     {16, 3, 0,
+      PROTOBUF_FIELD_OFFSET(ManagedSessionConsentResult, _impl_.approved_)}},
+    // repeated .remote_support.v1.CapabilityScope granted_scopes = 3;
+    {::_pbi::TcParser::FastV32P1,
+     {26, 0, 0,
+      PROTOBUF_FIELD_OFFSET(ManagedSessionConsentResult, _impl_.granted_scopes_)}},
+  }}, {{
+    65535, 65535
+  }}, {{
+    // string session_id = 1;
+    {PROTOBUF_FIELD_OFFSET(ManagedSessionConsentResult, _impl_.session_id_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
+    // bool approved = 2;
+    {PROTOBUF_FIELD_OFFSET(ManagedSessionConsentResult, _impl_.approved_), _Internal::kHasBitsOffset + 3, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
+    // repeated .remote_support.v1.CapabilityScope granted_scopes = 3;
+    {PROTOBUF_FIELD_OFFSET(ManagedSessionConsentResult, _impl_.granted_scopes_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcRepeated | ::_fl::kPackedOpenEnum)},
+    // string reason_code = 4;
+    {PROTOBUF_FIELD_OFFSET(ManagedSessionConsentResult, _impl_.reason_code_), _Internal::kHasBitsOffset + 2, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
+  }},
+  // no aux_entries
+  {{
+    "\61\12\0\0\13\0\0\0"
+    "remote_support.ipc.v1.ManagedSessionConsentResult"
+    "session_id"
+    "reason_code"
+  }},
+};
+PROTOBUF_NOINLINE void ManagedSessionConsentResult::Clear() {
+// @@protoc_insertion_point(message_clear_start:remote_support.ipc.v1.ManagedSessionConsentResult)
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  cached_has_bits = _impl_._has_bits_[0];
+  if (BatchCheckHasBit(cached_has_bits, 0x00000007U)) {
+    if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+      _impl_.granted_scopes_.Clear();
+    }
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+      _impl_.session_id_.ClearNonDefaultToEmpty();
+    }
+    if (CheckHasBit(cached_has_bits, 0x00000004U)) {
+      _impl_.reason_code_.ClearNonDefaultToEmpty();
+    }
+  }
+  _impl_.approved_ = false;
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+}
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+::uint8_t* PROTOBUF_NONNULL ManagedSessionConsentResult::_InternalSerialize(
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
+  const ManagedSessionConsentResult& this_ = static_cast<const ManagedSessionConsentResult&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
+::uint8_t* PROTOBUF_NONNULL ManagedSessionConsentResult::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
+  const ManagedSessionConsentResult& this_ = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
+    this_.CheckHasBitConsistency();
+  }
+  // @@protoc_insertion_point(serialize_to_array_start:remote_support.ipc.v1.ManagedSessionConsentResult)
+  ::uint32_t cached_has_bits = 0;
+  (void)cached_has_bits;
+
+  cached_has_bits = this_._impl_._has_bits_[0];
+  // string session_id = 1;
+  if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+    if (!this_._internal_session_id().empty()) {
+      const ::std::string& _s = this_._internal_session_id();
+      ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+          _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "remote_support.ipc.v1.ManagedSessionConsentResult.session_id");
+      target = stream->WriteStringMaybeAliased(1, _s, target);
+    }
+  }
+
+  // bool approved = 2;
+  if (CheckHasBit(cached_has_bits, 0x00000008U)) {
+    if (this_._internal_approved() != 0) {
+      target = stream->EnsureSpace(target);
+      target = ::_pbi::WireFormatLite::WriteBoolToArray(
+          2, this_._internal_approved(), target);
+    }
+  }
+
+  // repeated .remote_support.v1.CapabilityScope granted_scopes = 3;
+  if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+    {
+      ::size_t byte_size = this_._impl_._granted_scopes_cached_byte_size_.Get();
+      if (byte_size > 0) {
+        target = stream->WriteEnumPacked(
+            3, this_._internal_granted_scopes(), byte_size, target);
+      }
+    }
+  }
+
+  // string reason_code = 4;
+  if (CheckHasBit(cached_has_bits, 0x00000004U)) {
+    if (!this_._internal_reason_code().empty()) {
+      const ::std::string& _s = this_._internal_reason_code();
+      ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+          _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "remote_support.ipc.v1.ManagedSessionConsentResult.reason_code");
+      target = stream->WriteStringMaybeAliased(4, _s, target);
+    }
+  }
+
+  if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+    target =
+        ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+            this_._internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:remote_support.ipc.v1.ManagedSessionConsentResult)
+  return target;
+}
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+::size_t ManagedSessionConsentResult::ByteSizeLong(const MessageLite& base) {
+  const ManagedSessionConsentResult& this_ = static_cast<const ManagedSessionConsentResult&>(base);
+#else   // PROTOBUF_CUSTOM_VTABLE
+::size_t ManagedSessionConsentResult::ByteSizeLong() const {
+  const ManagedSessionConsentResult& this_ = *this;
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  // @@protoc_insertion_point(message_byte_size_start:remote_support.ipc.v1.ManagedSessionConsentResult)
+  ::size_t total_size = 0;
+
+  ::uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void)cached_has_bits;
+
+  ::_pbi::Prefetch5LinesFrom7Lines(&this_);
+  cached_has_bits = this_._impl_._has_bits_[0];
+  if (BatchCheckHasBit(cached_has_bits, 0x0000000fU)) {
+    // repeated .remote_support.v1.CapabilityScope granted_scopes = 3;
+    if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+      total_size += ::_pbi::WireFormatLite::EnumSizeWithPackedTagSize(
+          this_._internal_granted_scopes(), 1, this_._impl_._granted_scopes_cached_byte_size_);
+    }
+    // string session_id = 1;
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+      if (!this_._internal_session_id().empty()) {
+        total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
+                                        this_._internal_session_id());
+      }
+    }
+    // string reason_code = 4;
+    if (CheckHasBit(cached_has_bits, 0x00000004U)) {
+      if (!this_._internal_reason_code().empty()) {
+        total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
+                                        this_._internal_reason_code());
+      }
+    }
+    // bool approved = 2;
+    if (CheckHasBit(cached_has_bits, 0x00000008U)) {
+      if (this_._internal_approved() != 0) {
+        total_size += 2;
+      }
+    }
+  }
+  return this_.MaybeComputeUnknownFieldsSize(total_size,
+                                             &this_._impl_._cached_size_);
+}
+
+void ManagedSessionConsentResult::MergeImpl(::google::protobuf::MessageLite& to_msg,
+                            const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this =
+      static_cast<ManagedSessionConsentResult*>(&to_msg);
+  auto& from = static_cast<const ManagedSessionConsentResult&>(from_msg);
+  if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
+    from.CheckHasBitConsistency();
+  }
+  // @@protoc_insertion_point(class_specific_merge_from_start:remote_support.ipc.v1.ManagedSessionConsentResult)
+  ABSL_DCHECK_NE(&from, _this);
+  ::uint32_t cached_has_bits = 0;
+  (void)cached_has_bits;
+
+  cached_has_bits = from._impl_._has_bits_[0];
+  if (BatchCheckHasBit(cached_has_bits, 0x0000000fU)) {
+    if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+      _this->_internal_mutable_granted_scopes()->MergeFrom(from._internal_granted_scopes());
+    }
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+      if (!from._internal_session_id().empty()) {
+        _this->_internal_set_session_id(from._internal_session_id());
+      } else {
+        if (_this->_impl_.session_id_.IsDefault()) {
+          _this->_internal_set_session_id("");
+        }
+      }
+    }
+    if (CheckHasBit(cached_has_bits, 0x00000004U)) {
+      if (!from._internal_reason_code().empty()) {
+        _this->_internal_set_reason_code(from._internal_reason_code());
+      } else {
+        if (_this->_impl_.reason_code_.IsDefault()) {
+          _this->_internal_set_reason_code("");
+        }
+      }
+    }
+    if (CheckHasBit(cached_has_bits, 0x00000008U)) {
+      if (from._internal_approved() != 0) {
+        _this->_impl_.approved_ = from._impl_.approved_;
+      }
+    }
+  }
+  _this->_impl_._has_bits_[0] |= cached_has_bits;
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
+}
+
+void ManagedSessionConsentResult::CopyFrom(const ManagedSessionConsentResult& from) {
+  // @@protoc_insertion_point(class_specific_copy_from_start:remote_support.ipc.v1.ManagedSessionConsentResult)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+
+void ManagedSessionConsentResult::InternalSwap(ManagedSessionConsentResult* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+  using ::std::swap;
+  auto* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, other->GetArena());
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  _impl_.granted_scopes_.InternalSwap(&other->_impl_.granted_scopes_);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.session_id_, &other->_impl_.session_id_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.reason_code_, &other->_impl_.reason_code_, arena);
+  swap(_impl_.approved_, other->_impl_.approved_);
+}
+
+::google::protobuf::Metadata ManagedSessionConsentResult::GetMetadata() const {
   return ::google::protobuf::Message::GetMetadataImpl(GetClassData()->full());
 }
 // @@protoc_insertion_point(namespace_scope)

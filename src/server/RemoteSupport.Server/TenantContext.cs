@@ -80,12 +80,20 @@ internal sealed class TenantContextMiddleware(RequestDelegate next)
         context.Items.TryGetValue(ItemKey, out object? value) && value is TenantRequestContext tenant
             ? tenant : throw new ControlPlaneException(403, "TENANT_CONTEXT_INVALID", "Tenant context was invalid.");
 
+    private static readonly HashSet<string> DeviceSelfServiceSegments = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "heartbeat", "credential-challenges", "credentials", "keys", "pending-session-requests",
+    };
+
     private static bool RequiresTenantContext(PathString path)
     {
         if (path.StartsWithSegments("/v1/tenant", StringComparison.OrdinalIgnoreCase)) return true;
         if (path.StartsWithSegments("/v1/device-enrollment-tokens", StringComparison.OrdinalIgnoreCase)) return true;
-        if (path.StartsWithSegments("/v1/devices", StringComparison.OrdinalIgnoreCase) &&
-            !path.StartsWithSegments("/v1/devices/enrollments", StringComparison.OrdinalIgnoreCase)) return true;
-        return false;
+        if (!path.StartsWithSegments("/v1/devices", StringComparison.OrdinalIgnoreCase)) return false;
+        if (path.StartsWithSegments("/v1/devices/enrollments", StringComparison.OrdinalIgnoreCase)) return false;
+        // Device-authenticated (DPoP) or anonymous device self-service calls do not carry an operator
+        // tenant context; only operator-facing device inventory/session-creation calls require it.
+        string[] segments = (path.Value ?? string.Empty).Split('/', StringSplitOptions.RemoveEmptyEntries);
+        return segments.Length < 4 || !DeviceSelfServiceSegments.Contains(segments[3]);
     }
 }

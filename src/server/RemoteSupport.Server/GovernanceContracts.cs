@@ -29,6 +29,29 @@ public sealed record DeviceContract(Guid Id, string DisplayName, string Status, 
     string OsVersion, bool UnattendedEnabled, DateTimeOffset EnrolledAt, DateTimeOffset? LastSeenAt,
     long AuthorizationVersion);
 public sealed record PagedDevices(IReadOnlyList<DeviceContract> Items, string? NextCursor = null);
+public sealed record DeviceHeartbeat(string AppVersion, string OsVersion, string ServiceState,
+    int InteractiveSessions, DateTimeOffset SentAt, ClientCapabilities? Capabilities = null);
+public sealed record DeviceCredentialChallengeRequest(int KeyVersion, string Purpose);
+public sealed record DeviceCredentialChallenge(Guid ChallengeId, string Nonce, DateTimeOffset ExpiresAt,
+    string CanonicalizationVersion, string Purpose);
+public sealed record DeviceCredentialExchangeRequest(Guid ChallengeId, int KeyVersion, DetachedProof Proof);
+public sealed record DeviceCredentialResult(string DeviceCredential, DateTimeOffset ExpiresAt,
+    long AuthorizationVersion, int KeyVersion);
+public sealed record DeviceKeyRotationRequest(JsonElement NewPublicKey, DetachedProof CurrentKeyProof, Guid ChallengeId);
+public sealed record DeviceKeyRotationResult(int KeyVersion, bool CredentialChallengeRequired);
+public sealed record ManagedSessionRequest(IReadOnlyList<string> RequestedScopes, string SessionType,
+    JsonElement OperatorEphemeralPublicKey, int? RequestedDurationSeconds);
+public sealed record ManagedSessionCreated(SessionResponse Session, Guid OperatorPeerId,
+    string OperatorBootstrapToken, string HostDeliveryState, bool LocalConsentRequired, bool LocalNotificationRequired);
+public sealed record PendingOperatorDisplay(Guid UserId, string DisplayName, string TenantDisplayName);
+public sealed record PendingManagedSessionRequest(Guid SessionId, string SessionType, PendingOperatorDisplay Operator,
+    IReadOnlyList<string> RequestedScopes, string PolicyDecisionHash, string ConsentNonce, bool LocalConsentRequired,
+    bool LocalNotificationRequired, DateTimeOffset ExpiresAt, long StateVersion);
+public sealed record PagedManagedSessionRequests(IReadOnlyList<PendingManagedSessionRequest> Items,
+    int? NextPollAfterSeconds = null);
+public sealed record ManagedHostDecisionRequest(bool Approved, IReadOnlyList<string> GrantedScopes,
+    string ConsentNonce, JsonElement HostEphemeralPublicKey, DetachedProof DecisionProof);
+public sealed record ManagedHostDecisionResult(SessionResponse Session, Guid HostPeerId, string? HostBootstrapToken);
 public sealed record PolicyDocumentRequest(string Name, JsonElement Document, string? Description);
 public sealed record PolicyContract(Guid Id, string Name, string Status, int? ActiveVersion,
     DateTimeOffset CreatedAt, long ResourceVersion);
