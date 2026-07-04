@@ -13,6 +13,8 @@
 #include <vector>
 
 namespace {
+// CTest SKIP_RETURN_CODE sentinel: the environment cannot run the encode pipeline.
+constexpr int kEnvironmentUnsupportedSkip = 125;
 rs_encoder_handle encoder{};
 rs_decoder_handle decoder{};
 rs_runtime_handle runtime{};
@@ -116,11 +118,17 @@ int main() {
   encoder_options.allow_software_fallback = 1;
   encoder_options.max_keyframe_interval_ms = 2'000;
   const auto fallback_started = std::chrono::steady_clock::now();
-  if (rs_encoder_create(runtime, &encoder_options, &encoder) != RS_STATUS_OK) {
+  const rs_status_v1 encoder_status = rs_encoder_create(runtime, &encoder_options, &encoder);
+  if (encoder_status != RS_STATUS_OK) {
     char detail[512]{};
     uint32_t required = 0;
     rs_runtime_get_last_error(runtime, detail, sizeof(detail), &required);
     std::fprintf(stderr, "encoder create: %s\n", detail);
+    // A headless / GPU-less host (e.g. the CI runner's WARP device) cannot perform the
+    // mandatory D3D11 video color conversion, so the encoder truthfully reports
+    // RS_STATUS_NOT_SUPPORTED. Skip (not fail) there; this roundtrip runs in full
+    // wherever a video-capable device exists. CMake maps this code via SKIP_RETURN_CODE.
+    if (encoder_status == RS_STATUS_NOT_SUPPORTED) return kEnvironmentUnsupportedSkip;
     return 3;
   }
   const double fallback_ms = std::chrono::duration<double, std::milli>(

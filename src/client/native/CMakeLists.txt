@@ -206,3 +206,11 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   add_test(NAME AT-FR-INP-001-local-scope-and-lifecycle COMMAND input_integration_test)
 endif()
 add_test(NAME AT-FR-INP-002-coordinate-normalization COMMAND input_mapping_test)
+
+# The codec encode tests use synthetic capture + software fallback so they run in CI,
+# but they still require D3D11 video color conversion. Hosts without it (headless,
+# GPU-less CI runners on a WARP device) make rs_encoder_create return NOT_SUPPORTED;
+# the tests exit 125 there and CTest reports them Skipped instead of Failed. On any
+# video-capable machine the encoder is created and the tests run in full.
+set_tests_properties(AT-FR-SCR-005-codec-roundtrip AT-FR-SCR-005-codec-benchmark
+    PROPERTIES SKIP_RETURN_CODE 125)

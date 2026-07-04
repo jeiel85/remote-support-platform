@@ -18,6 +18,8 @@
 #include <vector>
 
 namespace {
+// CTest SKIP_RETURN_CODE sentinel: the environment cannot run the encode pipeline.
+constexpr int kEnvironmentUnsupportedSkip = 125;
 constexpr uint32_t static_content_flag = 0x40000000u;
 rs_encoder_handle encoder{};
 rs_decoder_handle decoder{};
@@ -125,7 +127,13 @@ int main(int argc, char** argv) {
   encoder_options.frame_queue_capacity = 3;
   encoder_options.allow_software_fallback = 1;
   encoder_options.max_keyframe_interval_ms = 2'000;
-  if (rs_encoder_create(runtime, &encoder_options, &encoder) != RS_STATUS_OK) return 2;
+  const rs_status_v1 encoder_status = rs_encoder_create(runtime, &encoder_options, &encoder);
+  if (encoder_status != RS_STATUS_OK) {
+    // Headless / GPU-less hosts cannot perform the mandatory D3D11 video color conversion,
+    // so the encoder reports RS_STATUS_NOT_SUPPORTED. Skip there (see codec_roundtrip_test);
+    // the benchmark runs in full wherever a video-capable device exists.
+    return encoder_status == RS_STATUS_NOT_SUPPORTED ? kEnvironmentUnsupportedSkip : 2;
+  }
 
   rs_decoder_options_v1 decoder_options{};
   decoder_options.struct_size = sizeof(decoder_options);
